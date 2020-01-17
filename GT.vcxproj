@@ -149,6 +149,7 @@
   <ItemGroup>
     <ClCompile Include="Color.cpp" />
     <ClCompile Include="Conn.cpp" />
+    <ClCompile Include="CSocket.cpp" />
     <ClCompile Include="Debug.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="sha1.cpp" />
@@ -159,6 +160,7 @@
     <ClInclude Include="Color.h" />
     <ClInclude Include="Conn.h" />
     <ClInclude Include="ConsoleColors.h" />
+    <ClInclude Include="CSocket.h" />
     <ClInclude Include="Debug.h" />
     <ClInclude Include="sha1.h" />
     <ClInclude Include="Socket.h" />
