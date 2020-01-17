@@ -20,9 +20,9 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
-    <ProjectGuid>{24914B94-9AE8-4989-992C-7659690C2E9D}</ProjectGuid>
+    <ProjectGuid>{D9D453E2-9743-45CB-8A83-D56B434EFBAA}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>GT</RootNamespace>
+    <RootNamespace>Web</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -102,8 +102,9 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\source\cpp\GT;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -147,22 +148,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Color.cpp" />
-    <ClCompile Include="Conn.cpp" />
-    <ClCompile Include="Debug.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="sha1.cpp" />
-    <ClCompile Include="Socket.cpp" />
-    <ClCompile Include="WSocket.cpp" />
+    <ClCompile Include="..\sha1.cpp" />
+    <ClCompile Include="..\WSocket.cpp" />
+    <ClCompile Include="Web.cpp" />
+    <ClCompile Include="WS.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Color.h" />
-    <ClInclude Include="Conn.h" />
-    <ClInclude Include="ConsoleColors.h" />
-    <ClInclude Include="Debug.h" />
-    <ClInclude Include="sha1.h" />
-    <ClInclude Include="Socket.h" />
-    <ClInclude Include="WSocket.h" />
+    <ClInclude Include="..\sha1.h" />
+    <ClInclude Include="..\Socket.h" />
+    <ClInclude Include="..\WSocket.h" />
+    <ClInclude Include="WS.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\GT.vcxproj">
+      <Project>{24914b94-9ae8-4989-992c-7659690c2e9d}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,10 +1,13 @@
 #pragma once
+#define WIN32_LEAN_AND_MEAN
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include "ConsoleColors.h"
-
-#include<stdio.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include <stdint.h>
-#include<winsock2.h>
+#include <windows.h>
+#include <winsock2.h>
+//#include "sha1.h"
 #pragma comment(lib, "ws2_32.lib") //Winsock Library
 namespace GT {
 
@@ -38,6 +41,10 @@ namespace GT {
 		void (*CallMessage)(ConnInfo Info);
 		void (*CallClose)(ConnInfo Info);
 		
+		virtual void onConnect(ConnInfo Info)=0;
+		virtual void onMessage(ConnInfo Info)=0;
+		virtual void onClose(ConnInfo Info)=0;
+
 		void startListen();
 	private:
 		WSADATA wsa = {};

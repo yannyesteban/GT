@@ -27,7 +27,7 @@ namespace GT {
 			printf("Bind failed with error code : %d", WSAGetLastError());
 			exit(EXIT_FAILURE);
 		}
-
+		startListen();
 	}
 
 	void Socket::stop() {
@@ -106,7 +106,8 @@ namespace GT {
 						Info.port = ntohs(address.sin_port);
 						Info.tag = (char*)"yanny";
 						clients[i] = tSocket;
-						CallConection(Info);
+						//CallConection(Info);
+						onConnect(Info);
 						//CallConection(master, new_socket, clients, i, maxClients, info);
 						printf("Adding to list of sockets at index %d \n", i);
 						break;
@@ -150,7 +151,8 @@ namespace GT {
 						Info.buffer = buffer;
 						Info.valread = valread;
 						Info.error = WSAGetLastError();
-						CallClose(Info);
+						//CallClose(Info);
+						onClose(Info);
 					}
 					if (valread == 0) {
 						//Somebody disconnected , get his details and print
@@ -169,7 +171,8 @@ namespace GT {
 						Info.buffer = buffer;
 						Info.valread = valread;
 						Info.error = WSAGetLastError();
-						CallClose(Info);
+						//CallClose(Info);
+						onClose(Info);
 						//CallClientError(master, s, buffer, valread, i, WSAGetLastError());
 						closesocket(s);
 						clients[i] = 0;
@@ -189,7 +192,8 @@ namespace GT {
 						Info.tag = (char*)"yanny";
 						Info.buffer = buffer;
 						Info.valread = valread;
-						CallMessage(Info);
+						//CallMessage(Info);
+						onMessage(Info);
 						
 					}
 				}

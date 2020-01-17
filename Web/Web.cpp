@@ -1,27 +1,12 @@
-// GT.cpp : Este archivo contiene la función "main". La ejecución del programa comienza y termina ahí.
+// Web.cpp : Este archivo contiene la función "main". La ejecución del programa comienza y termina ahí.
 //
 
 #include <iostream>
-#include "Conn.h"
-#include "Color.h"
-
+#include "WSocket.h"
 using namespace GT;
 int main()
 {
-    
-    setlocale(LC_CTYPE, "Spanish");
-    system("cls");
-    Color::set(4);
-    std::cout << "GT v1.0 (2020)!\n" ;
-    Color::set(0);
-    SocketInfo Info;
-    Info.host = (char*)"127.0.0.1";
-    Info.port = 3311;
-    Info.maxClients = 30;
-
-    Conn *S = new Conn(Info);
-    S->start();
-    S->startListen();
+    std::cout << "Hello World!\n";
 }
 
 // Ejecutar programa: Ctrl + F5 o menú Depurar > Iniciar sin depurar
