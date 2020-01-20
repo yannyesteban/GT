@@ -26,7 +26,7 @@ namespace GT {
 		int valread;
 
 		char* address;
-		u_short port;
+		//u_short port;
 		char* tag;
 		char* host;
 		const char * port;

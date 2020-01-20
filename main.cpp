@@ -4,10 +4,11 @@
 #include <iostream>
 #include "Conn.h"
 #include "WSocket.h"
+#include "CSocket.h"
 #include "Color.h"
 
 using namespace GT;
-int main()
+int main2()
 {
     
     setlocale(LC_CTYPE, "Spanish");
@@ -23,6 +24,24 @@ int main()
     WSocket *S = new WSocket(Info);
     S->start();
     //S->startListen();
+    return 1;
+}
+
+int main() {
+    setlocale(LC_CTYPE, "Spanish");
+    system("cls");
+    Color::set(4);
+    std::cout << "GT Client v1.0 (2020)!\n";
+    Color::set(0);
+    CSInfo Info;
+    Info.host = (char*)"127.0.0.1";
+    Info.port = "3311";
+    Info.maxClients = 30;
+
+    CSocket* S = new CSocket(Info);
+    S->start();
+
+    return 1;
 }
 
 // Ejecutar programa: Ctrl + F5 o menú Depurar > Iniciar sin depurar

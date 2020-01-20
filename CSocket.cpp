@@ -24,7 +24,7 @@ namespace GT {
 		hints.ai_protocol = IPPROTO_TCP;
 
 		// Resolve the server address and port
-		int iResult = getaddrinfo(info.host, info.port, &hints, &result);
+		iResult = getaddrinfo(info.host, info.port, &hints, &result);
 		if (iResult != 0) {
 			msgError = "getaddrinfo failed with error";
 			sockError = iResult;
