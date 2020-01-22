@@ -1,5 +1,5 @@
 #pragma once
-
+#include <iostream>
 #include "CSocket.h"
 BOOL WINAPI keyboard(LPVOID param);
 namespace GT {

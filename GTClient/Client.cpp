@@ -21,14 +21,26 @@ BOOL __stdcall keyboard(LPVOID param) {
 
 	char message[255] = "";
 	int iResult;
-	printf("que %s", "hey");
+	//printf("que %s", "hey");
 	while (strcmp(message, "*exit")) {
-		//system("cls");
-		printf("> ");
-		scanf_s("%s!", message,255);
-		//scanf("%254[^\n]", message);
-		printf("mensaje enviado %s // length[%d]\n", message, (int)strlen(message));
+		
+		//fflush(stdin);
+		std::cout << "-> ";
+		std::cin.getline(message, 255, '\n');
 
+
+		//system("cls");
+		//fflush(stdin);
+		//std::cin.ignore(10, '\n');
+		//std::cin.ignore(std::cin.rdbuf()->in_avail());
+		//printf("> ");
+		//scanf_s("%s!", message,255);
+		//scanf_s("%200[^\n]", message, 200);
+		//fflush(stdin);
+		//system("pause");
+		//printf("mensaje enviado %s // length[%d]\n", message, (int)strlen(message));
+		std::cin.clear();
+		//continue;
 		//message[strlen(message)] = '\0';
 
 		//char MM[] = "*===Multi Hilo===";
@@ -43,6 +55,7 @@ BOOL __stdcall keyboard(LPVOID param) {
 			exit(0);
 			return false;
 		}
+		printf("   => Ok, length[%d]\n", (int)strlen(message));
 
 	}
 	system("cls");

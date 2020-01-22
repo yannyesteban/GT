@@ -1,7 +1,9 @@
 #pragma once
 #include "Types.h"
+#include "Tool.h"
 #include <mysql/jdbc.h>
 #include<string>
+//
 
 namespace GT {
 	struct InfoProto {
@@ -53,6 +55,10 @@ namespace GT {
 		void loadFormats();
 		void printFormats();
 
+		bool saveTrack(const char* unit_id, int id, int version, const char* buffer);
+
+		bool isVersion(int value);
+
 	private:
 		bool debug;
 		InfoDB info;
@@ -67,5 +73,6 @@ namespace GT {
 		std::map<int, InfoProto> mProtocols;
 		std::map<std::string, InfoClient> mClients;
 		std::map<int, std::list<std::string>> mFormats;
+		std::list<int> mVersions;
 	};
 }

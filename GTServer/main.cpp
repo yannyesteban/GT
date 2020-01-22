@@ -25,7 +25,6 @@ int main()
     printf("DB Name: %s\n", appInfo.db.name);
     ///printf("Time: %s", XT::Time::now());
 
-    //Sleep(5000);
     SocketInfo Info;
     Info.host = (char*)"127.0.0.1";
     Info.port = 3311;
@@ -34,7 +33,7 @@ int main()
     Server * S = new Server(Info);
     S->init(appInfo);
     S->start();
-    //S->startListen();
+    
     return 1;
 }
 
