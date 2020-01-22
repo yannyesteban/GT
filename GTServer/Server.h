@@ -29,6 +29,7 @@ namespace GT {
 		bool isSyncMsg(ConnInfo Info);
 
 		bool evalMessage(const char* msg);
+		bool deviceMessage(ConnInfo Info);
 
 
 	private:
@@ -36,6 +37,7 @@ namespace GT {
 		DB * db;
 
 		std::map<SOCKET, GTClient> clients;
+		std::map<string, GTClient > mDevices;
 		//AppConfig * config;
 		//Versions versions;
 		//sql::Driver* driver = nullptr;

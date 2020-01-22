@@ -300,7 +300,61 @@ namespace GT {
 			*/
 		}
 	}
+	bool DB::saveTrack(const char* unit_id, const char* buffer) {
+		//std::string s(buffer);
 
+		buffer = "2012000413,20190717161915,-66.845906,10.500806,1,279,983.0,4,2,0.0,1,12.27,0.01,0,0,0,1";
+
+
+		//list<string> field = XT::Tool::split(s, ',');
+		int version = mClients[unit_id].version_id;
+		std::string  mm[30];
+		int n;
+		GT::Tool::getItem(mm, n, buffer);
+		std::string query = "INSERT INTO tracking ";
+		std::string qfields = "device_cod";
+		std::string qvalues(std::to_string(mClients[unit_id].id));
+
+		//char aux[10];
+		//sprintf(aux, "'%d'", id);
+		//std::string qvalues = std::to_string(n);
+
+		int x = 0;// counter of items
+		for (std::list<string>::iterator it = mFormats[version].begin(); it != mFormats[version].end(); it++) {
+			if (qfields != "") {
+				qfields += ",";
+				qvalues += ",";
+			}
+			qfields = qfields + "`" + it->c_str() + "`";
+			qvalues = qvalues + "'" + mm[x++] + "'";
+		}
+		query = query + "(" + qfields + ") VALUES (" + qvalues + ");";
+
+		//std::cout << query << endl;
+
+
+		try {
+			sql::Statement* stmt;
+			sql::ResultSet* res;
+			stmt = cn->createStatement();
+			//res = stmt->executeQuery(query.c_str());
+			//delete res;
+			delete stmt;
+
+		} catch (sql::SQLException & e) {
+
+			if (1 == 0) {
+				cout << endl << endl << "# ERR: SQLException in " << __FILE__;
+				cout << endl << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+				cout << endl << "# ERR: " << e.what();
+				cout << endl << " (MySQL error code: " << e.getErrorCode();
+				cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+			}
+
+		}
+		
+		return true;
+	}
 	bool DB::saveTrack(const char* unit_id, int id, int version, const char* buffer) {
 
 		//std::string s(buffer);
@@ -359,14 +413,23 @@ namespace GT {
 		return true;
 	}
 
+	
+
 	bool DB::isVersion(int value) {
 		for (std::list<int>::iterator it = mVersions.begin(); it != mVersions.end(); it++) {
+
+			
 			if (value == *it) {
+				printf("is sync..%d...%d....\n", value, *it);
 				return true;
 			}
 		}
 		
 		return false;
+	}
+
+	InfoClient DB::getInfoClient(string id) {
+		return mClients[id];
 	}
 
 

@@ -36,8 +36,24 @@ namespace GT {
 	void Server::onMessage(ConnInfo Info) {
 		printf("recibiendo: %s\n", Info.buffer);
 
-		if (isSyncMsg(Info)) {
+		SyncMsg xx = {
+			63738,
+			283,
+			2012000422,
 
+		};
+		memcpy(Info.buffer, &xx, sizeof(xx));
+		Info.valread = sizeof(xx);
+		//Info.buffer = (void *)xx;
+
+		if (isSyncMsg(Info)) {
+			//return;
+		}
+
+		if (clients[Info.client].type == 2) {
+			deviceMessage(Info);
+
+			//return;
 		}
 		evalMessage(Info.buffer);
 	}
@@ -48,23 +64,31 @@ namespace GT {
 
 	
 	bool Server::isSyncMsg(ConnInfo Info) {
+
+		
+
+
 		SyncMsg* sync_msg = (SyncMsg*)Info.buffer;
 
 		char id[12];
 
-		printf(ANSI_COLOR_CYAN "---> verification of sync (%lu)..." ANSI_COLOR_RESET, sync_msg->Keep_Alive_Device_ID);
+		printf(ANSI_COLOR_CYAN "---> verification of sync (%lu)..(%d).\n" ANSI_COLOR_RESET, sync_msg->Keep_Alive_Device_ID, sync_msg->Keep_Alive_Header);
 		//puts(sync_msg->Keep_Alive_Device_ID));
 
 		if (db->isVersion(sync_msg->Keep_Alive_Header)) {
 			sprintf(id, "%lu", sync_msg->Keep_Alive_Device_ID);
+			printf("\nasync %d\n", sync_msg->Keep_Alive_Device_ID);
+
+
+			mDevices[id] = clients[Info.client];
+			mDevices[id].type = 2;
+			strcpy(mDevices[id].device_id, (const char*)id);
+			send(Info.client, Info.buffer, Info.valread, 0);// return the sycm message
 			return true;
 		}
-		/*for (int i = 0; i < versions.n; i++) {
-			if (sync_msg->Keep_Alive_Header == versions.e[i]) {
-				sprintf(id, "%lu", sync_msg->Keep_Alive_Device_ID);
-				return true;
-			}
-		}*/
+		
+
+
 		return false;
 	}
 	bool Server::evalMessage(const char* message) {
@@ -83,26 +107,37 @@ namespace GT {
 		default:
 			puts("otra cosa");
 
-			//std::string string = (char*)message;
-			std::stringstream ss((char*)"hello \npedro\npor su casa\n");
-			std::string to;
-			int i = 0;
-
-
-
-
-			if (message != NULL) {
-				while (std::getline(ss, to)) {//, '\n'
-
-					printf("\n%d .- %s", i++, to.c_str());
-
-					//_CallMsgReceived2(master, client, (char*)to.c_str(), valread, index);
-				}
-			}
+			
 
 
 			break;
 
+		}
+
+		return false;
+	}
+	bool Server::deviceMessage(ConnInfo Info) {
+
+		printf("esto es un device message\n");
+
+
+		//std::string string = (char*)message;
+		std::stringstream ss((char*)"hello \npedro\npor su casa\n");
+		std::string to;
+		int i = 0;
+
+
+
+
+		if (Info.buffer != NULL) {
+			while (std::getline(ss, to)) {//, '\n'
+				printf("%d .- %s\n", i++, to.c_str());
+
+				db->saveTrack(clients[Info.client].device_id, to.c_str);
+				
+
+				//_CallMsgReceived2(master, client, (char*)to.c_str(), valread, index);
+			}
 		}
 
 		return false;
