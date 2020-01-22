@@ -64,7 +64,7 @@ namespace GT {
 			WSACleanup();
 			return false;
 		}
-
+		onConect();
 		// listen
 		char recvbuf[100];
 		int recvbuflen = 100;
@@ -88,12 +88,15 @@ namespace GT {
 				
 
 		} while (iResult > 0);
-
+		printf("BYEEEEE\n");
 		return true;
 	}
 	void CSocket::stop() {
 	}
 	void CSocket::onReceive(char* buffer, size_t size) {
 		printf("Message: %s\nBytes received: %d\n> ", buffer, size);
+	}
+	SOCKET CSocket::getHost() {
+		return master;
 	}
 }

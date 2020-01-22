@@ -38,9 +38,11 @@ namespace GT {
 		bool start();
 		void stop();
 
+
+		virtual void onConect()=0;
 		virtual void onReceive(char* buffer, size_t size);
 
-
+		SOCKET getHost();
 
 	private:
 		CSInfo info;

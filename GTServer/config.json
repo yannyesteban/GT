@@ -1,0 +1,17 @@
+{
+  "appname": "GTComm",
+  "port": 3311,
+  "max_clients": 35,
+  "version": "1.0.0.1",
+  "debug": true,
+  "show_cache": false,
+
+  "db": {
+    "name": "sevian_2020",
+    "host": "localhost",
+    "user": "root",
+    "pass": "123456",
+    "port": "3306"
+
+  }
+}

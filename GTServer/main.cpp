@@ -1,46 +1,40 @@
-// GT.cpp : Este archivo contiene la función "main". La ejecución del programa comienza y termina ahí.
+// GTServer.cpp : Este archivo contiene la función "main". La ejecución del programa comienza y termina ahí.
 //
 
+
 #include <iostream>
-#include "Conn.h"
-#include "WSocket.h"
-#include "CSocket.h"
 #include "Color.h"
 
+#include "Server.h"
+#include "Config.h"
 using namespace GT;
-int main2()
+
+int main()
 {
-    
     setlocale(LC_CTYPE, "Spanish");
     system("cls");
+
+
     Color::set(4);
-    std::cout << "GT v1.0 (2020)!\n" ;
+    std::cout << "GT v1.0 (2020)!\n";
     Color::set(0);
+
+    auto appInfo = GT::Config::load("C:\\source\\cpp\\GT\\GTServer\\config.json");
+    printf("APP NAME: %s\n", appInfo.appname);
+    printf("Version: %s \n", appInfo.version);
+    printf("DB Name: %s\n", appInfo.db.name);
+    ///printf("Time: %s", XT::Time::now());
+
+    //Sleep(5000);
     SocketInfo Info;
     Info.host = (char*)"127.0.0.1";
     Info.port = 3311;
     Info.maxClients = 30;
 
-    WSocket *S = new WSocket(Info);
+    Server * S = new Server(Info);
+    S->init(appInfo);
     S->start();
     //S->startListen();
-    return 1;
-}
-
-int main() {
-    setlocale(LC_CTYPE, "Spanish");
-    system("cls");
-    Color::set(4);
-    std::cout << "GT Client v1.0 (2020)!\n";
-    Color::set(0);
-    CSInfo Info;
-    Info.host = (char*)"127.0.0.1";
-    Info.port = "3311";
-    Info.maxClients = 30;
-
-    //CSocket* S = new CSocket(Info);
-    //S->start();
-
     return 1;
 }
 
