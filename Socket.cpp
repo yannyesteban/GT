@@ -33,6 +33,18 @@ namespace GT {
 	void Socket::stop() {
 	}
 
+	int Socket::disconect(SOCKET client) {
+		//shutdown(client, 2);
+		
+		for (int i = 0; i < maxClients; i++) {
+			if (clients[i] == client) {
+				closesocket(client);
+				clients[i] = 0;
+			}
+		}
+		return 0;
+	}
+
 	void Socket::startListen() {
 		int h = listen(master, 3);
 
@@ -85,12 +97,6 @@ namespace GT {
 			
 				//inform user of socket number - used in send and receive commands
 				//printf("New connection , socket fd is %d , ip is : %s , port : %d (?)\n", new_socket, inet_ntoa(address.sin_addr), ntohs(address.sin_port));
-				//GT::CnnInfo info;
-				//info.address = inet_ntoa(address.sin_addr);
-				//info.port = ntohs(address.sin_port);
-				//info.tag = (char*)"yanny";
-
-				//GT::CnnInfo info;
 				//add new socket to array of sockets
 				
 				for (i = 0; i < maxClients; i++) {
@@ -131,7 +137,7 @@ namespace GT {
 						int error_code = WSAGetLastError();
 						if (error_code == WSAECONNRESET) {
 							//Somebody disconnected , get his details and print
-							printf(ANSI_COLOR_RED "Host disconnected unexpectedly, ip: %s, port: %d \n" ANSI_COLOR_RESET, inet_ntoa(address.sin_addr), ntohs(address.sin_port));
+							printf(ANSI_COLOR_RED "1. Host disconnected unexpectedly, ip: %s, port: %d \n" ANSI_COLOR_RESET, inet_ntoa(address.sin_addr), ntohs(address.sin_port));
 							//Close the socket and mark as 0 in list for reuse
 							closesocket(s);
 							clients[i] = 0;
@@ -156,7 +162,7 @@ namespace GT {
 					}
 					if (valread == 0) {
 						//Somebody disconnected , get his details and print
-						printf("Host disconnected , ip %s , port %d \n", inet_ntoa(address.sin_addr), ntohs(address.sin_port));
+						printf("2. Host disconnected , ip %s , port %d \n", inet_ntoa(address.sin_addr), ntohs(address.sin_port));
 
 						//Close the socket and mark as 0 in list for reuse
 						ConnInfo Info;

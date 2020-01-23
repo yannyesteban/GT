@@ -36,6 +36,8 @@ namespace GT {
 		Socket(SocketInfo pInfo);
 		void start();
 		void stop();
+
+		int disconect(SOCKET client);
 	
 		void (*CallConection)(ConnInfo Info);
 		void (*CallMessage)(ConnInfo Info);

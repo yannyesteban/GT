@@ -15,7 +15,7 @@ namespace GT {
 		db->connect();
 		db->loadProtocols();
 		db->loadVersions();
-		//db->loadClients();
+		db->loadClients();
 		db->loadFormats();
 		db->saveTrack("", 1, 21, "");
 		return true;
@@ -35,7 +35,7 @@ namespace GT {
 
 	void Server::onMessage(ConnInfo Info) {
 		printf("recibiendo: %s\n", Info.buffer);
-
+		/*
 		SyncMsg xx = {
 			63738,
 			283,
@@ -44,6 +44,8 @@ namespace GT {
 		};
 		memcpy(Info.buffer, &xx, sizeof(xx));
 		Info.valread = sizeof(xx);
+
+		*/
 		//Info.buffer = (void *)xx;
 
 		if (isSyncMsg(Info)) {
@@ -55,7 +57,7 @@ namespace GT {
 
 			//return;
 		}
-		evalMessage(Info.buffer);
+		evalMessage(Info, Info.buffer);
 	}
 
 	void Server::onClose(ConnInfo Info) {
@@ -91,12 +93,14 @@ namespace GT {
 
 		return false;
 	}
-	bool Server::evalMessage(const char* message) {
+	bool Server::evalMessage(ConnInfo Info, const char* message) {
 
 		Command* cmd = (Command*)message;
 		switch (cmd->token) {
 		case '*':
 			puts("* asterisco");
+			//shutdown(Info.client, 0);
+			disconect(Info.client);
 			break;
 		case '$':
 			puts("$ dolar");
@@ -133,7 +137,7 @@ namespace GT {
 			while (std::getline(ss, to)) {//, '\n'
 				printf("%d .- %s\n", i++, to.c_str());
 
-				db->saveTrack(clients[Info.client].device_id, to.c_str);
+				db->saveTrack(clients[Info.client].device_id, to.c_str());
 				
 
 				//_CallMsgReceived2(master, client, (char*)to.c_str(), valread, index);

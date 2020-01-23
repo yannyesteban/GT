@@ -3,7 +3,7 @@
   "port": 3311,
   "max_clients": 35,
   "version": "1.0.0.1",
-  "debug": true,
+  "debug": false,
   "show_cache": false,
 
   "db": {

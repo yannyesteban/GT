@@ -28,7 +28,7 @@ namespace GT {
 		
 		bool isSyncMsg(ConnInfo Info);
 
-		bool evalMessage(const char* msg);
+		bool evalMessage(ConnInfo Info, const char* msg);
 		bool deviceMessage(ConnInfo Info);
 
 
