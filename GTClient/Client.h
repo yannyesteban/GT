@@ -1,9 +1,9 @@
 #pragma once
 #include <iostream>
-#include "CSocket.h"
+#include "SocketClient.h"
 BOOL WINAPI keyboard(LPVOID param);
 namespace GT {
-	class Client:public CSocket {
+	class Client:public SocketClient {
 	public:
 		Client(CSInfo pInfo);
 

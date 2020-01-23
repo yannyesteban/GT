@@ -37,13 +37,13 @@ struct _mask_key {
 
 
 namespace GT {
-	class WSocket : public Socket {
+	class WebSocketServer : public Socket {
 	public:
-		WSocket(SocketInfo pInfo);
-		~WSocket();
+		WebSocketServer(SocketInfo pInfo);
+		~WebSocketServer();
 
 
-	bool handshake(ConnInfo Info);
+		bool handshake(ConnInfo Info);
 		bool message(ConnInfo Info);
 
 

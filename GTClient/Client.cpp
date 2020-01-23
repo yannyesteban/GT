@@ -1,6 +1,6 @@
 #include "Client.h"
 namespace GT {
-	Client::Client(CSInfo pInfo) :CSocket(pInfo) {}
+	Client::Client(CSInfo pInfo) :SocketClient(pInfo) {}
 	void Client::onConect() {
 
 		hClientThread = CreateThread(

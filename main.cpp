@@ -3,8 +3,8 @@
 
 #include <iostream>
 #include "Conn.h"
-#include "WSocket.h"
-#include "CSocket.h"
+#include "WebSocketServer.h"
+#include "SocketClient.h"
 #include "Color.h"
 
 using namespace GT;
@@ -21,7 +21,7 @@ int main2()
     Info.port = 3311;
     Info.maxClients = 30;
 
-    WSocket *S = new WSocket(Info);
+    WebSocketServer*S = new WebSocketServer(Info);
     S->start();
     //S->startListen();
     return 1;

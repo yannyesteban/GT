@@ -32,9 +32,9 @@ namespace GT {
 		const char * port;
 	} CSInfo;
 
-	class CSocket {
+	class SocketClient {
 	public:
-		CSocket(CSInfo);
+		SocketClient(CSInfo);
 		bool start();
 		void stop();
 

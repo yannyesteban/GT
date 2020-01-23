@@ -23,12 +23,12 @@ namespace GT {
 
 	void Server::onConnect(ConnInfo Info) {
 		if (clients.count(Info.client) > 0) {
-			puts("Receiving...");
+			//puts("Receiving...");
 		} else {
 			puts("New Client...");
 			clients[Info.client].status = 1;
 			clients[Info.client].socket = Info.client;
-			clients[Info.client].type = 2;
+			clients[Info.client].type = 1;
 			strcpy(clients[Info.client].device_id, "unknow");
 		}
 	}
@@ -74,10 +74,12 @@ namespace GT {
 
 		char id[12];
 
-		printf(ANSI_COLOR_CYAN "---> verification of sync (%lu)..(%d).\n" ANSI_COLOR_RESET, sync_msg->Keep_Alive_Device_ID, sync_msg->Keep_Alive_Header);
-		//puts(sync_msg->Keep_Alive_Device_ID));
+		
 
 		if (db->isVersion(sync_msg->Keep_Alive_Header)) {
+			printf(ANSI_COLOR_CYAN "---> verification of sync (%lu)..(%d).\n" ANSI_COLOR_RESET, sync_msg->Keep_Alive_Device_ID, sync_msg->Keep_Alive_Header);
+			//puts(sync_msg->Keep_Alive_Device_ID));
+
 			sprintf(id, "%lu", sync_msg->Keep_Alive_Device_ID);
 			printf("\nasync %d\n", sync_msg->Keep_Alive_Device_ID);
 
@@ -93,6 +95,7 @@ namespace GT {
 
 		return false;
 	}
+	
 	bool Server::evalMessage(ConnInfo Info, const char* message) {
 
 		Command* cmd = (Command*)message;
@@ -104,22 +107,25 @@ namespace GT {
 			break;
 		case '$':
 			puts("$ dolar");
+			system("cls");
 			break;
 		case '%':
 			puts("% porcentaje");
 			break;
+		case '-':
+			puts("- return");
+			send(Info.client, Info.buffer, Info.valread, 0);
+			break;
 		default:
 			puts("otra cosa");
-
-			
-
-
+			;
 			break;
 
 		}
 
 		return false;
 	}
+
 	bool Server::deviceMessage(ConnInfo Info) {
 
 		printf("esto es un device message\n");

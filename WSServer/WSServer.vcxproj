@@ -149,11 +149,26 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\Color.cpp" />
+    <ClCompile Include="..\sha1.cpp" />
+    <ClCompile Include="..\Socket.cpp" />
+    <ClCompile Include="..\SocketClient.cpp" />
+    <ClCompile Include="..\WebSocketServer.cpp" />
+    <ClCompile Include="Hub.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="WSServer.cpp" />
+    <ClCompile Include="WebServer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="WSServer.h" />
+    <ClInclude Include="Hub.h" />
+    <ClInclude Include="WebServer.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\GT.vcxproj">
+      <Project>{24914b94-9ae8-4989-992c-7659690c2e9d}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram.cd" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

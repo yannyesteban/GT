@@ -2,10 +2,29 @@
 //
 
 #include <iostream>
+#include "Conn.h"
+#include "WebServer.h"
 
+#include "Color.h"
+using namespace GT;
 int main()
 {
-    std::cout << "Hello World!\n";
+    setlocale(LC_CTYPE, "Spanish");
+    system("cls");
+    Color::set(4);
+    std::cout << "GT v1.0 (2020)!\n";
+    Color::set(0);
+    SocketInfo Info;
+    Info.host = (char*)"127.0.0.1";
+    Info.port = 3310;
+    Info.maxClients = 30;
+
+    WebServer* S = new WebServer(Info);
+    S->init();
+    S->start();
+    
+    //S->startListen();
+    return 1;
 }
 
 // Ejecutar programa: Ctrl + F5 o menú Depurar > Iniciar sin depurar

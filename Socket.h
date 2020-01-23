@@ -31,6 +31,8 @@ namespace GT {
 		u_short port;
 		u_short maxClients;
 	} SocketInfo;
+
+
 	class Socket {
 	public:
 		Socket(SocketInfo pInfo);

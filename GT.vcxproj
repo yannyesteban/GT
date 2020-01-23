@@ -149,25 +149,28 @@
   <ItemGroup>
     <ClCompile Include="Color.cpp" />
     <ClCompile Include="Conn.cpp" />
-    <ClCompile Include="CSocket.cpp" />
+    <ClCompile Include="SocketClient.cpp" />
     <ClCompile Include="Debug.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="sha1.cpp" />
     <ClCompile Include="Socket.cpp" />
     <ClCompile Include="suma.cpp" />
-    <ClCompile Include="WSocket.cpp" />
+    <ClCompile Include="WebSocketServer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Color.h" />
     <ClInclude Include="Conn.h" />
     <ClInclude Include="ConsoleColors.h" />
-    <ClInclude Include="CSocket.h" />
+    <ClInclude Include="SocketClient.h" />
     <ClInclude Include="Debug.h" />
     <ClInclude Include="sha1.h" />
     <ClInclude Include="Socket.h" />
     <ClInclude Include="suma.h" />
     <ClInclude Include="Types.h" />
-    <ClInclude Include="WSocket.h" />
+    <ClInclude Include="WebSocketServer.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram.cd" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

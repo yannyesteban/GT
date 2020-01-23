@@ -149,7 +149,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\Color.cpp" />
-    <ClCompile Include="..\CSocket.cpp" />
+    <ClCompile Include="..\SocketClient.cpp" />
     <ClCompile Include="Client.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>

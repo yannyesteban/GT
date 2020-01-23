@@ -1,33 +1,33 @@
-#include "WSocket.h"
+#include "WebSocketServer.h"
 
 
 
 namespace GT {
-    WSocket::WSocket(SocketInfo pInfo):Socket(pInfo) {
+    WebSocketServer::WebSocketServer(SocketInfo pInfo):Socket(pInfo) {
 
 
 
 	}
-    WSocket::~WSocket() {
+    WebSocketServer::~WebSocketServer() {
 	}
-    void WSocket::onConnect(ConnInfo Info) {
+    void WebSocketServer::onConnect(ConnInfo Info) {
         puts("onConnect");
     }
 
-    void WSocket::onMessage(ConnInfo Info) {
+    void WebSocketServer::onMessage(ConnInfo Info) {
         puts("_CallMessage");
 
         if (!handshake(Info)) {
-            message(Info);
+            //message(Info);
         }
     }
 
-    void WSocket::onClose(ConnInfo Info) {
+    void WebSocketServer::onClose(ConnInfo Info) {
         puts("onClose");
     }
     
 
-    bool WSocket::handshake(ConnInfo Info) {
+    bool WebSocketServer::handshake(ConnInfo Info) {
 
         int iSendResult;
         //char recvbuf[DEFAULT_BUFLEN];
@@ -41,7 +41,7 @@ namespace GT {
         char* pKey = strstr(Info.buffer, "Sec-WebSocket-Key:");
         //printf("recibiendo:\n\n%s\n\n", Info.buffer);
         if (pKey) {
-
+            puts("handshake");
             //printf("Hola INIT \r\n");
             // parse just the key part
             pKey = strchr(pKey, ' ') + 1;
@@ -77,13 +77,13 @@ namespace GT {
         return false;
     }
 
-    bool WSocket::message(ConnInfo Info) {
+    bool WebSocketServer::message(ConnInfo Info) {
         puts("_CallMessage");
 
 
         const char* ssss = decodeMessage(Info);
 
-        printf("%s\n\n-----------------", ssss);
+        printf("%s\n", ssss);
 
 
         //char message[] = Info.buffer;
@@ -91,7 +91,7 @@ namespace GT {
         size_t size=0;
         encodeMessage((char *)"QUEEEE", buffer, size);
 
-        printf("%s(%d)\n\n-----------------", Info.buffer, size);
+        printf("%s(%d)\n", Info.buffer, size);
 
         send(Info.client, buffer, (int)size, 0);
         
@@ -100,7 +100,7 @@ namespace GT {
 
     
 
-    const char* WSocket::decodeMessage(ConnInfo Info) {
+    const char* WebSocketServer::decodeMessage(ConnInfo Info) {
         Info.buffer[Info.valread] = 0;
         
         _websocket_header* h = (_websocket_header*)Info.buffer;
@@ -140,11 +140,13 @@ namespace GT {
             }
 
         }
+       
 
+        printf("4.--<%s>--\n", client_msg);
         return client_msg;
     }
 
-    void WSocket::encodeMessage(char * message, char * sendbuf, size_t & sendbuf_size) {
+    void WebSocketServer::encodeMessage(char * message, char * sendbuf, size_t & sendbuf_size) {
 
         sendbuf_size = 0;
 

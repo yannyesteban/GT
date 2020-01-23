@@ -1,9 +1,9 @@
-#include "CSocket.h"
+#include "SocketClient.h"
 namespace GT {
-	CSocket::CSocket(CSInfo pInfo) :info(pInfo) {
+	SocketClient::SocketClient(CSInfo pInfo) :info(pInfo) {
 
 	}
-	bool CSocket::start() {
+	bool SocketClient::start() {
 		// Initialize Winsock
 		int iResult = WSAStartup(MAKEWORD(2, 2), &wsa);
 		if (iResult != 0) {
@@ -91,12 +91,12 @@ namespace GT {
 		printf("BYEEEEE\n");
 		return true;
 	}
-	void CSocket::stop() {
+	void SocketClient::stop() {
 	}
-	void CSocket::onReceive(char* buffer, size_t size) {
+	void SocketClient::onReceive(char* buffer, size_t size) {
 		printf("Message: %s\nBytes received: %d\n> ", buffer, size);
 	}
-	SOCKET CSocket::getHost() {
+	SOCKET SocketClient::getHost() {
 		return master;
 	}
 }
