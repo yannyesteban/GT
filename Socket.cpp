@@ -153,7 +153,7 @@ namespace GT {
 						Info.maxClients = maxClients;
 						Info.address = inet_ntoa(address.sin_addr);
 						Info.port = ntohs(address.sin_port);
-						Info.tag = (char*)"yanny";
+						Info.tag = (char*)"error UNO";
 						Info.buffer = buffer;
 						Info.valread = valread;
 						Info.error = WSAGetLastError();
@@ -173,7 +173,7 @@ namespace GT {
 						Info.maxClients = maxClients;
 						Info.address = inet_ntoa(address.sin_addr);
 						Info.port = ntohs(address.sin_port);
-						Info.tag = (char*)"yanny";
+						Info.tag = (char*)"ERROR dos";
 						Info.buffer = buffer;
 						Info.valread = valread;
 						Info.error = WSAGetLastError();

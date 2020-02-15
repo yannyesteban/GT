@@ -58,6 +58,8 @@ namespace GT {
 		bool saveTrack(const char* unit_id, int id, int version, const char* buffer);
 		bool saveTrack(const char* unit_id, const char* buffer);
 
+		bool saveEvent(const char* unit_id, int type_id);
+
 		bool isVersion(int value);
 
 		InfoClient getInfoClient(string id);

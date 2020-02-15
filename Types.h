@@ -33,10 +33,19 @@ namespace GT {
 	};
 
 	typedef struct {
+		//unsigned int type;
 		char token;
-		char id[10];
-		char message[100];
+		char id[11];
+		//char type;
+		char message[120];
+		
+		
 	} Command;
+
+	typedef struct {
+		char id[11];
+		char message[100];
+	} DeviceMSG;
 
 	
 }

@@ -178,7 +178,7 @@ namespace GT {
 			stmt = cn->createStatement();
 
 			p_stmt = cn->prepareStatement(
-				"SELECT id, unit_id, version_id FROM devices as d;"
+				"SELECT id, device_name, version_id FROM devices as d;"
 			);
 
 			if (p_stmt->execute()) {
@@ -186,7 +186,7 @@ namespace GT {
 
 				while (result->next()) {
 
-					mClients.insert(std::pair<string, InfoClient >(result->getString("unit_id").c_str(), {
+					mClients.insert(std::pair<string, InfoClient >(result->getString("device_name").c_str(), {
 						result->getInt("id"),
 						result->getInt("version_id")
 						}));
@@ -355,6 +355,8 @@ namespace GT {
 		
 		return true;
 	}
+	
+	
 	bool DB::saveTrack(const char* unit_id, int id, int version, const char* buffer) {
 
 		//std::string s(buffer);
@@ -413,7 +415,37 @@ namespace GT {
 		return true;
 	}
 
-	
+	bool DB::saveEvent(const char* unit_id, int type_id) {
+
+		printf("unit_id: %s, type: %d\n", unit_id, type_id);
+
+		std::string query = "INSERT INTO units_events ( unit_id, type_id, date_time) "
+		 "VALUES ('"+ (std::string)unit_id +"',2,'2020-10-01 11:11:22')";
+
+		printf("query :%s\n", query.c_str());
+
+		try {
+			sql::Statement* stmt;
+			sql::ResultSet* res;
+			stmt = cn->createStatement();
+			res = stmt->executeQuery(query.c_str());
+			delete res;
+			delete stmt;
+
+		} catch (sql::SQLException & e) {
+
+			if (1 == 0) {
+				cout << endl << endl << "# ERR: SQLException in " << __FILE__;
+				cout << endl << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+				cout << endl << "# ERR: " << e.what();
+				cout << endl << " (MySQL error code: " << e.getErrorCode();
+				cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+			}
+			return false;
+
+		}
+		return true;
+	}
 
 	bool DB::isVersion(int value) {
 		for (std::list<int>::iterator it = mVersions.begin(); it != mVersions.end(); it++) {
@@ -427,6 +459,9 @@ namespace GT {
 		
 		return false;
 	}
+
+
+
 
 	InfoClient DB::getInfoClient(string id) {
 		return mClients[id];
