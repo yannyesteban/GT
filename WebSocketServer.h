@@ -4,6 +4,8 @@
 #include "Socket.h"
 #include "sha1.h"
 
+
+
 #define WEBSOCKET_KEY   "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 #define DEFAULT_BUFLEN  512
 #define DEFAULT_PORT    "8083"

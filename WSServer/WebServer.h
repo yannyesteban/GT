@@ -1,4 +1,9 @@
 #pragma once
+
+#include "rapidjson/document.h"
+#include "rapidjson/prettywriter.h" // for stringify JSON
+#include "rapidjson/filereadstream.h"
+
 #include "WebSocketServer.h"
 #include "Hub.h"
 BOOL WINAPI mainhub(LPVOID param);

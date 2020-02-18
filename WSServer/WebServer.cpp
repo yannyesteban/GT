@@ -1,4 +1,6 @@
 #include "WebServer.h"
+using namespace rapidjson;
+
 namespace GT {
     WebServer::WebServer(SocketInfo pInfo):
         WebSocketServer(pInfo),
@@ -25,12 +27,19 @@ namespace GT {
         
         const char* x = decodeMessage(Info);
         
-        puts("***************");
+        puts("===============");
         puts(x);
         puts("***************");
         printf("[%s]\n", x);
         SOCKET s = hub->getHost();
 
+        Document document;
+        document.Parse(x);
+        if (document.IsObject()) {
+            printf("JSON %s\n", document["msg"].GetString());
+        }
+        
+        
         send(s, x, (int)sizeof(x), 0);
 
     }
