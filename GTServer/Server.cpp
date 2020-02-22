@@ -43,7 +43,7 @@ namespace GT {
 			printf("error client dead!!!!\n");
 			return;
 		}
-printf("recibiendo: %i, tag: %s, buffer: %s\n", Info.client,Info.tag, Info.buffer);
+		printf("recibiendo: %i, tag: %s, buffer: %s\n", Info.client,Info.tag, Info.buffer);
 		/*
 		SyncMsg xx = {
 			63738,
@@ -58,10 +58,14 @@ printf("recibiendo: %i, tag: %s, buffer: %s\n", Info.client,Info.tag, Info.buffe
 		//Info.buffer = (void *)xx;
 
 		if (isSyncMsg(Info)) {
-			//return;
+			return;
 		}
+		unsigned short type = getHeader(Info);
+		
+		printf("Info.client %d, type: %d\n", Info.client, clients[Info.client].type);
 
 		if (clients[Info.client].type == 2) {
+			printf("Info.Device %s, %d, version: %d\n", clients[Info.client].device_id, clients[Info.client].id, clients[Info.client].version_id);
 			deviceMessage(Info);
 
 			//return;
@@ -106,11 +110,20 @@ printf("recibiendo: %i, tag: %s, buffer: %s\n", Info.client,Info.tag, Info.buffe
 
 			
 			mDevices[id] = clients[Info.client];
+			clients[Info.client].type = 2;
 			mDevices[id].type = 2;
 			strcpy(mDevices[id].device_id, (const char*)id);
+			InfoClient cInfo = db->getInfoClient(id);
+			mDevices[id].id = cInfo.id;
+			mDevices[id].version_id = cInfo.version_id;
+
+			clients[Info.client].id = cInfo.id;
+			clients[Info.client].version_id = cInfo.version_id;
+			
+			strcpy(clients[Info.client].device_id, (const char*)id);
 
 			db->saveEvent("88", 4);
-			printf("save event \n");
+			printf(ANSI_COLOR_RED "Save Event from: (%s) %d, version: %d \n" ANSI_COLOR_RESET, id, mDevices[id].id, mDevices[id].version_id);
 
 			send(Info.client, Info.buffer, Info.valread, 0);// return the sycm message
 
@@ -122,6 +135,15 @@ printf("recibiendo: %i, tag: %s, buffer: %s\n", Info.client,Info.tag, Info.buffe
 
 
 		return false;
+	}
+
+	unsigned short Server::getHeader(ConnInfo Info) {
+		IdHeader* header = (IdHeader*)Info.buffer;
+	
+		printf("header is %d\n", header->header);
+		
+
+		return header->type;
 	}
 	
 	bool Server::evalMessage(ConnInfo Info, const char* message) {
@@ -137,24 +159,24 @@ printf("recibiendo: %i, tag: %s, buffer: %s\n", Info.client,Info.tag, Info.buffe
 		if (cmd->token == 9) {
 			DeviceMSG * m2 = (DeviceMSG*) cmd->message;
 			//m2->id[sizeof(m2->id)] = '\0';
-				printf("m2 id. %d: %s \n", sizeof(m2->id), m2->id);
-				printf("m2 id. %d: %s \n", sizeof(m2->message), m2->message);
+			printf("m2 id. %d: %s \n", sizeof(m2->id), m2->id);
+			printf("m2 id. %d: %s \n", sizeof(m2->message), m2->message);
 
-				if (mDevices.count(m2->id)>0) {
-					printf("si es igual.\n");
-					send(mDevices[m2->id].socket, m2->message, strlen(m2->message), 0);
-				}
+			if (mDevices.count(m2->id)>0) {
+				printf("si es igual.\n");
+				send(mDevices[m2->id].socket, m2->message, strlen(m2->message), 0);
+			}
 				
-				for (std::map<string, GTClient >::iterator it = mDevices.begin(); it != mDevices.end(); it++) {
-					if (m2->id == it->first.c_str()) {
-						printf("si es igual.\n");
-					}
+			for (std::map<string, GTClient >::iterator it = mDevices.begin(); it != mDevices.end(); it++) {
+				if (m2->id == it->first.c_str()) {
+					printf("si es igual.\n");
+				}
 
 					
-					printf("there are a client..%s..\n", it->first.c_str() );
+				printf("there are a client..%s..\n", it->first.c_str() );
 					
 					
-				}
+			}
 
 
 
@@ -194,7 +216,7 @@ printf("recibiendo: %i, tag: %s, buffer: %s\n", Info.client,Info.tag, Info.buffe
 
 
 		//std::string string = (char*)message;
-		std::stringstream ss((char*)"hello \npedro\npor su casa\n");
+		std::stringstream ss((char*)Info.buffer);
 		std::string to;
 		int i = 0;
 
@@ -203,7 +225,7 @@ printf("recibiendo: %i, tag: %s, buffer: %s\n", Info.client,Info.tag, Info.buffe
 
 		if (Info.buffer != NULL) {
 			while (std::getline(ss, to)) {//, '\n'
-				printf("%d .- %s\n", i++, to.c_str());
+				printf("id %d, %d .- %s\n", clients[Info.client].device_id, i++, to.c_str());
 
 				db->saveTrack(clients[Info.client].device_id, to.c_str());
 				

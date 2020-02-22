@@ -9,7 +9,13 @@
 
 namespace GT {
 
+
+	
+
 	struct GTClient {
+		int id = -2;
+		int version_id = -2;
+
 		char device_id[10];
 		short int status = 0;
 		SOCKET socket;
@@ -27,6 +33,7 @@ namespace GT {
 
 		
 		bool isSyncMsg(ConnInfo Info);
+		unsigned short getHeader(ConnInfo Info);
 
 		bool evalMessage(ConnInfo Info, const char* msg);
 		bool deviceMessage(ConnInfo Info);

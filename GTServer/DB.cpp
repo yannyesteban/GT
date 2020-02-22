@@ -303,11 +303,14 @@ namespace GT {
 	bool DB::saveTrack(const char* unit_id, const char* buffer) {
 		//std::string s(buffer);
 
-		buffer = "2012000413,20190717161915,-66.845906,10.500806,1,279,983.0,4,2,0.0,1,12.27,0.01,0,0,0,1";
+		//buffer = "2012000413,20190717161915,-66.845906,10.500806,1,279,983.0,4,2,0.0,1,12.27,0.01,0,0,0,1";
 
-
+		
 		//list<string> field = XT::Tool::split(s, ',');
 		int version = mClients[unit_id].version_id;
+
+
+		std::cout << "unit_id : " << unit_id << " version " << version  << endl;
 		std::string  mm[30];
 		int n;
 		GT::Tool::getItem(mm, n, buffer);
@@ -330,15 +333,15 @@ namespace GT {
 		}
 		query = query + "(" + qfields + ") VALUES (" + qvalues + ");";
 
-		//std::cout << query << endl;
+		std::cout << query << endl;
 
 
 		try {
 			sql::Statement* stmt;
 			sql::ResultSet* res;
 			stmt = cn->createStatement();
-			//res = stmt->executeQuery(query.c_str());
-			//delete res;
+			res = stmt->executeQuery(query.c_str());
+			delete res;
 			delete stmt;
 
 		} catch (sql::SQLException & e) {

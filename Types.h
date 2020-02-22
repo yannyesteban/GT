@@ -47,6 +47,34 @@ namespace GT {
 		char message[100];
 	} DeviceMSG;
 
+	struct IdHeader {
+		unsigned short header;//10010
+		unsigned short type;
+	};
+
+	struct DeviceMsg {
+		unsigned short header;//10010
+		unsigned short type;
+		unsigned short device_id;
+		char device_name[11];
+		
+		char msg[100];
+	};
+
+	struct CMDMsg {
+		unsigned short header;//10010
+		unsigned short type;
+		
+		unsigned short deviceId;
+		char deviceName[11];
+		unsigned short cmdId;//
+		
+		char tag[21];//10010
+		char password[5];//10010
+		char params[200];
+		
+		
+	};
 	
 }
 

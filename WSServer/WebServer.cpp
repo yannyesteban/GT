@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include "WebServer.h"
 using namespace rapidjson;
 
@@ -35,12 +36,75 @@ namespace GT {
 
         Document document;
         document.Parse(x);
-        if (document.IsObject()) {
-            printf("JSON %s\n", document["msg"].GetString());
+        if (!document.IsObject()) {
+            printf("ERROR JSON...!!!\n");
+            return;
         }
+        printf("JSON deviceId %d\n", document["deviceId"].GetInt());
         
+        CMDMsg msg = {
+            10010,
+            1,
+
+            (unsigned short)document["deviceId"].GetInt(),
+            "2012000066",
+            (unsigned short)document["commandId"].GetInt(),
+
+            "TAG1",
+            "0000",
+            ""// document["msg"].GetString()
+        };
+
+        /*
+        const Value& v(int[]);
+        v. = document["comdValues"].GetArray();
+        StringBuffer bf2;
+        PrettyWriter<StringBuffer> writer2(bf2);
+        v.Accept(writer2);
+        const char* json = bf2.GetString();
+        */
+
+
         
-        send(s, x, (int)sizeof(x), 0);
+
+        StringBuffer bf;
+        PrettyWriter<StringBuffer> writer(bf);
+        document.Accept(writer);
+
+        std::cout << bf.GetString() << std::endl;
+
+
+        //printf("%s\n", document["comdValues"].GetString());
+
+
+
+        const Value& a = document["comdValues"].GetArray();
+        assert(a.IsArray());
+        StringBuffer bf2;
+        Writer<StringBuffer> writer2(bf2);
+        a.Accept(writer2);
+
+
+
+        const char* json = bf2.GetString();
+
+        std::cout << bf2.GetString() << std::endl;
+
+
+        strcpy(msg.deviceName, document["deviceName"].GetString());
+        strcpy(msg.params, bf2.GetString());
+        //n = strlen(&szBuff[0]);
+        char buffer2[255];
+        memcpy(buffer2, &msg, sizeof(msg));
+        //Info.valread = sizeof(xx);
+        //send(s, x, (int)sizeof(x), 0);
+        send(s, buffer2, (int)sizeof(buffer2), 0);
+        printf("BUFFER2 es : %s, %d, %d\n", buffer2, sizeof(buffer2), sizeof(msg));
+        printf("---------------\n");
+        //msg.params = (char *)document["msg"].GetString();
+        //strncpy(msg.params, document["msg"].GetString(), document["msg"].GetStringLength());
+        printf("%s\n", msg.params);
+        //printf("%s\n", msg.p);
 
     }
 
