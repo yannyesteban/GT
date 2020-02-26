@@ -48,7 +48,7 @@ namespace GT {
 			stmt = cn->createStatement();
 
 			p_stmt = cn->prepareStatement(
-				"SELECT id, tag_length, pass_default, protocol_pre,sync_header "
+				"SELECT id, tag_length, pass_default, protocol_pre,sync_header, format_id "
 				"FROM devices_versions as d "
 			);
 
@@ -62,7 +62,8 @@ namespace GT {
 						result->getInt("tag_length"),
 						result->getString("pass_default").c_str(),
 						result->getString("protocol_pre").c_str(),
-						result->getString("sync_header").c_str()
+						result->getString("sync_header").c_str(),
+						result->getInt("format_id"),
 						}));
 
 				}
@@ -178,7 +179,10 @@ namespace GT {
 			stmt = cn->createStatement();
 
 			p_stmt = cn->prepareStatement(
-				"SELECT id, device_name, version_id FROM devices as d;"
+				"SELECT u.id as unit_id, d.id as device_id, device_name, version_id "
+				"FROM units as u "
+				"INNER JOIN devices as d on d.id = u.device_id "
+				"WHERE device_name IS NOT NULL "
 			);
 
 			if (p_stmt->execute()) {
@@ -187,7 +191,8 @@ namespace GT {
 				while (result->next()) {
 
 					mClients.insert(std::pair<string, InfoClient >(result->getString("device_name").c_str(), {
-						result->getInt("id"),
+						result->getInt("unit_id"),
+						result->getInt("device_id"),
 						result->getInt("version_id")
 						}));
 
@@ -214,15 +219,15 @@ namespace GT {
 
 	void DB::printClients() {
 		printf("\n*** Cache for Sync Versions ***\n\n");
-		printf("%12s", "UnitId");
-		printf("%10s", "Id");
+		printf("%12s", "Name");
+		printf("%10s", "U Id");
 		printf("%10s\n", "Version");
 		printf("%12s", "/==========");
 		printf("%10s", "/========");
 		printf("%10s\n", "/=========");
 		for (std::map<std::string, InfoClient>::iterator it = mClients.begin(); it != mClients.end(); ++it) {
 			printf("%12s", it->first.c_str());
-			printf("%10d", it->second.id);
+			printf("%10d", it->second.unit_id);
 			printf("%10d\n", it->second.version_id);
 		}
 	}
@@ -236,7 +241,7 @@ namespace GT {
 			stmt = cn->createStatement();
 
 			p_stmt = cn->prepareStatement(
-				"SELECT id_version, parameter FROM devices_format as d ORDER BY id_version, `order`;"
+				"SELECT format_id, parameter FROM devices_format as d ORDER BY format_id, `order`;"
 			);
 
 			if (p_stmt->execute()) {
@@ -244,7 +249,7 @@ namespace GT {
 				int version;
 				
 				while (result->next()) {
-					version = result->getInt("id_version");
+					version = result->getInt("format_id");
 					mFormats[version].push_back(result->getString("parameter").c_str());
 				}
 
@@ -300,6 +305,7 @@ namespace GT {
 			*/
 		}
 	}
+	
 	bool DB::saveTrack(const char* unit_id, const char* buffer) {
 		//std::string s(buffer);
 
@@ -307,16 +313,16 @@ namespace GT {
 
 		
 		//list<string> field = XT::Tool::split(s, ',');
-		int version = mClients[unit_id].version_id;
+		int version = mProtocols[ mClients[unit_id].version_id].format_id;
 
 
-		std::cout << "unit_id : " << unit_id << " version " << version  << endl;
+		std::cout << "unit_id : " << unit_id << " version(Format) " << version  << endl;
 		std::string  mm[30];
 		int n;
 		GT::Tool::getItem(mm, n, buffer);
 		std::string query = "INSERT INTO tracking ";
-		std::string qfields = "device_cod";
-		std::string qvalues(std::to_string(mClients[unit_id].id));
+		std::string qfields = "unit_id";
+		std::string qvalues(std::to_string(mClients[unit_id].unit_id));
 
 		//char aux[10];
 		//sprintf(aux, "'%d'", id);

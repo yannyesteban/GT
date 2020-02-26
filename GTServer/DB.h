@@ -13,11 +13,14 @@ namespace GT {
 		std::string pass_default;
 		std::string protocol_pre;
 		std::string sync_header;
+		int format_id;
 
 	};
 
 	struct InfoClient {
-		int id;
+		
+		int unit_id;
+		int device_id;
 		int version_id;
 	};
 

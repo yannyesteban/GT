@@ -114,15 +114,15 @@ namespace GT {
 			mDevices[id].type = 2;
 			strcpy(mDevices[id].device_id, (const char*)id);
 			InfoClient cInfo = db->getInfoClient(id);
-			mDevices[id].id = cInfo.id;
+			mDevices[id].id = cInfo.unit_id;
 			mDevices[id].version_id = cInfo.version_id;
 
-			clients[Info.client].id = cInfo.id;
+			clients[Info.client].id = cInfo.unit_id;
 			clients[Info.client].version_id = cInfo.version_id;
 			
 			strcpy(clients[Info.client].device_id, (const char*)id);
 
-			db->saveEvent("88", 4);
+			//db->saveEvent("88", 4);
 			printf(ANSI_COLOR_RED "Save Event from: (%s) %d, version: %d \n" ANSI_COLOR_RESET, id, mDevices[id].id, mDevices[id].version_id);
 
 			send(Info.client, Info.buffer, Info.valread, 0);// return the sycm message
