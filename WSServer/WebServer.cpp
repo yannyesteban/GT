@@ -64,14 +64,11 @@ namespace GT {
         const char* json = bf2.GetString();
         */
 
-
-        
-
         StringBuffer bf;
         PrettyWriter<StringBuffer> writer(bf);
         document.Accept(writer);
 
-        std::cout << bf.GetString() << std::endl;
+        std::cout << "A: "<< bf.GetString() << std::endl;
 
 
         //printf("%s\n", document["comdValues"].GetString());
@@ -80,6 +77,8 @@ namespace GT {
 
         const Value& a = document["comdValues"].GetArray();
         assert(a.IsArray());
+        
+        
         StringBuffer bf2;
         Writer<StringBuffer> writer2(bf2);
         a.Accept(writer2);
@@ -88,7 +87,7 @@ namespace GT {
 
         const char* json = bf2.GetString();
 
-        std::cout << bf2.GetString() << std::endl;
+        std::cout << "B: " << bf2.GetString() << std::endl;
 
 
         strcpy(msg.deviceName, document["deviceName"].GetString());

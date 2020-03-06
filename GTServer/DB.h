@@ -4,6 +4,9 @@
 #include <mysql/jdbc.h>
 #include<string>
 //
+#include "rapidjson/document.h"
+#include "rapidjson/prettywriter.h" // for stringify JSON
+#include "rapidjson/filereadstream.h"
 
 namespace GT {
 	struct InfoProto {
@@ -17,7 +20,7 @@ namespace GT {
 
 	};
 
-	struct InfoClient {
+	struct InfoClientX {
 		
 		int unit_id;
 		int device_id;
@@ -64,6 +67,8 @@ namespace GT {
 		bool saveEvent(const char* unit_id, int type_id);
 
 		bool isVersion(int value);
+
+		std::string createCommand(CMDMsg* msg, unsigned int deviceId, unsigned short cmdId);
 
 		InfoClient getInfoClient(string id);
 

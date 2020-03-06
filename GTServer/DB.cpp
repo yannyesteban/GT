@@ -1,5 +1,6 @@
 #include "DB.h"
 
+using namespace rapidjson;
 using namespace std;
 
 namespace GT {
@@ -469,11 +470,146 @@ namespace GT {
 		return false;
 	}
 
+	std::string DB::createCommand(CMDMsg* msg, unsigned int deviceId, unsigned short commandId) {
+
+		//CMDMsg* msg = (CMDMsg*)Info.buffer;
+		Document document;
+		//std::string str = msg->params;
+		cout << msg->params << endl;
+		document.Parse((const char*)msg->params);
+		//document.Parse(str.c_str());
+		if (!document.IsArray()) {
+			printf("ERROR JSON...!!!\n");
+			return 0;
+		}
+		SizeType ii = document.Size();
+		for (SizeType x = 0; x < ii; x++) {
+			cout << x << " ==> " << document[x].GetString() << endl;
+		}
+		//printf("JSON deviceId %s\n", document[0].GetString());
+
+		std::string command;
+		std::string str = "";
+
+		try {
+			sql::Statement* stmt;
+			sql::ResultSet* result;
+			sql::PreparedStatement* p_stmt;
+
+			
+
+			stmt = cn->createStatement();
+			string query = "SELECT count(p.id) as n_commands, c.*, CONCAT(protocol_pre, command, '=', d.password) as command1 "
+				"FROM devices_commands as c "
+				"LEFT JOIN devices_comm_params as p ON p.command_id = c.id "
+				"INNER JOIN devices_versions as v ON v.id = c.version_id "
+				"INNER JOIN devices as d ON d.version_id = v.id "
+
+				"WHERE "
+				"c.id = '" + to_string(commandId) + "' "
+				"and "
+				"d.id = '" + to_string(deviceId) + "' "
+				"order by c.id, `order`;";
+			cout << "query: " << query << endl;
+			p_stmt = cn->prepareStatement(query.c_str());
+			int n_commands = 0;
+			if (p_stmt->execute()) {
+				result = p_stmt->getResultSet();
+
+				while (result->next()) {
+					n_commands = result->getInt("n_commands");
+					command = result->getString("command1").c_str();
+					
+				}
+
+				delete result;
+				delete p_stmt;
+				delete stmt;
+				if (debug) {
+					//printClients();
+				}
+
+			}
+
+			cout << " n Commands " << n_commands << endl;
+			str = command;
+			if (ii == n_commands) {
+				for (SizeType x = 0; x < ii; x++) {
+					if (str != "") {
+						str = str + "," + document[x].GetString();
+					}
+
+
+					//cout << x << " ==> " << str << endl;
+				}
+			}
+
+
+		} catch (sql::SQLException & e) {
+			cout << "# ERR: SQLException in " << __FILE__;
+			cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+			cout << "# ERR: " << e.what();
+			cout << " (MySQL error code: " << e.getErrorCode();
+			//cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+		}
+
+
+
+		return str;
+	}
+
 
 
 
 	InfoClient DB::getInfoClient(string id) {
-		return mClients[id];
+		int unit_id = 0, version_id = 0, device_id = 0;
+
+		try {
+			sql::Statement* stmt;
+			sql::ResultSet* result;
+			sql::PreparedStatement* p_stmt;
+
+			stmt = cn->createStatement();
+
+			string query = "SELECT u.id as unit_id, d.id as device_id, device_name, version_id "
+				"FROM units as u "
+				"INNER JOIN devices as d on d.id = u.device_id "
+				"WHERE device_name = '"  + id + "'";
+			cout << query << endl;
+			p_stmt = cn->prepareStatement(query.c_str());
+
+			if (p_stmt->execute()) {
+				result = p_stmt->getResultSet();
+
+				while (result->next()) {
+					unit_id = result->getInt("unit_id");
+					device_id = result->getInt("device_id");
+					version_id = result->getInt("version_id");
+				}
+
+				delete result;
+				delete p_stmt;
+				delete stmt;
+				if (debug) {
+					printClients();
+				}
+				//InfoClient nn = { unit_id, device_id, version_id };
+				//return nn;
+
+			}
+
+
+		} catch (sql::SQLException & e) {
+			cout << "# ERR: SQLException in " << __FILE__;
+			cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+			cout << "# ERR: " << e.what();
+			cout << " (MySQL error code: " << e.getErrorCode();
+			//cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+		}
+
+
+		InfoClient nn = { unit_id, device_id, version_id };
+		return nn;
 	}
 
 

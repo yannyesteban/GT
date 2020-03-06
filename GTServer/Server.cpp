@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "Server.h"
 
-
+using namespace rapidjson;
 using namespace std;
 namespace GT {
 
@@ -92,14 +92,10 @@ namespace GT {
 	
 	bool Server::isSyncMsg(ConnInfo Info) {
 
-		
-
 
 		SyncMsg* sync_msg = (SyncMsg*)Info.buffer;
 
 		char id[12];
-
-		
 
 		if (db->isVersion(sync_msg->Keep_Alive_Header)) {
 			printf(ANSI_COLOR_CYAN "---> verification of sync (%lu)..(%d).\n" ANSI_COLOR_RESET, sync_msg->Keep_Alive_Device_ID, sync_msg->Keep_Alive_Header);
@@ -110,17 +106,24 @@ namespace GT {
 
 			
 			mDevices[id] = clients[Info.client];
-			clients[Info.client].type = 2;
-			mDevices[id].type = 2;
-			strcpy(mDevices[id].device_id, (const char*)id);
-			InfoClient cInfo = db->getInfoClient(id);
-			mDevices[id].id = cInfo.unit_id;
-			mDevices[id].version_id = cInfo.version_id;
 
-			clients[Info.client].id = cInfo.unit_id;
-			clients[Info.client].version_id = cInfo.version_id;
+			if (mDevices[id].type != 2) {
+
+				cout << "VERIFICANDO CONEXION" << endl;
+				clients[Info.client].type = 2;
+				mDevices[id].type = 2;
+				strcpy(mDevices[id].device_id, (const char*)id);
+				InfoClient cInfo = db->getInfoClient(id);
+				mDevices[id].id = cInfo.unit_id;
+				mDevices[id].version_id = cInfo.version_id;
+
+				clients[Info.client].id = cInfo.unit_id;
+				clients[Info.client].version_id = cInfo.version_id;
+				strcpy(clients[Info.client].device_id, (const char*)id);
+			}
+
 			
-			strcpy(clients[Info.client].device_id, (const char*)id);
+			
 
 			//db->saveEvent("88", 4);
 			printf(ANSI_COLOR_RED "Save Event from: (%s) %d, version: %d \n" ANSI_COLOR_RESET, id, mDevices[id].id, mDevices[id].version_id);
@@ -140,6 +143,15 @@ namespace GT {
 	unsigned short Server::getHeader(ConnInfo Info) {
 		IdHeader* header = (IdHeader*)Info.buffer;
 	
+		if (header->header == 10010) {
+			CMDMsg* msg = (CMDMsg*)Info.buffer;
+
+			if (mDevices[msg->deviceName].type == 2) {
+				cout << "CMD is: " << msg->deviceName << "," << db->createCommand(msg, msg->deviceId, msg->cmdId) << endl;
+			} else {
+				cout << "NOTHINg" << endl;
+			}
+		}
 		printf("header is %d\n", header->header);
 		
 

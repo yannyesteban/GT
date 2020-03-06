@@ -4,7 +4,9 @@
 #include "Types.h"
 #include "Socket.h"
 #include "DB.h"
-
+#include "rapidjson/document.h"
+#include "rapidjson/prettywriter.h" // for stringify JSON
+#include "rapidjson/filereadstream.h"
 
 
 namespace GT {

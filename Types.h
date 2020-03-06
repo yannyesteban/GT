@@ -75,6 +75,14 @@ namespace GT {
 		
 		
 	};
+
+
+	struct InfoClient {
+
+		int unit_id;
+		int device_id;
+		int version_id;
+	};
 	
 }
 
