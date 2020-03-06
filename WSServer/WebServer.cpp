@@ -1,6 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include "WebServer.h"
 using namespace rapidjson;
+using namespace std;
 
 namespace GT {
     WebServer::WebServer(SocketInfo pInfo):
@@ -42,9 +43,24 @@ namespace GT {
         }
         printf("JSON deviceId %d\n", document["deviceId"].GetInt());
         
+        std::cout <<"Type 1: "<< document["type"].GetString() << std::endl;
+
+        string msgType = document["type"].GetString();
+        unsigned short type = 0;
+        if (msgType == "set") {
+            type = 1;
+            cout << "configuración" << endl;
+        }
+
+        if (msgType == "get") {
+            type = 2;
+            cout << "recuperación" << endl;
+        }
+
+        std::cout << "Type 2: " << type << std::endl;
         CMDMsg msg = {
             10010,
-            1,
+            type,
 
             (unsigned short)document["deviceId"].GetInt(),
             "2012000066",

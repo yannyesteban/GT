@@ -145,7 +145,7 @@ namespace GT {
 	
 		if (header->header == 10010) {
 			CMDMsg* msg = (CMDMsg*)Info.buffer;
-
+			cout << "type msg: " << msg->type << endl;
 			if (mDevices[msg->deviceName].type == 2) {
 				cout << "CMD is: " << msg->deviceName << "," << db->createCommand(msg, msg->deviceId, msg->cmdId) << endl;
 			} else {
