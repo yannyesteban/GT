@@ -65,6 +65,7 @@ namespace GT {
 		unsigned short header;//10010
 		unsigned short type;
 		
+		unsigned short unitId;
 		unsigned short deviceId;
 		char deviceName[11];
 		unsigned short cmdId;//

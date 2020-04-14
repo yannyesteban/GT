@@ -32,7 +32,7 @@ namespace GT {
         puts("===============");
         puts(x);
         puts("***************");
-        printf("[%s]\n", x);
+        //printf("[%s]\n", x);
         SOCKET s = hub->getHost();
 
         Document document;
@@ -61,7 +61,7 @@ namespace GT {
         CMDMsg msg = {
             10010,
             type,
-
+            (unsigned short)document["unitId"].GetInt(),
             (unsigned short)document["deviceId"].GetInt(),
             "2012000066",
             (unsigned short)document["commandId"].GetInt(),
