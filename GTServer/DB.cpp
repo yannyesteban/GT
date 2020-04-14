@@ -545,6 +545,10 @@ namespace GT {
 				}
 			}
 
+			if (msg->type == 2) {
+				str = str + ",?";
+			}
+
 
 		} catch (sql::SQLException & e) {
 			cout << "# ERR: SQLException in " << __FILE__;
