@@ -68,7 +68,7 @@ namespace GT {
 
 		bool isVersion(int value);
 
-		std::string createCommand(CMDMsg* msg, unsigned int deviceId, unsigned short cmdId);
+		std::string createCommand(CMDMsg* msg, unsigned int unitId, unsigned short cmdId);
 
 		InfoClient getInfoClient(string id);
 

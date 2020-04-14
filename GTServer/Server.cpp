@@ -149,7 +149,7 @@ namespace GT {
 			cout << "Unit ID: " << msg->unitId << endl;
 			if (mDevices[msg->deviceName].type == 2 || true) {
 				cout << "Unit ID: " << msg->unitId << endl;
-				cout << "CMD is: " << msg->deviceName << "," << db->createCommand(msg, msg->deviceId, msg->cmdId) << endl;
+				cout << "CMD is: " << msg->deviceName << "," << db->createCommand(msg, msg->unitId, msg->cmdId) << endl;
 			} else {
 				cout << "NOTHINg" << endl;
 			}

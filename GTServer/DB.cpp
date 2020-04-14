@@ -470,7 +470,7 @@ namespace GT {
 		return false;
 	}
 
-	std::string DB::createCommand(CMDMsg* msg, unsigned int deviceId, unsigned short commandId) {
+	std::string DB::createCommand(CMDMsg* msg, unsigned int unitId, unsigned short commandId) {
 
 		//CMDMsg* msg = (CMDMsg*)Info.buffer;
 		Document document;
@@ -504,11 +504,12 @@ namespace GT {
 				"LEFT JOIN devices_comm_params as p ON p.command_id = c.id "
 				"INNER JOIN devices_versions as v ON v.id = c.version_id "
 				"INNER JOIN devices as d ON d.version_id = v.id "
+				"INNER JOIN units as u ON u.device_id = d.id "
 
 				"WHERE "
 				"c.id = '" + to_string(commandId) + "' "
 				"and "
-				"d.id = '" + to_string(deviceId) + "' "
+				"u.id = '" + to_string(unitId) + "' "
 				"order by c.id, `order`;";
 			cout << "query: " << query << endl;
 			p_stmt = cn->prepareStatement(query.c_str());
