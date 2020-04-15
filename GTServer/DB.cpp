@@ -475,7 +475,7 @@ namespace GT {
 		//CMDMsg* msg = (CMDMsg*)Info.buffer;
 		Document document;
 		//std::string str = msg->params;
-		cout << msg->params << endl;
+		//cout << msg->params << endl;
 		document.Parse((const char*)msg->params);
 		//document.Parse(str.c_str());
 		if (!document.IsArray()) {
@@ -511,7 +511,7 @@ namespace GT {
 				"and "
 				"u.id = '" + to_string(unitId) + "' "
 				"order by c.id, `order`;";
-			cout << "query: " << query << endl;
+			//cout << "query: " << query << endl;
 			p_stmt = cn->prepareStatement(query.c_str());
 			int n_commands = 0;
 			if (p_stmt->execute()) {
@@ -532,7 +532,7 @@ namespace GT {
 
 			}
 
-			cout << " n Commands " << n_commands << endl;
+			//cout << " n Commands " << n_commands << endl;
 			str = command;
 			if (ii == n_commands) {
 				for (SizeType x = 0; x < ii; x++) {
@@ -548,9 +548,90 @@ namespace GT {
 			if (msg->type == 2) {
 				str = str + ",?";
 			}
-
+			printf("" ANSI_COLOR_CYAN);
+			std::cout << "Command: " << str << endl;
+			printf("" ANSI_COLOR_RESET);
 
 		} catch (sql::SQLException & e) {
+			cout << "# ERR: SQLException in " << __FILE__;
+			cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+			cout << "# ERR: " << e.what();
+			cout << " (MySQL error code: " << e.getErrorCode();
+			//cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+			//return "";
+		}
+
+
+
+		return str;
+	}
+
+	std::string DB::loadCommand(CMDMsg* msg, unsigned int historyId) {
+		std::string str = "";
+		
+		std::string query = 
+			R"(SELECT protocol_pre, c.command, d.password, coalesce(h2.value, '') as value, h.description
+
+			FROM devices_commands as c 
+			INNER JOIN devices_comm_params as p ON p.command_id = c.id
+			INNER JOIN devices_versions as v ON v.id = c.version_id
+			INNER JOIN devices as d ON d.version_id = v.id
+			INNER JOIN units as u ON u.device_id = d.id
+			INNER JOIN h_commands as h ON h.command_id = c.id and h.unit_id = u.id
+			LEFT JOIN h_commands_values as h2 ON h2.h_command_id = h.id AND h2.param_id = p.id
+			WHERE h.id = ')"+to_string(historyId)+"' ORDER BY `order`";
+
+		//std::cout << query << endl << endl;
+
+		try {
+			sql::Statement* stmt;
+			sql::ResultSet* result;
+			sql::PreparedStatement* p_stmt;
+
+			std::string protocol_pre = "";
+			std::string command = "";
+			std::string password = "";
+			std::string description = "";
+
+			stmt = cn->createStatement();
+			
+			p_stmt = cn->prepareStatement(query.c_str());
+			
+			if (p_stmt->execute()) {
+				result = p_stmt->getResultSet();
+
+				while (result->next()) {
+					protocol_pre = result->getString("protocol_pre").c_str();
+					command = result->getString("command").c_str();
+					
+					password = result->getString("password").c_str();
+					description = result->getString("description").c_str();
+
+					if (str != "") {
+
+						str = str + "," + result->getString("value").c_str();
+					} else {
+						str = str + result->getString("value").c_str();
+					}
+
+				}
+
+				delete result;
+				delete p_stmt;
+				delete stmt;
+				if (debug) {
+					//printClients();
+				}
+
+			}
+			
+			str = protocol_pre + command + "=" + password + "," + str;
+			printf("" ANSI_COLOR_CYAN);
+			std::cout << "History Command: " << description << ", " << str << endl;
+			printf("" ANSI_COLOR_RESET);
+
+
+		} catch (sql::SQLException& e) {
 			cout << "# ERR: SQLException in " << __FILE__;
 			cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
 			cout << "# ERR: " << e.what();
@@ -561,6 +642,9 @@ namespace GT {
 
 
 		return str;
+
+
+		
 	}
 
 

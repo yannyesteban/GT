@@ -142,19 +142,25 @@ namespace GT {
 
 	unsigned short Server::getHeader(ConnInfo Info) {
 		IdHeader* header = (IdHeader*)Info.buffer;
-	
+		std:string command = "";
 		if (header->header == 10010) {
 			CMDMsg* msg = (CMDMsg*)Info.buffer;
 			cout << "type msg: " << msg->type << endl;
 			cout << "Unit ID: " << msg->unitId << endl;
-			if (mDevices[msg->deviceName].type == 2 || true) {
-				cout << "Unit ID: " << msg->unitId << endl;
-				cout << "CMD is: " << msg->deviceName << "," << db->createCommand(msg, msg->unitId, msg->cmdId) << endl;
-			} else {
-				cout << "NOTHINg" << endl;
+			if (msg->type == 1 || msg->type == 2) {
+				command = db->createCommand(msg, msg->unitId, msg->cmdId);
 			}
+			if (msg->type == 3) {
+				command = db->loadCommand(msg, msg->cmdId);
+			}
+			if (mDevices[msg->deviceName].type == 2) {
+				cout << "Sending command!!!"<< endl;
+			} else {
+				cout << "Unit disconected!!!" << endl;
+			}
+			send(Info.client, command.c_str(), strlen(command.c_str()), 0);
 		}
-		printf("header is %d\n", header->header);
+		printf("header: %d\n", header->header);
 		
 
 		return header->type;

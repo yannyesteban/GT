@@ -7,7 +7,7 @@
     "port": "3306",
     "user": "root"
   },
-  "debug": true,
+  "debug": false,
   "max_clients": 35,
   "port": 3311,
   "show_cache": false,

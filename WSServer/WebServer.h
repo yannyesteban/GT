@@ -7,6 +7,7 @@
 #include "WebSocketServer.h"
 #include "Hub.h"
 BOOL WINAPI mainhub(LPVOID param);
+
 namespace GT {
 	class WebServer : public WebSocketServer {
 	public:

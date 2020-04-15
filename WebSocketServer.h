@@ -11,6 +11,7 @@
 #define DEFAULT_PORT    "8083"
 
 
+
 #pragma pack (push, 1)
 struct _websocket_header {
 	unsigned char opcode : 4;

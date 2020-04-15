@@ -1,6 +1,10 @@
 #pragma once
+
+#define MULTILINE(...) #__VA_ARGS__
+
 #include "Types.h"
 #include "Tool.h"
+#include "ConsoleColors.h"
 #include <mysql/jdbc.h>
 #include<string>
 //
@@ -69,7 +73,7 @@ namespace GT {
 		bool isVersion(int value);
 
 		std::string createCommand(CMDMsg* msg, unsigned int unitId, unsigned short cmdId);
-
+		std::string loadCommand(CMDMsg* msg, unsigned int historyId);
 		InfoClient getInfoClient(string id);
 
 	private:

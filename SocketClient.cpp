@@ -94,7 +94,7 @@ namespace GT {
 	void SocketClient::stop() {
 	}
 	void SocketClient::onReceive(char* buffer, size_t size) {
-		printf("Message: %s\nBytes received: %d\n> ", buffer, size);
+		printf("*** Message: %s\nBytes received: %d\n> ", buffer, size);
 	}
 	SOCKET SocketClient::getHost() {
 		return master;

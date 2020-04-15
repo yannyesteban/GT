@@ -6,7 +6,11 @@
 #include "WebServer.h"
 
 #include "Color.h"
+
+
 using namespace GT;
+
+
 int main()
 {
     setlocale(LC_CTYPE, "Spanish");
