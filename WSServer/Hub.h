@@ -4,7 +4,10 @@
 
 namespace GT {
 	class Hub :	public SocketClient {
+
 	public:
+
+		
 		Hub(CSInfo pInfo);
 		void onConect();
 		void onReceive(char* buffer, size_t size);
@@ -12,8 +15,8 @@ namespace GT {
 		void (*CallConection)(CSInfo Info);
 		void (*CallMessage)(CSInfo Info);
 		void (*CallClose)(CSInfo Info);
-		void (*test)(char* buffer, size_t size);
-
+		void (*callReceive)(void * app, char* buffer, size_t size);
+		void * appData;
 	private:
 		
 	

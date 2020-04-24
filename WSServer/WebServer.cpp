@@ -24,6 +24,10 @@ namespace GT {
        
 	}
 
+    void WebServer::onConnect(ConnInfo Info) {
+        puts("onConnect 2020");
+    }
+
     void WebServer::onMessage(ConnInfo Info) {
         WebSocketServer::onMessage(Info);
         
@@ -47,6 +51,25 @@ namespace GT {
 
         string msgType = document["type"].GetString();
         unsigned short type = 0;
+
+        if (msgType == "connect") {
+            type = 1;
+            cout << "connecting" << endl;
+
+            cout << "client Name" << document["clientName"].GetString() << endl;
+
+
+            char buffer[DEFAULT_BUFLEN];
+            size_t size = 0;
+            encodeMessage((char *)document["clientName"].GetString(), buffer, size);
+
+            //printf("%s(%d)\n", Info.buffer, size);
+
+            send(Info.client, buffer, (int)size, 0);
+            return;
+        }
+
+
         if (msgType == "set") {
             type = 1;
             cout << "configuración" << endl;
@@ -139,10 +162,22 @@ namespace GT {
 
     }
 
+    void WebServer::send2(char* message) {
+        char buffer[DEFAULT_BUFLEN];
+        size_t size = 0;
+        encodeMessage(message, buffer, size);
+
+        //printf("%s(%d)\n", Info.buffer, size);
+
+        //send(Info.client, buffer, (int)size, 0);
+    }
+
     
 
 }
-void test1(char* buffer, size_t size) {
+void test1(void * app, char* buffer, size_t size) {
+    GT::WebServer* WS = (GT::WebServer*)app;
+    std::cout << "Token " << WS->Token << std::endl;
     std::cout << "uno " << std::endl;
     std::cout << "que " << buffer << std::endl;
 }
@@ -155,7 +190,8 @@ BOOL __stdcall mainhub(LPVOID param) {
     Info.port = "3311";
     puts("Activate the HUB server");
     WS->hub = new GT::Hub(Info);
-    WS->hub->test = test1;
+    WS->hub->appData = WS;
+    WS->hub->callReceive = test1;
     WS->hub->start();
 
     return true;

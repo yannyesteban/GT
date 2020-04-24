@@ -76,6 +76,9 @@ namespace GT {
 		std::string loadCommand(CMDMsg* msg, unsigned int historyId);
 		InfoClient getInfoClient(string id);
 
+		void deviceConfig(const char* unit_id, CommandResult*  result);
+		void save(std::string query);
+
 	private:
 		bool debug;
 		InfoDB info;

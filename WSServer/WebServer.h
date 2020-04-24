@@ -14,7 +14,11 @@ namespace GT {
 		WebServer(SocketInfo pInfo);
 		void init();
 		void onMessage(ConnInfo Info);
+		void send2(char* buffer);
+		void onConnect(ConnInfo Info);
+
 		Hub * hub;
+		int Token = 4737;
 	private:
 
 		

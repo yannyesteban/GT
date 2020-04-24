@@ -9,6 +9,16 @@ namespace GT {
 	}
 
 	bool Server::init(AppConfig pConfig) {
+
+
+		std::string result[20];
+		int len;
+		int nLine = 0;
+
+		const char* x = "$OK:TRACK=1,1,1,1,1";
+		Tool::getCommand(result, len, x);
+
+
 		//config = pConfig;
 		pConfig.db.debug = pConfig.debug;
 		db = new DB(pConfig.db);
@@ -240,14 +250,41 @@ namespace GT {
 		std::string to;
 		int i = 0;
 
-
-
+		std::string result[20];
+		int len;
+		int nLine = 0;
 
 		if (Info.buffer != NULL) {
 			while (std::getline(ss, to)) {//, '\n'
-				printf("id %d, %d .- %s\n", clients[Info.client].device_id, i++, to.c_str());
+				Tool::getCommand(result, len, to.c_str());
+				
+				nLine++;
 
-				db->saveTrack(clients[Info.client].device_id, to.c_str());
+
+				printf(ANSI_COLOR_CYAN "linea: %d\n", nLine);
+				
+				
+				if (len > 0) {
+					cout << "es un COMANDO" << endl;
+					CommandResult  rCommand = {
+						result[2],
+						result[3],
+						result[4],
+						result[5]
+
+					};
+					db->deviceConfig(clients[Info.client].device_id, & rCommand);
+				} else {
+					cout << "es un track" << endl;
+					db->saveTrack(clients[Info.client].device_id, to.c_str());
+				}
+				std::cout << "LINE: " << to.c_str() << endl;
+				printf("" ANSI_COLOR_RESET);
+
+
+				//printf("id %d, %d .- %s\n", clients[Info.client].device_id, i++, to.c_str());
+
+				
 				
 
 				//_CallMsgReceived2(master, client, (char*)to.c_str(), valread, index);

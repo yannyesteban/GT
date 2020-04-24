@@ -53,16 +53,19 @@ BOOL __stdcall keyboard(LPVOID param) {
 		GT::Command xx = {
 			9,
 			"201200422",
-			"201200422aaaaaaaaa",
+			"201200422aaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbb",
 
 
 		};
 		GT::DeviceMSG m2 = {
-			"2012000520",
-			"$wp+ver=0000,?"
+			"2012000750",
+			"$WP+COMMTYPE=0000,?"//"$WP+TRACK=0000,? "
 
 		};
-
+		message[strlen(message)+1] = '\0';
+		memcpy(m2.message, message, strlen(message)+1);
+		printf("==message-> %s\n", m2.message);
+		printf("..message-> %s\n", xx.message);
 		memcpy(xx.message, &m2, sizeof(m2));
 
 		printf("TOKEN-> %d\n", xx.token);

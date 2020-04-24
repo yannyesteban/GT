@@ -337,29 +337,40 @@ namespace GT {
 			}
 			qfields = qfields + "`" + it->c_str() + "`";
 			qvalues = qvalues + "'" + mm[x++] + "'";
+			//std::cout << ":" << qfields << endl << qvalues << endl;
 		}
+		
+		
 		query = query + "(" + qfields + ") VALUES (" + qvalues + ");";
 
-		std::cout << query << endl;
 
+		cout << "*****************************" << endl;
 
 		try {
+			
+			
+			printf("" ANSI_COLOR_MAGENTA);
+			std::cout << query << endl;
+			printf("" ANSI_COLOR_RESET);
 			sql::Statement* stmt;
-			sql::ResultSet* res;
+			//sql::ResultSet* res;
 			stmt = cn->createStatement();
-			res = stmt->executeQuery(query.c_str());
-			delete res;
+			stmt->execute(query.c_str());
+			//delete res;
 			delete stmt;
+			
 
 		} catch (sql::SQLException & e) {
+			printf("" ANSI_COLOR_BLUE ANSI_COLOR_CYAN_);
+			std::cout << query << endl;
+			printf("" ANSI_COLOR_RESET);
 
-			if (1 == 0) {
-				cout << endl << endl << "# ERR: SQLException in " << __FILE__;
-				cout << endl << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-				cout << endl << "# ERR: " << e.what();
-				cout << endl << " (MySQL error code: " << e.getErrorCode();
-				cout << ", SQLState: " << e.getSQLState() << " )" << endl;
-			}
+			
+			cout << endl << endl << "# ERR: SQLException in " << __FILE__;
+			cout << endl << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+			cout << endl << "# ERR: " << e.what();
+			cout << endl << " (MySQL error code: " << e.getErrorCode();
+			cout << ", SQLState: " << e.getSQLState() << " )" << endl;
 
 		}
 		
@@ -699,6 +710,170 @@ namespace GT {
 
 		InfoClient nn = { unit_id, device_id, version_id };
 		return nn;
+	}
+
+	void DB::deviceConfig(const char* unit_id, CommandResult* commandResult) {
+		std::string paramsList[20];
+		int length = 0;
+		Tool::getItem(paramsList, length, commandResult->params.c_str());
+
+		int unitId = mClients[unit_id].unit_id;
+
+		std::string query = R"(DELETE dc
+			FROM devices_config as dc
+			INNER JOIN units as u ON u.id = dc.unit_id
+			INNER JOIN devices as d ON d.id = u.device_id
+			INNER JOIN devices_versions as v ON v.id = d.version_id
+			INNER JOIN devices_comm_params as p ON p.id = dc.param_id
+
+			INNER JOIN devices_commands as c ON c.id = p.command_id
+
+			WHERE c.command = ? and u.id = ?)";
+
+		try {
+			sql::Statement* stmt;
+			sql::ResultSet* result;
+			sql::PreparedStatement* p_stmt;
+
+			//stmt = cn->createStatement();
+
+			p_stmt = cn->prepareStatement(query.c_str());
+
+			p_stmt->setString(1, commandResult->command.c_str());
+			p_stmt->setInt(2, unitId);
+			if (p_stmt->execute()) {
+				
+				delete p_stmt;
+				//delete stmt;
+				if (debug) {
+					//printClients();
+				}
+			}
+		} catch (sql::SQLException& e) {
+
+			cout << endl << endl << "# ERR: SQLException in " << __FILE__;
+			cout << endl << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+			cout << endl << "# ERR: " << e.what();
+			cout << endl << " (MySQL error code: " << e.getErrorCode();
+			cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+		}
+
+
+		query = R"(SELECT
+			p.id as param_id, param, u.id as unit_id, c.command
+
+
+			FROM devices_commands as c
+			INNER JOIN devices_comm_params as p ON p.command_id = c.id
+			INNER JOIN devices_versions as v ON v.id = c.version_id
+			INNER JOIN devices as d ON d.version_id = v.id
+			INNER JOIN units as u ON u.device_id = d.id
+
+			WHERE c.command = ? and u.id = ?
+			ORDER BY p.order)";
+
+
+		try {
+			sql::Statement* stmt;
+			sql::ResultSet* result;
+			sql::PreparedStatement* p_stmt;
+
+			std::string param_id = "";
+			std::string str = "(";
+			std::string strFields = " (`unit_id`,`device_id`,`param_id`, `value`, `update`) ";
+
+
+			stmt = cn->createStatement();
+
+			p_stmt = cn->prepareStatement(query.c_str());
+
+
+			p_stmt->setString(1, commandResult->command.c_str());
+			p_stmt->setInt(2, unitId);
+			int x = 0;
+			if (p_stmt->execute()) {
+
+
+				
+
+
+				result = p_stmt->getResultSet();
+
+				while (result->next()) {
+					param_id = result->getString("param_id").c_str();
+
+					str = "(";
+					if (str != "") {
+
+						str = str + to_string(unitId) + ",2," + param_id + ",'" + paramsList[x++]+"', now()";
+					} else {
+						str = str + param_id;
+					}
+					str += ")";
+
+					str = "INSERT INTO `devices_config` " + strFields + " VALUES " + str;
+					cout << str << endl;
+
+					save(str);
+
+				}
+
+				
+				delete result;
+				delete p_stmt;
+				delete stmt;
+				if (debug) {
+					//printClients();
+				}
+
+
+				
+
+
+			}
+			printf("" ANSI_COLOR_GREEN);
+			cout << commandResult->command << " " << commandResult->token << " " << commandResult->params << endl;
+			printf("" ANSI_COLOR_RESET);
+		} catch (sql::SQLException& e) {
+
+			
+			cout << endl << endl << "# ERR: SQLException in " << __FILE__;
+			cout << endl << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+			cout << endl << "# ERR: " << e.what();
+			cout << endl << " (MySQL error code: " << e.getErrorCode();
+			cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+			
+
+		}
+	}
+
+	void DB::save(std::string query) {
+
+		printf("" ANSI_COLOR_CYAN);
+
+		cout << query << endl;
+
+		printf("" ANSI_COLOR_RESET);
+
+		try {
+			sql::Statement* stmt;
+			sql::ResultSet* res;
+			stmt = cn->createStatement();
+			res = stmt->executeQuery(query.c_str());
+			delete res;
+			delete stmt;
+
+		} catch (sql::SQLException& e) {
+
+			if (1 == 0) {
+				cout << endl << endl << "# ERR: SQLException in " << __FILE__;
+				cout << endl << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+				cout << endl << "# ERR: " << e.what();
+				cout << endl << " (MySQL error code: " << e.getErrorCode();
+				cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+			}
+
+		}
 	}
 
 

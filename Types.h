@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 
 namespace GT {
 	struct InfoDB {
@@ -83,6 +84,14 @@ namespace GT {
 		int unit_id;
 		int device_id;
 		int version_id;
+	};
+
+	struct CommandResult {
+		std::string token;
+		std::string command;
+		std::string tag;
+		std::string params;
+
 	};
 	
 }
