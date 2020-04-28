@@ -2,6 +2,8 @@
 #include <string>
 
 namespace GT {
+
+	
 	struct InfoDB {
 
 		const char* host;
@@ -91,6 +93,16 @@ namespace GT {
 		std::string command;
 		std::string tag;
 		std::string params;
+
+	};
+
+	struct RCommand {
+		unsigned short header;
+		unsigned short type;
+		char user[41];
+		char message[101];
+		char unit[11];
+		int mode;
 
 	};
 	

@@ -974,7 +974,7 @@ namespace GT {
 
 			p_stmt->setInt(1, unitId);
 			p_stmt->setInt(2, commandId);
-			p_stmt->execute();
+			//p_stmt->execute();
 			
 
 		} catch (sql::SQLException& e) {

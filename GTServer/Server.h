@@ -37,6 +37,9 @@ namespace GT {
 		bool isSyncMsg(ConnInfo Info);
 		unsigned short getHeader(ConnInfo Info);
 
+		IdHeader * getMsgHeader(const char * msg);
+		
+
 		bool evalMessage(ConnInfo Info, const char* msg);
 		bool deviceMessage(ConnInfo Info);
 

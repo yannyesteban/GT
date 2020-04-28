@@ -6,6 +6,8 @@
 #include "Types.h"
 #include "WebSocketServer.h"
 #include "Hub.h"
+#include "Config.h"
+#include "DB.h"
 BOOL WINAPI mainhub(LPVOID param);
 
 namespace GT {
@@ -20,7 +22,7 @@ namespace GT {
 		Hub * hub;
 		int Token = 4737;
 	private:
-
+		DB* db;
 		
 		HANDLE hClientThread;
 		DWORD dwThreadId;

@@ -73,11 +73,16 @@ namespace GT {
 		bool isVersion(int value);
 
 		std::string createCommand(CMDMsg* msg, unsigned int unitId, unsigned short cmdId);
+		std::string createCommand(unsigned int unitId, unsigned short commandId, std::string tag, std::list<string> params, unsigned short mode);
 		std::string loadCommand(CMDMsg* msg, unsigned int historyId);
 		InfoClient getInfoClient(string id);
 
 		void deviceConfig(const char* unit_id, CommandResult*  result);
 		void save(std::string query);
+
+		std::string addPending(unsigned int unitId, unsigned short commandId, unsigned int tag, std::string command, std::string user);
+		unsigned int getTag(unsigned int unitId, unsigned short commandId);
+		
 
 	private:
 		bool debug;

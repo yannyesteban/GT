@@ -70,6 +70,10 @@ namespace GT {
 		if (isSyncMsg(Info)) {
 			return;
 		}
+
+
+		IdHeader* h = getMsgHeader(Info.buffer);
+		printf("Header %d, Type %d\n", h->header, h->type);
 		unsigned short type = getHeader(Info);
 		
 		printf("Info.client %d, type: %d\n", Info.client, clients[Info.client].type);
@@ -153,6 +157,20 @@ namespace GT {
 	unsigned short Server::getHeader(ConnInfo Info) {
 		IdHeader* header = (IdHeader*)Info.buffer;
 		std:string command = "";
+
+		if (header->header == 10020) {
+			RCommand * r = (RCommand*)Info.buffer;
+			if (header->type == 1) {
+				std::cout << " mensaje " << r->message << " unit " << r->unit << endl;
+
+				send(Info.client, "JEJE", 5, 0);
+				//send(mDevices[r->unit].socket, r->message, strlen(r->message), 0);
+			}
+			
+			return 0;
+
+		}
+
 		if (header->header == 10010) {
 			CMDMsg* msg = (CMDMsg*)Info.buffer;
 			cout << "type msg: " << msg->type << endl;
@@ -175,6 +193,13 @@ namespace GT {
 
 		return header->type;
 	}
+
+	IdHeader * Server::getMsgHeader(const char* msg) {
+		IdHeader * header = (IdHeader*)msg;
+		return header;
+	}
+
+	
 	
 	bool Server::evalMessage(ConnInfo Info, const char* message) {
 

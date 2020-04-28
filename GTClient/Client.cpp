@@ -50,6 +50,23 @@ BOOL __stdcall keyboard(LPVOID param) {
 		//strcpy(sendbuf, buffer);
 		//iResult = send(ConnectSocket,  mensajes[i], 10, 0);
 		
+
+		GT::RCommand r = {
+			10020,
+			1,
+			"pepe",
+			"$WP+VER=0000,?",
+			"2012000750",
+			4737
+		};
+
+
+		printf(".unit [%d] %s...\n", strlen(r.user), r.user);
+
+		memcpy(message, &r, sizeof(r));
+
+		iResult = send(Info->getHost(), message, (int)sizeof(message), 0);
+
 		GT::Command xx = {
 			9,
 			"201200422",

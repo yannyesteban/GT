@@ -11,6 +11,16 @@ namespace GT {
     }
     void WebServer::init() {
 
+
+        auto appInfo = GT::Config::load("C:\\source\\cpp\\GT\\GTServer\\config.json");
+
+        cout << appInfo.db.name << endl;
+        //config = pConfig;
+        // pConfig.db.debug = pConfig.debug;
+        db = new DB(appInfo.db);
+        db->connect();
+
+
         hClientThread = CreateThread(
             NULL,
             0,
@@ -33,10 +43,6 @@ namespace GT {
         
         const char* x = decodeMessage(Info);
         
-        //puts("===============");
-        //puts(x);
-        //puts("***************");
-        //printf("[%s]\n", x);
         SOCKET s = hub->getHost();
 
         Document document;
@@ -45,11 +51,20 @@ namespace GT {
             printf("ERROR JSON...!!!\n");
             return;
         }
+
+
+        
+        //const Value& values = document["comdValues"].GetArray();
+       // cout << values[0].GetInt() << endl;
+        //document["comdValues"].GetArray();
+
         //printf("JSON deviceId %d\n", document["deviceId"].GetInt());
         
         //std::cout <<"Type 1: "<< document["type"].GetString() << std::endl;
 
         string msgType = document["type"].GetString();
+        //string msgName = document["name"].GetString();
+        //std::cout << "name " << document["name"].GetString() << endl;
         unsigned short type = 0;
 
         if (msgType == "connect") {
@@ -68,6 +83,20 @@ namespace GT {
             send(Info.client, buffer, (int)size, 0);
             return;
         }
+
+        const Value& values = document["comdValues"].GetArray();
+        std::list<string> params;
+        for (SizeType i = 0; i < values.Size(); i++) {
+            params.push_back(values[i].GetString());
+            //std::cout << " Array " << i << " es " << values[i].GetString() << std::endl;
+        }
+
+        for (std::list<std::string>::iterator it = params.begin() ; it != params.end(); ++it) {
+            std::cout << " Array \t" << *it <<  std::endl;
+        }
+        cout << values[0].GetString() << endl;
+
+
 
 
         if (msgType == "set") {
@@ -98,7 +127,7 @@ namespace GT {
             "0000",
             ""// document["msg"].GetString()
         };
-
+        
         /*
         const Value& v(int[]);
         v. = document["comdValues"].GetArray();
@@ -141,6 +170,26 @@ namespace GT {
         memcpy(buffer2, &msg, sizeof(msg));
         //Info.valread = sizeof(xx);
         //send(s, x, (int)sizeof(x), 0);
+
+
+        GT::RCommand r = {
+            10020,
+            1,
+            "pepe",
+            "",
+            "2012000750",
+            4737
+        };
+        
+        unsigned int tag = db->getTag(document["unitId"].GetInt(), document["commandId"].GetInt());
+        
+        std::string str = db->createCommand(
+            (unsigned int)document["unitId"].GetInt(),
+            (unsigned short)document["commandId"].GetInt(),
+            to_string(tag), params, 1);
+        db->addPending(document["unitId"].GetInt(), document["commandId"].GetInt(), tag, str, "pepe");
+        strcpy(r.message, str.c_str());
+        memcpy(buffer2, &r, sizeof(r));
         send(s, buffer2, (int)sizeof(buffer2), 0);
         //send(Info.client, "yanny", strlen("yanny"), 0);
 
