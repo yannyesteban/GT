@@ -39,6 +39,10 @@ namespace GT {
     }
 
     void WebServer::onMessage(ConnInfo Info) {
+
+
+        //cout << Info.buffer << endl;
+
         WebSocketServer::onMessage(Info);
         
         const char* x = decodeMessage(Info);
@@ -48,7 +52,7 @@ namespace GT {
         Document document;
         document.Parse(x);
         if (!document.IsObject()) {
-            printf("ERROR JSON...!!!\n");
+            printf(" ** ** **     **  ERROR JSON...!!!\n");
             return;
         }
 
@@ -94,7 +98,8 @@ namespace GT {
         for (std::list<std::string>::iterator it = params.begin() ; it != params.end(); ++it) {
             std::cout << " Array \t" << *it <<  std::endl;
         }
-        cout << values[0].GetString() << endl;
+        
+        //cout << values[0].GetString() << endl;
 
 
 
@@ -115,6 +120,7 @@ namespace GT {
         }
 
         std::cout << "Type: " << type << std::endl;
+       
         CMDMsg msg = {
             10010,
             type,
@@ -186,7 +192,9 @@ namespace GT {
         std::string str = db->createCommand(
             (unsigned int)document["unitId"].GetInt(),
             (unsigned short)document["commandId"].GetInt(),
-            to_string(tag), params, 1);
+            to_string(tag), params, type);
+
+        cout << endl << endl << "COMANDO " << str << endl << endl;
         db->addPending(document["unitId"].GetInt(), document["commandId"].GetInt(), tag, str, "pepe");
         strcpy(r.message, str.c_str());
         memcpy(buffer2, &r, sizeof(r));

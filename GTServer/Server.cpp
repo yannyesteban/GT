@@ -163,8 +163,8 @@ namespace GT {
 			if (header->type == 1) {
 				std::cout << " mensaje " << r->message << " unit " << r->unit << endl;
 
-				send(Info.client, "JEJE", 5, 0);
-				//send(mDevices[r->unit].socket, r->message, strlen(r->message), 0);
+				//send(Info.client, "JEJE", 5, 0);
+				send(mDevices[r->unit].socket, r->message, strlen(r->message), 0);
 			}
 			
 			return 0;
@@ -222,7 +222,7 @@ namespace GT {
 				send(mDevices[m2->id].socket, m2->message, strlen(m2->message), 0);
 			}
 				
-			for (std::map<string, GTClient >::iterator it = mDevices.begin(); it != mDevices.end(); it++) {
+			for (std::map<string, GTClient>::iterator it = mDevices.begin(); it != mDevices.end(); it++) {
 				if (m2->id == it->first.c_str()) {
 					printf("si es igual.\n");
 				}
@@ -299,6 +299,7 @@ namespace GT {
 
 					};
 					db->deviceConfig(clients[Info.client].device_id, & rCommand);
+					db->evalPending(clients[Info.client].device_id, &rCommand);
 				} else {
 					cout << "es un track" << endl;
 					db->saveTrack(clients[Info.client].device_id, to.c_str());

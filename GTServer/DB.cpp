@@ -744,9 +744,6 @@ namespace GT {
 		
 	}
 
-
-
-
 	InfoClient DB::getInfoClient(string id) {
 		int unit_id = 0, version_id = 0, device_id = 0;
 
@@ -932,6 +929,57 @@ namespace GT {
 
 		}
 	}
+
+	void DB::evalPending(const char* unit_id, CommandResult* commandResult) {
+		
+
+		int unitId = mClients[unit_id].unit_id;
+
+		std::string query = R"(DELETE p
+			FROM pending as p
+			INNER JOIN units as u ON u.id = p.unit_id
+			INNER JOIN devices as d ON d.id = u.device_id
+			INNER JOIN devices_versions as v ON v.id = d.version_id
+
+
+			INNER JOIN devices_commands as c ON c.id = p.command_id
+
+			WHERE u.id = ? AND c.command = ? AND p.index = ?)";
+
+		try {
+			sql::Statement* stmt;
+			
+			sql::PreparedStatement* p_stmt;
+
+			//stmt = cn->createStatement();
+
+			p_stmt = cn->prepareStatement(query.c_str());
+
+			p_stmt->setInt(1, unitId);
+			p_stmt->setString(2, commandResult->command.c_str());
+			p_stmt->setString(3, commandResult->tag.c_str());
+			
+			if (p_stmt->execute()) {
+
+				delete p_stmt;
+				//delete stmt;
+				if (debug) {
+					//printClients();
+				}
+			}
+		} catch (sql::SQLException& e) {
+
+			cout << endl << endl << "# ERR: SQLException in " << __FILE__;
+			cout << endl << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+			//cout << endl << "# ERR: " << e.what();
+			cout << endl << " (MySQL error code: " << e.getErrorCode();
+			cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+		}
+
+
+		
+	}
+
 
 	void DB::save(std::string query) {
 

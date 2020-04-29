@@ -82,7 +82,7 @@ namespace GT {
 
 		std::string addPending(unsigned int unitId, unsigned short commandId, unsigned int tag, std::string command, std::string user);
 		unsigned int getTag(unsigned int unitId, unsigned short commandId);
-		
+		void evalPending(const char* unit_id, CommandResult* result);
 
 	private:
 		bool debug;
