@@ -11,7 +11,7 @@
 #pragma comment(lib, "ws2_32.lib") //Winsock Library
 namespace GT {
 
-	typedef struct  {
+	typedef struct  ConnInfob{
 		SOCKET master;
 		SOCKET client;
 		SOCKET * clients;
@@ -26,7 +26,7 @@ namespace GT {
 		char* tag;
 	} ConnInfo;
 
-	typedef struct  {
+	typedef struct SocketInfob {
 		char* host;
 		u_short port;
 		u_short maxClients;

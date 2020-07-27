@@ -16,7 +16,7 @@ int main()
     setlocale(LC_CTYPE, "Spanish");
     system("cls");
     Color::set(4);
-    std::cout << "GT WEB-Socket v0.99 (2020)!\n\n\n";
+    std::cout << "GT WEB-Socket v1.0 (2020)!\n\n\n";
     Color::set(0);
     SocketInfo Info;
     Info.host = (char*)"127.0.0.1";

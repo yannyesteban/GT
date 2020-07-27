@@ -15,7 +15,7 @@
 #pragma comment (lib, "Mswsock.lib")
 #pragma comment (lib, "AdvApi32.lib")
 namespace GT {
-	typedef struct {
+	typedef struct CSInfob {
 		SOCKET master;
 		SOCKET client;
 		SOCKET* clients;
