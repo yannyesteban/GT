@@ -23,11 +23,12 @@ int main()
     printf("APP NAME: %s\n", appInfo.appname);
     printf("Version: %s \n", appInfo.version);
     printf("DB Name: %s\n", appInfo.db.name);
+    printf("Socket Port: %d\n", appInfo.port);
     ///printf("Time: %s", XT::Time::now());
 
     SocketInfo Info;
     Info.host = (char*)"127.0.0.1";
-    Info.port = 3311;
+    Info.port = appInfo.port;
     Info.maxClients = 30;
 
     Server * S = new Server(Info);
