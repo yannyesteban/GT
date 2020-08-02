@@ -19,7 +19,7 @@ int main()
     std::cout << "GT v1.0 (2020)!\n";
     Color::set(0);
 
-    auto appInfo = GT::Config::load("C:\\source\\cpp\\GT\\GTServer\\config.json");
+    auto appInfo = GT::Config::load("config.json");
     printf("APP NAME: %s\n", appInfo.appname);
     printf("Version: %s \n", appInfo.version);
     printf("DB Name: %s\n", appInfo.db.name);
