@@ -1,11 +1,12 @@
 // WSServer.cpp : Este archivo contiene la función "main". La ejecución del programa comienza y termina ahí.
 //
-
+#define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
 #include "Conn.h"
 #include "WebServer.h"
 
 #include "Color.h"
+#include <iomanip> // para la fecha
 
 
 using namespace GT;
@@ -15,6 +16,11 @@ int main()
 {
     setlocale(LC_CTYPE, "Spanish");
     system("cls");
+
+    auto t = std::time(nullptr);
+    auto tm = *std::localtime(&t);
+    std::cout << std::put_time(&tm, "%d-%m-%Y %H-%M-%S") << std::endl;
+
     Color::set(4);
     std::cout << "GT WEB-Socket v1.0 (2020)!\n\n\n";
     Color::set(0);

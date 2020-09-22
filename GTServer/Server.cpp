@@ -134,6 +134,8 @@ namespace GT {
 				clients[Info.client].id = cInfo.unit_id;
 				clients[Info.client].version_id = cInfo.version_id;
 				strcpy(clients[Info.client].device_id, (const char*)id);
+			} else {
+				cout << "Algo Raro aqui!!!" << endl;
 			}
 
 			

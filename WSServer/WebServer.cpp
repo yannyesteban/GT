@@ -12,7 +12,7 @@ namespace GT {
     void WebServer::init() {
 
 
-        auto appInfo = GT::Config::load("C:\\source\\cpp\\GT\\GTServer\\config.json");
+        auto appInfo = GT::Config::load("config.json");
 
         cout << appInfo.db.name << endl;
         //config = pConfig;
@@ -90,8 +90,21 @@ namespace GT {
 
         const Value& values = document["comdValues"].GetArray();
         std::list<string> params;
+
+        //assert(attributes.IsArray()); // attributes is an array
+        for (rapidjson::Value::ConstValueIterator itr = values.Begin(); itr != values.End(); ++itr) {
+            const rapidjson::Value& attribute = *itr;
+            assert(attribute.IsObject()); // each attribute is an object
+            for (rapidjson::Value::ConstMemberIterator itr2 = attribute.MemberBegin(); itr2 != attribute.MemberEnd(); ++itr2) {
+                //std::cout << itr2->name.GetString() << " : " << std::endl;
+                std::cout << itr2->name.GetString() << " : " << itr2->value.GetString() << std::endl;
+            }
+        }
+
+
         for (SizeType i = 0; i < values.Size(); i++) {
-            params.push_back(values[i].GetString());
+            std::cout << "         hooolaaaaaaaaa " << std::endl;
+            //params.push_back(values[i].GetString());
             //std::cout << " Array " << i << " es " << values[i].GetString() << std::endl;
         }
 
@@ -244,7 +257,7 @@ BOOL __stdcall mainhub(LPVOID param) {
 
     GT::CSInfo Info;
     Info.host = (char*)"127.0.0.1";
-    Info.port = "3311";
+    Info.port = "3320";
     puts("Activate the HUB server");
     WS->hub = new GT::Hub(Info);
     WS->hub->appData = WS;

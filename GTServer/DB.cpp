@@ -49,8 +49,8 @@ namespace GT {
 			stmt = cn->createStatement();
 
 			p_stmt = cn->prepareStatement(
-				"SELECT id, tag_length, pass_default, protocol_pre,sync_header, format_id "
-				"FROM devices_versions as d "
+				R"(SELECT id, tag_length, pass_default, protocol_pre,sync_header, format_id 
+				FROM devices_versions as d )"
 			);
 
 			if (p_stmt->execute()) {
@@ -180,10 +180,11 @@ namespace GT {
 			stmt = cn->createStatement();
 
 			p_stmt = cn->prepareStatement(
-				"SELECT u.id as unit_id, d.id as device_id, device_name, version_id "
-				"FROM units as u "
-				"INNER JOIN devices as d on d.id = u.device_id "
-				"WHERE device_name IS NOT NULL "
+				R"(
+				SELECT u.id as unit_id, d.id as device_id, device_name, version_id 
+				FROM units as u 
+				INNER JOIN devices as d on d.id = u.device_id 
+				WHERE device_name IS NOT NULL )"
 			);
 
 			if (p_stmt->execute()) {
@@ -316,8 +317,10 @@ namespace GT {
 		//list<string> field = XT::Tool::split(s, ',');
 		int version = mProtocols[ mClients[unit_id].version_id].format_id;
 
+		version = mClients[unit_id].version_id;
 
 		std::cout << "unit_id : " << unit_id << " version(Format) " << version  << endl;
+		std::cout << "buffer: " << buffer << std::endl;
 		std::string  mm[30];
 		int n;
 		GT::Tool::getItem(mm, n, buffer);
@@ -370,7 +373,7 @@ namespace GT {
 			cout << endl << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
 			cout << endl << "# ERR: " << e.what();
 			cout << endl << " (MySQL error code: " << e.getErrorCode();
-			cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+			//cout << ", SQLState: " << e.getSQLState() << " )" << endl;
 
 		}
 		

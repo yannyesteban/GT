@@ -20,7 +20,7 @@ int main()
     std::cout << "Hello World!\n";
     CSInfo Info;
     Info.host = (char*)"127.0.0.1";
-    Info.port = "3311";
+    Info.port = "3320";
 
     Client* C = new Client(Info);
     C->start();
