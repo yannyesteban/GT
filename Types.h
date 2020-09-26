@@ -102,6 +102,7 @@ namespace GT {
 		char user[41];
 		char message[101];
 		char unit[11];
+		int unitId;
 		int mode;
 
 	};

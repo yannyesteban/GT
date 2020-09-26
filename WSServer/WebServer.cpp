@@ -92,20 +92,20 @@ namespace GT {
         std::list<string> params;
 
         //assert(attributes.IsArray()); // attributes is an array
-        for (rapidjson::Value::ConstValueIterator itr = values.Begin(); itr != values.End(); ++itr) {
-            const rapidjson::Value& attribute = *itr;
-            assert(attribute.IsObject()); // each attribute is an object
-            for (rapidjson::Value::ConstMemberIterator itr2 = attribute.MemberBegin(); itr2 != attribute.MemberEnd(); ++itr2) {
-                //std::cout << itr2->name.GetString() << " : " << std::endl;
-                std::cout << itr2->name.GetString() << " : " << itr2->value.GetString() << std::endl;
-            }
-        }
+        //for (rapidjson::Value::ConstValueIterator itr = values.Begin(); itr != values.End(); ++itr) {
+        //    const rapidjson::Value& attribute = *itr;
+        //    assert(attribute.IsObject()); // each attribute is an object
+        //    for (rapidjson::Value::ConstMemberIterator itr2 = attribute.MemberBegin(); itr2 != attribute.MemberEnd(); ++itr2) {
+        //        //std::cout << itr2->name.GetString() << " : " << std::endl;
+        //        std::cout << itr2->name.GetString() << " : " << itr2->value.GetString() << std::endl;
+        //    }
+        //}
 
 
         for (SizeType i = 0; i < values.Size(); i++) {
             std::cout << "         hooolaaaaaaaaa " << std::endl;
-            //params.push_back(values[i].GetString());
-            //std::cout << " Array " << i << " es " << values[i].GetString() << std::endl;
+            params.push_back(values[i].GetString());
+            std::cout << " Array " << i << " es " << values[i].GetString() << std::endl;
         }
 
         for (std::list<std::string>::iterator it = params.begin() ; it != params.end(); ++it) {
@@ -117,12 +117,12 @@ namespace GT {
 
 
 
-        if (msgType == "set") {
+        if (msgType == "SET") {
             type = 1;
             cout << "configuración" << endl;
         }
 
-        if (msgType == "get") {
+        if (msgType == "GET") {
             type = 2;
             cout << "recuperación" << endl;
         }
@@ -197,7 +197,9 @@ namespace GT {
             "pepe",
             "",
             "2012000750",
-            4737
+            (int)document["unitId"].GetInt(),
+            
+            1024
         };
         
         unsigned int tag = db->getTag(document["unitId"].GetInt(), document["commandId"].GetInt());

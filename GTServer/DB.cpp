@@ -84,7 +84,7 @@ namespace GT {
 			cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
 			cout << "# ERR: " << e.what();
 			cout << " (MySQL error code: " << e.getErrorCode();
-			//cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+			//cout << ", SQLState: " << e.getSQLState().c_str() << " )" << endl;
 		}
 
 	}
@@ -581,7 +581,7 @@ namespace GT {
 	}
 
 
-	std::string DB::createCommand(unsigned int unitId, unsigned short commandId, std::string tag, std::list<string> params, unsigned short mode) {
+	std::string DB::createCommand(unsigned int unitId, unsigned short commandId, std::string tag, std::list<string> params, unsigned short type) {
 
 		std::string command;
 		std::string str = "";
@@ -594,21 +594,28 @@ namespace GT {
 
 
 			//stmt = cn->createStatement();
-			string query = "SELECT count(p.id) as n_commands, c.*, CONCAT(protocol_pre, command) as command1, d.password "
-				"FROM devices_commands as c "
-				"LEFT JOIN devices_comm_params as p ON p.command_id = c.id "
-				"INNER JOIN devices_versions as v ON v.id = c.version_id "
-				"INNER JOIN devices as d ON d.version_id = v.id "
-				"INNER JOIN units as u ON u.device_id = d.id "
+			string query = R"(
+				SELECT count(p.id) as n_commands, c.*, CONCAT(protocol_pre, command) as command1, d.password,
+					sum(case when p.type='Q' then 1 else 0 end) as qp,
+					sum(case when p.type='A' then 1 else 0 end) as ap,
+					sum(case when p.type='W' then 1 else 0 end) as wp,
+					sum(case when p.type='R' then 1 else 0 end) as rp 
+				FROM devices_commands as c 
+				LEFT JOIN devices_comm_params as p ON p.command_id = c.id 
+				INNER JOIN devices_versions as v ON v.id = c.version_id 
+				INNER JOIN devices as d ON d.version_id = v.id 
+				INNER JOIN units as u ON u.device_id = d.id 
 
-				"WHERE "
-				"c.id = ? "
-				"and "
-				"u.id = ? "
-				"order by c.id, `order`;";
+				WHERE 
+				c.id = ? 
+				and 
+				u.id = ? 
+				order by c.id, `order`;)";
 			cout << "query: " << query << endl;
 			p_stmt = cn->prepareStatement(query.c_str());
 			int n_commands = 0;
+
+			std::string typeCommand = "A";
 
 			if (tag != "") {
 				tag = "+" + tag;
@@ -618,8 +625,21 @@ namespace GT {
 			if (p_stmt->execute()) {
 				result = p_stmt->getResultSet();
 
-				while (result->next()) {
-					n_commands = result->getInt("n_commands");
+				if (result->next()) {
+					typeCommand = result->getString("type").c_str();
+
+					if (type == 1) {
+						if (typeCommand == "A") {
+							n_commands = result->getInt("ap");
+						}
+						if (typeCommand == "W") {
+							n_commands = result->getInt("wp");
+						}
+					} else {
+						n_commands = result->getInt("qp");
+						
+					}
+					//n_commands = result->getInt("n_commands");
 					command = result->getString("command1").c_str()+tag+"="+ result->getString("password").c_str();
 
 				}
@@ -644,7 +664,7 @@ namespace GT {
 			}
 
 			
-			if (mode == 2) {
+			if (typeCommand == "A" && type == 2) {
 				str = str + ",?";
 			}
 			

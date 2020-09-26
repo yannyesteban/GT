@@ -163,9 +163,9 @@ namespace GT {
 		if (header->header == 10020) {
 			RCommand * r = (RCommand*)Info.buffer;
 			if (header->type == 1) {
-				std::cout << " mensaje " << r->message << " unit " << r->unit << endl;
+				std::cout << " mensaje " << r->message << " unit " << r->unit << " unitId " << r->unitId << " Mode: " << r->mode << endl;
 
-				//send(Info.client, "JEJE", 5, 0);
+				send(Info.client, "JEJE", 5, 0);
 				send(mDevices[r->unit].socket, r->message, strlen(r->message), 0);
 			}
 			
