@@ -78,12 +78,12 @@ namespace GT {
     }
 
     bool WebSocketServer::message(ConnInfo Info) {
-        puts("_CallMessage");
+        puts(ANSI_COLOR_RED "_CallMessage");
 
 
         const char* ssss = decodeMessage(Info);
 
-        printf("%s\n", ssss);
+        printf(ANSI_COLOR_YELLOW "%s\n" ANSI_COLOR_RESET, ssss);
 
 
         //char message[] = Info.buffer;

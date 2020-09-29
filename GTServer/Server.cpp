@@ -73,7 +73,7 @@ namespace GT {
 
 
 		IdHeader* h = getMsgHeader(Info.buffer);
-		printf("Header %d, Type %d\n", h->header, h->type);
+		printf("\nHeader %d, Type %d\n", h->header, h->type);
 		unsigned short type = getHeader(Info);
 		
 		printf("Info.client %d, type: %d\n", Info.client, clients[Info.client].type);
@@ -109,31 +109,33 @@ namespace GT {
 
 		SyncMsg* sync_msg = (SyncMsg*)Info.buffer;
 
-		char id[12];
+		char name[12];
 
 		if (db->isVersion(sync_msg->Keep_Alive_Header)) {
 			printf(ANSI_COLOR_CYAN "---> verification of sync (%lu)..(%d).\n" ANSI_COLOR_RESET, sync_msg->Keep_Alive_Device_ID, sync_msg->Keep_Alive_Header);
 			//puts(sync_msg->Keep_Alive_Device_ID));
 
-			sprintf(id, "%lu", sync_msg->Keep_Alive_Device_ID);
+			sprintf(name, "%lu", sync_msg->Keep_Alive_Device_ID);
 			//printf("\nasync %d\n", sync_msg->Keep_Alive_Device_ID);
 
 			
-			mDevices[id] = clients[Info.client];
+			mDevices[name] = clients[Info.client];
 
-			if (mDevices[id].type != 2) {
+			if (mDevices[name].type != 2) {
 
 				cout << "VERIFICANDO CONEXION" << endl;
 				clients[Info.client].type = 2;
-				mDevices[id].type = 2;
-				strcpy(mDevices[id].device_id, (const char*)id);
-				InfoClient cInfo = db->getInfoClient(id);
-				mDevices[id].id = cInfo.unit_id;
-				mDevices[id].version_id = cInfo.version_id;
+				mDevices[name].type = 2;
+				strcpy(mDevices[name].device_id, (const char*)name);
+				InfoClient cInfo = db->getInfoClient(name);
+				mDevices[name].id = cInfo.unit_id;
+				mDevices[name].version_id = cInfo.version_id;
 
 				clients[Info.client].id = cInfo.unit_id;
 				clients[Info.client].version_id = cInfo.version_id;
-				strcpy(clients[Info.client].device_id, (const char*)id);
+				strcpy(clients[Info.client].device_id, (const char*)name);
+				setUnitName(cInfo.unit_id, name);
+				
 			} else {
 				cout << "Algo Raro aqui!!!" << endl;
 			}
@@ -142,8 +144,8 @@ namespace GT {
 			
 
 			//db->saveEvent("88", 4);
-			printf(ANSI_COLOR_RED "Save Event from: (%s) %d, version: %d \n" ANSI_COLOR_RESET, id, mDevices[id].id, mDevices[id].version_id);
-
+			printf(ANSI_COLOR_RED "SYNC MESSAGGE FROM: (%s) %d, version: %d \n" ANSI_COLOR_RESET, name, mDevices[name].id, mDevices[name].version_id);
+			
 			send(Info.client, Info.buffer, Info.valread, 0);// return the sycm message
 
 			//const char* buf = "$WP+VER=0000,?";
@@ -158,15 +160,45 @@ namespace GT {
 
 	unsigned short Server::getHeader(ConnInfo Info) {
 		IdHeader* header = (IdHeader*)Info.buffer;
-		std:string command = "";
+		std::string command = "";
 
 		if (header->header == 10020) {
 			RCommand * r = (RCommand*)Info.buffer;
 			if (header->type == 1) {
 				std::cout << " mensaje " << r->message << " unit " << r->unit << " unitId " << r->unitId << " Mode: " << r->mode << endl;
-
-				send(Info.client, "JEJE", 5, 0);
-				send(mDevices[r->unit].socket, r->message, strlen(r->message), 0);
+				std::cout << "SOCKET " << mDevices[getUnitName(r->unitId)].socket << std::endl;
+				//send(Info.client, "YANNY 2020 JEJE", 16, 0);
+				
+				RCommand response;
+				response.header = 10021;
+				response.mode = 1024;
+				response.type = 2;
+				response.id = r->id;
+ 				response.unitId = r->unitId;
+				std::string str = r->message;
+				char buffer[255];
+				strcpy_s(response.message, sizeof(response.message), str.c_str());
+				
+				str = r->unit;
+				strcpy_s(response.unit, sizeof(response.unit), str.c_str());
+				
+				str = r->user;
+				strcpy_s(response.user, sizeof(response.user),str.c_str());
+				
+				
+				memcpy(buffer, &response, sizeof(response));
+				send(Info.client, buffer, (int)sizeof(buffer), 0);
+				
+				
+				send(mDevices[getUnitName(r->unitId)].socket, r->message, strlen(r->message), 0);
+				/*
+				std::cout << "Header: " << response.header << std::endl;
+				std::cout << "Message: " << response.message << std::endl;
+				std::cout << "UnitId: " << response.unitId << std::endl;
+				std::cout << "Mode: " << response.mode << std::endl;
+				std::cout << "User: " << response.user << std::endl;
+				std::cout << "Unit: " << response.unit << std::endl;
+				*/
 			}
 			
 			return 0;
@@ -204,7 +236,7 @@ namespace GT {
 	
 	
 	bool Server::evalMessage(ConnInfo Info, const char* message) {
-
+		
 		printf("evalMessage: %s\n", message);
 
 		Command* cmd = (Command*)message;
@@ -269,7 +301,7 @@ namespace GT {
 
 	bool Server::deviceMessage(ConnInfo Info) {
 
-		printf("esto es un device message\n");
+		printf(ANSI_COLOR_MAGENTA "esto es un device message\n");
 
 
 		//std::string string = (char*)message;
@@ -320,5 +352,11 @@ namespace GT {
 		}
 
 		return false;
+	}
+	std::string Server::getUnitName(int unitId) {
+		return mUnitName[unitId];
+	}
+	void Server::setUnitName(int unitId, std::string name) {
+		mUnitName[unitId] = name;
 	}
 }

@@ -611,7 +611,7 @@ namespace GT {
 				and 
 				u.id = ? 
 				order by c.id, `order`;)";
-			cout << "query: " << query << endl;
+			//cout << "query: " << query << endl;
 			p_stmt = cn->prepareStatement(query.c_str());
 			int n_commands = 0;
 

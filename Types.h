@@ -99,6 +99,7 @@ namespace GT {
 	struct RCommand {
 		unsigned short header;
 		unsigned short type;
+		unsigned int id;
 		char user[41];
 		char message[101];
 		char unit[11];
@@ -106,6 +107,7 @@ namespace GT {
 		int mode;
 
 	};
+	
 	
 }
 

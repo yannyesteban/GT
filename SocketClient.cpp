@@ -1,4 +1,5 @@
 #include "SocketClient.h"
+#include "ConsoleColors.h"
 namespace GT {
 	SocketClient::SocketClient(CSInfo pInfo) :info(pInfo) {
 
@@ -66,18 +67,20 @@ namespace GT {
 		}
 		onConect();
 		// listen
-		char recvbuf[100];
-		int recvbuflen = 100;
+		char recvbuf[255];
+		int recvbuflen = 255;
 		
 		do {
-
-			puts(".");
+			
+			puts("Waiting Message....");
 			memset(&recvbuf, 0, sizeof(recvbuf));//clear the buffer
 			iResult = recv(master, recvbuf, recvbuflen, 0);
-
+			printf(ANSI_COLOR_GREEN);
 			puts(recvbuf);
+			//printf(ANSI_COLOR_GREEN);
 			if (iResult > 0) {
-				
+
+				puts(ANSI_COLOR_YELLOW "Waiting Message...." ANSI_COLOR_RESET);
 				onReceive(recvbuf, recvbuflen);
 			} else if (iResult == 0) {
 				printf("Connection closed\n");

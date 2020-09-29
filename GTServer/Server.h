@@ -50,12 +50,15 @@ namespace GT {
 
 		std::map<SOCKET, GTClient> clients;
 		std::map<string, GTClient > mDevices;
+		std::map<int, string> mUnitName;
 		//AppConfig * config;
 		//Versions versions;
 		//sql::Driver* driver = nullptr;
 		//sql::Connection* cn = nullptr;
 		//sql::Statement* stmt = nullptr;
 		//sql::ResultSet* result = nullptr;
+		std::string getUnitName(int unitId);
+		void setUnitName(int unitId, std::string name);
 	};
 
 }

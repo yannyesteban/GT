@@ -11,6 +11,18 @@
 BOOL WINAPI mainhub(LPVOID param);
 
 namespace GT {
+
+	struct WebClient {
+		int id = -2;
+		int version_id = -2;
+
+		char name[40];
+		short int status = 0;
+		SOCKET socket;
+		short int type = 0;
+
+	};
+
 	class WebServer : public WebSocketServer {
 	public:
 		WebServer(SocketInfo pInfo);
@@ -18,6 +30,8 @@ namespace GT {
 		void onMessage(ConnInfo Info);
 		void send2(char* buffer);
 		void onConnect(ConnInfo Info);
+		void test2(unsigned int);
+		WebClient getClient(void);
 
 		Hub * hub;
 		int Token = 4737;
@@ -26,6 +40,7 @@ namespace GT {
 		
 		HANDLE hClientThread;
 		DWORD dwThreadId;
+		std::map<SOCKET, WebClient> clients;
 	};
 }
 

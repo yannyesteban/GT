@@ -38,6 +38,28 @@ namespace GT {
         puts("onConnect 2020");
     }
 
+    void WebServer::test2(unsigned int socket) {
+        string str = "yanny esteban";
+        char buffer[100];
+        size_t size;
+        encodeMessage((char*)str.c_str(), buffer, size);
+
+        send(socket, buffer, size, 0);
+        cout << "jamas" << endl;
+    }
+
+    WebClient WebServer::getClient(void) {
+
+
+        for (std::map<SOCKET, WebClient>::iterator it = clients.begin(); it != clients.end(); ++it) {
+
+            printf("%40s", it->second.name);
+            
+
+        }
+        return WebClient();
+    }
+
     void WebServer::onMessage(ConnInfo Info) {
 
 
@@ -72,8 +94,16 @@ namespace GT {
         unsigned short type = 0;
 
         if (msgType == "connect") {
+
+            clients[Info.client].socket = Info.client;
+            std::string name = document["clientName"].GetString();
+            
+            strcpy_s(clients[Info.client].name, sizeof(clients[Info.client].name), name.c_str());
+            
+            
+
             type = 1;
-            cout << "connecting" << endl;
+            cout << "connecting: " << clients[Info.client].name << endl;
 
             cout << "client Name" << document["clientName"].GetString() << endl;
 
@@ -194,6 +224,7 @@ namespace GT {
         GT::RCommand r = {
             10020,
             1,
+            Info.client,
             "pepe",
             "",
             "2012000750",
@@ -218,7 +249,7 @@ namespace GT {
 
         char buffer[DEFAULT_BUFLEN];
         size_t size = 0;
-        encodeMessage((char*)"QUEEEE", buffer, size);
+        encodeMessage((char*)"websocket 2021", buffer, size);
 
         printf("%s(%d)\n", Info.buffer, size);
 
@@ -249,9 +280,35 @@ namespace GT {
 }
 void test1(void * app, char* buffer, size_t size) {
     GT::WebServer* WS = (GT::WebServer*)app;
-    std::cout << "Token " << WS->Token << std::endl;
-    std::cout << "uno " << std::endl;
-    std::cout << "que " << buffer << std::endl;
+    //std::cout << "Token " << WS->Token << std::endl;
+    //std::cout << "uno " << std::endl;
+    //std::cout << "que " << buffer << std::endl;
+
+    GT::RCommand* r = (GT::RCommand*)buffer;
+    if (r->header == 10021) {
+        std::cout << ANSI_COLOR_YELLOW "Header: " << r->header << std::endl;
+        std::cout << "Message: " << r->message << std::endl;
+        std::cout << "Message: " << r->message << std::endl;
+        std::cout << "UnitId: " << r->unitId << std::endl;
+        std::cout << "Mode: " << r->mode << std::endl;
+        std::cout << "User: " << r->user << std::endl;
+        std::cout << "Unit: " << r->unit << std::endl;
+        std::cout << "ID: " << r->id << std::endl;
+        printf(ANSI_COLOR_RED "...%s....\n" ANSI_COLOR_RESET, r->unit);
+        WS->getClient();
+        //send(r->id, "yet 2030", 8, 0);
+        //WS->test2(r->id);
+
+
+        string str = r->message;
+        char buffer2[100];
+        size_t size2;
+        WS->encodeMessage((char*)str.c_str(), buffer2, size2);
+
+        send(r->id, buffer2, size2, 0);
+        //cout << "jamas" << endl;
+    }
+    
 }
 
 BOOL __stdcall mainhub(LPVOID param) {
