@@ -241,7 +241,7 @@ namespace GT {
             to_string(tag), params, type);
 
         cout << endl << endl << "COMANDO " << str << endl << endl;
-        db->addPending(document["unitId"].GetInt(), document["commandId"].GetInt(), tag, str, "pepe");
+        db->addPending(document["unitId"].GetInt(), document["commandId"].GetInt(), tag, str, "pepe", type);
         strcpy(r.message, str.c_str());
         memcpy(buffer2, &r, sizeof(r));
         send(s, buffer2, (int)sizeof(buffer2), 0);

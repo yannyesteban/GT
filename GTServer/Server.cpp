@@ -315,6 +315,16 @@ namespace GT {
 
 		if (Info.buffer != NULL) {
 			while (std::getline(ss, to)) {//, '\n'
+
+
+				Tool::getTracking(result, len, to.c_str());
+				if (len >= 5) {
+					cout << ANSI_COLOR_CYAN "RP Track: " << result[4] << endl;
+					
+				}
+				
+
+
 				Tool::getCommand(result, len, to.c_str());
 				
 				nLine++;
@@ -332,6 +342,10 @@ namespace GT {
 						result[5]
 
 					};
+					bool isRead = db->isReadCommand(clients[Info.client].device_id, &rCommand);
+					cout << ANSI_COLOR_RED "Token " << rCommand.token << endl;
+					cout << ANSI_COLOR_RED "el comando es Read " << isRead << endl;
+
 					db->deviceConfig(clients[Info.client].device_id, & rCommand);
 					db->evalPending(clients[Info.client].device_id, &rCommand);
 				} else {

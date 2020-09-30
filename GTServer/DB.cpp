@@ -49,7 +49,7 @@ namespace GT {
 			stmt = cn->createStatement();
 
 			p_stmt = cn->prepareStatement(
-				R"(SELECT id, tag_length, pass_default, protocol_pre,sync_header, format_id 
+				R"(SELECT id, tag_length, pass_default, protocol_pre,sync_header, format_id, token_ok, token_error,token_resp
 				FROM devices_versions as d )"
 			);
 
@@ -63,6 +63,10 @@ namespace GT {
 						result->getInt("tag_length"),
 						result->getString("pass_default").c_str(),
 						result->getString("protocol_pre").c_str(),
+						result->getString("token_ok").c_str(),
+						result->getString("token_error").c_str(),
+						result->getString("token_resp").c_str(),
+
 						result->getString("sync_header").c_str(),
 						result->getInt("format_id"),
 						}));
@@ -1003,6 +1007,53 @@ namespace GT {
 		
 	}
 
+	bool DB::isReadCommand(const char* unit_id, CommandResult* commandResult) {
+		int unitId = mClients[unit_id].unit_id;
+		
+
+		sql::PreparedStatement* p_stmt;
+		sql::ResultSet* result = nullptr;
+		bool isRead = false;
+		std:string query = R"(SELECT IF(p.type = 2, true, false) as result
+			FROM pending as p
+			INNER JOIN units as u ON u.id = p.unit_id
+			INNER JOIN devices as d ON d.id = u.device_id
+			INNER JOIN devices_versions as v ON v.id = d.version_id
+
+
+			INNER JOIN devices_commands as c ON c.id = p.command_id
+
+			WHERE u.id = ? AND c.command = ? AND p.index = ?
+		)";
+
+		try {
+			p_stmt = cn->prepareStatement(query.c_str());
+
+			p_stmt->setInt(1, unitId);
+			p_stmt->setString(2, commandResult->command.c_str());
+			p_stmt->setString(3, commandResult->tag.c_str());
+
+			if (p_stmt->execute()) {
+
+				result = p_stmt->getResultSet();
+
+				if (result->next()) {
+
+					isRead = result->getBoolean("result");
+
+				}
+				delete result;
+			}
+
+			delete p_stmt;
+
+		} catch (sql::SQLException& e) {
+
+		}
+		
+		return isRead;
+	}
+
 
 	void DB::save(std::string query) {
 
@@ -1033,7 +1084,7 @@ namespace GT {
 		}
 	}
 
-	std::string  DB::addPending(unsigned int unitId, unsigned short commandId, unsigned int tag, std::string command, std::string user) {
+	std::string  DB::addPending(unsigned int unitId, unsigned short commandId, unsigned int tag, std::string command, std::string user, unsigned short type) {
 
 		std:string query = "";
 		sql::PreparedStatement* p_stmt;
@@ -1052,7 +1103,7 @@ namespace GT {
 
 		}
 
-		query = "INSERT INTO pending (`unit_id`, `command_id`, `command`, `tag`, `index`, `user`) VALUES (?,?,?,?,?,?)";
+		query = "INSERT INTO pending (`unit_id`, `command_id`, `command`, `tag`, `index`, `user`, `type`) VALUES (?,?,?,?,?,?,?)";
 		
 		
 		try {
@@ -1065,8 +1116,8 @@ namespace GT {
 			p_stmt->setString(4, to_string(tag).c_str());
 			p_stmt->setInt(5, tag);
 			p_stmt->setString(6, user.c_str());
+			p_stmt->setInt(7, type);
 
-			
 			if (p_stmt->execute()) {
 			}
 			//delete res;

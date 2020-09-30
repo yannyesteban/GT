@@ -19,6 +19,9 @@ namespace GT {
 		int tag_length;
 		std::string pass_default;
 		std::string protocol_pre;
+		std::string token_ok;
+		std::string token_error;
+		std::string token_resp;
 		std::string sync_header;
 		int format_id;
 
@@ -80,10 +83,10 @@ namespace GT {
 		void deviceConfig(const char* unit_id, CommandResult*  result);
 		void save(std::string query);
 
-		std::string addPending(unsigned int unitId, unsigned short commandId, unsigned int tag, std::string command, std::string user);
+		std::string addPending(unsigned int unitId, unsigned short commandId, unsigned int tag, std::string command, std::string user, unsigned short type);
 		unsigned int getTag(unsigned int unitId, unsigned short commandId);
 		void evalPending(const char* unit_id, CommandResult* result);
-
+		bool isReadCommand(const char* unit_id, CommandResult* result);
 	private:
 		bool debug;
 		InfoDB info;

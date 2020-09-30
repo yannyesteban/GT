@@ -67,5 +67,21 @@ namespace GT {
 			subject = match.suffix().str();
 		}
 	}
+	void Tool::getTracking(std::string w[], int& len, const char* buffer) {
+	std:string subject(buffer);
+		std::smatch match;
+		std::regex re("(\\$(RP):(\\w+),(.+))");
+		len = 0;
+		if (std::regex_search(subject, match, re)) {
+
+			for (int i = 0; i < match.size(); i++) {
+				w[i] = match[i].str();
+				cout << "ZZZZ es : " << i << ", " << w[i] << endl;
+				len++;
+			}
+
+			subject = match.suffix().str();
+		}
+	}
 }
 
