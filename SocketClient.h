@@ -43,9 +43,9 @@ namespace GT {
 		virtual void onReceive(char* buffer, size_t size);
 
 		SOCKET getHost();
-
-	private:
 		CSInfo info;
+	private:
+		
 		int sockError = 0;
 		const char* msgError;
 		WSADATA wsa = {};

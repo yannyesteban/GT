@@ -54,6 +54,7 @@ BOOL __stdcall keyboard(LPVOID param) {
 		GT::RCommand r = {
 			10020,
 			1,
+			0,
 			"pepe",
 			"$WP+VER=0000,?",
 			"2012000750",

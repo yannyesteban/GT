@@ -18,7 +18,7 @@ namespace GT {
 		void (*callReceive)(void * app, char* buffer, size_t size);
 		void * appData;
 	private:
-		
+		CSInfo pInfo;
 	
 	};
 }

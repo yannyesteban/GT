@@ -278,6 +278,8 @@ namespace GT {
     
 
 }
+
+
 void test1(void * app, char* buffer, size_t size) {
     GT::WebServer* WS = (GT::WebServer*)app;
     //std::cout << "Token " << WS->Token << std::endl;
@@ -311,6 +313,29 @@ void test1(void * app, char* buffer, size_t size) {
     
 }
 
+void test2(GT::CSInfo Info) {
+
+
+    GT::RequestConnection c = {
+        10001,
+        Info.master,
+        "hub1",
+        "pepe",
+        1,
+        -2,
+        "hola dejame entrar",
+        0
+
+
+    };
+    char buffer2[255];
+    memcpy(buffer2, &c, sizeof(c));
+    send(Info.master, buffer2, (int)sizeof(buffer2), 0);
+
+    cout << "YESSSSSSSSSSS " << Info.master << endl;
+    send(Info.master, "Barcelona vs Real Madrid", strlen("Barcelona vs Real Madrid"), 0);
+}
+
 BOOL __stdcall mainhub(LPVOID param) {
     GT::WebServer* WS = (GT::WebServer*)param;
 
@@ -320,6 +345,7 @@ BOOL __stdcall mainhub(LPVOID param) {
     puts("Activate the HUB server");
     WS->hub = new GT::Hub(Info);
     WS->hub->appData = WS;
+    WS->hub->CallConection = test2;
     WS->hub->callReceive = test1;
     WS->hub->start();
 

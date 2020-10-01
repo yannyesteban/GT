@@ -55,6 +55,20 @@ namespace GT {
 		unsigned short type;
 	};
 
+	struct RequestConnection {
+		unsigned short header;//10001
+		unsigned int socket;
+		char name[41];
+		char user[41];
+		unsigned short type = 0;
+		int version_id = -2;
+		char message[101];
+		short int status = 0;
+		
+		
+
+	};
+
 	struct DeviceMsg {
 		unsigned short header;//10010
 		unsigned short type;

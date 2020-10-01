@@ -65,6 +65,8 @@ namespace GT {
 			WSACleanup();
 			return false;
 		}
+		
+		info.master = master;
 		onConect();
 		// listen
 		char recvbuf[255];

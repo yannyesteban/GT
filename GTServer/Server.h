@@ -12,7 +12,16 @@
 namespace GT {
 
 
-	
+	struct RClient {
+		SOCKET socket;
+		char name[41];
+		char user[41];
+		short int type = 0;
+		int version_id = -2;
+		short int status = 0;
+		
+
+	};
 
 	struct GTClient {
 		int id = -2;
@@ -43,11 +52,12 @@ namespace GT {
 		bool evalMessage(ConnInfo Info, const char* msg);
 		bool deviceMessage(ConnInfo Info);
 
-
+		void broadcast(const char* msg);
 	private:
 		bool debug;
 		DB * db;
-
+		
+		std::map<SOCKET, RClient> rClients;
 		std::map<SOCKET, GTClient> clients;
 		std::map<string, GTClient > mDevices;
 		std::map<int, string> mUnitName;

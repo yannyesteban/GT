@@ -161,10 +161,28 @@ namespace GT {
 	unsigned short Server::getHeader(ConnInfo Info) {
 		IdHeader* header = (IdHeader*)Info.buffer;
 		std::string command = "";
+		if (header->header == 10001) {
+			std::string str;
 
+			RequestConnection* r = (RequestConnection*)Info.buffer;
+			
+
+			rClients[Info.client] = {};
+			strcpy_s(rClients[Info.client].name, sizeof(rClients[Info.client].name), r->name);
+			strcpy_s(rClients[Info.client].user, sizeof(rClients[Info.client].user), r->user);
+			rClients[Info.client].type = 3;
+			rClients[Info.client].status = 1;
+			rClients[Info.client].socket = Info.client;
+
+			cout << "Hub " << rClients[Info.client].user << endl;
+			return 0;
+		
+		}
 		if (header->header == 10020) {
 			RCommand * r = (RCommand*)Info.buffer;
 			if (header->type == 1) {
+
+
 				std::cout << " mensaje " << r->message << " unit " << r->unit << " unitId " << r->unitId << " Mode: " << r->mode << endl;
 				std::cout << "SOCKET " << mDevices[getUnitName(r->unitId)].socket << std::endl;
 				//send(Info.client, "YANNY 2020 JEJE", 16, 0);
@@ -316,11 +334,12 @@ namespace GT {
 		if (Info.buffer != NULL) {
 			while (std::getline(ss, to)) {//, '\n'
 
-
+				broadcast("hola");
 				Tool::getTracking(result, len, to.c_str());
 				if (len >= 5) {
 					cout << ANSI_COLOR_CYAN "RP Track: " << result[4] << endl;
-					
+					db->saveTrack(clients[Info.client].device_id, result[4].c_str());
+					continue;
 				}
 				
 
@@ -366,6 +385,16 @@ namespace GT {
 		}
 
 		return false;
+	}
+	void Server::broadcast(const char* msg) {
+		cout << "Entrando a un Broadcast; " << rClients.size() << endl;
+		for (std::map<SOCKET, RClient>::iterator it = rClients.begin(); it != rClients.end(); ++it) {
+			cout << " --- " << it->second.name << endl;
+			send(it->second.socket, "devolviendo", strlen("devolviendo"), 0);
+			
+
+		}
+
 	}
 	std::string Server::getUnitName(int unitId) {
 		return mUnitName[unitId];
