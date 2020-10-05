@@ -60,7 +60,126 @@ namespace GT {
         return WebClient();
     }
 
+    unsigned short WebServer::getHeader(char * buffer) {
+
+        IdHeader* header = (IdHeader*)buffer;
+        std::string command = "";
+
+        std::cout << ANSI_COLOR_MAGENTA "Real Header: " << header->header << endl;
+        if (header->header == 10050) {
+        
+            RCommand* response = (RCommand*)buffer;
+            std::cout << ANSI_COLOR_YELLOW "10050 Message: " << response->message << std::endl;
+
+            for (std::map<SOCKET, WebClient>::iterator it = clients.begin(); it != clients.end(); ++it) {
+                cout << " --- Name: " << it->second.name << endl;
+                cout << " --- socket: " << it->first << endl;
+                string str = response->message;
+                char buffer2[255];
+                size_t size2;
+                encodeMessage((char*)str.c_str(), buffer2, size2);
+
+                send(it->first, buffer2, size2, 0);
+                jsonResponse(it->first, response);
+
+                //encodeMessage((char*)"yanny esteban", buffer2, size2);
+
+                //send(it->first, buffer2, size2, 0);
+
+            }
+
+
+            /*
+            */
+            return 1;
+        
+        }
+
+        if (header->header == 10021) {
+            RCommand* response = (RCommand*)buffer;
+            std::cout << ANSI_COLOR_YELLOW "10021 Header: " << response->header << std::endl;
+            std::cout << "Message: " << response->message << std::endl;
+            
+            std::cout << "UnitId: " << response->unitId << std::endl;
+            std::cout << "Mode: " << response->mode << std::endl;
+            std::cout << "User: " << response->user << std::endl;
+            std::cout << "Unit: " << response->unit << std::endl;
+            std::cout << "ID: " << response->id << std::endl;
+            printf(ANSI_COLOR_RED "...%s....\n" ANSI_COLOR_RESET, response->unit);
+            getClient();
+            //send(r->id, "yet 2030", 8, 0);
+            //WS->test2(r->id);
+
+
+            string str = response->message;
+            char buffer2[100];
+            size_t size2;
+           encodeMessage((char*)str.c_str(), buffer2, size2);
+
+            send(response->id, buffer2, size2, 0);
+            //cout << "jamas" << endl;
+            return 1;
+        }
+
+
+        return 0;
+    }
+
+    void WebServer::jsonResponse(SOCKET client, RCommand * response) {
+        Document z;
+        z.SetObject();
+       
+
+        Value msg;
+        char buffer[255];
+        int len = sprintf(buffer, "%s", response->message);
+        msg.SetString(response->message, strlen(response->message), z.GetAllocator());
+        z.AddMember("message", msg, z.GetAllocator());
+        z.AddMember("lastname", "Esteban", z.GetAllocator());
+        z["lastname"].SetString(response->user, strlen(response->user), z.GetAllocator());
+      
+            
+
+        StringBuffer bf5;
+        Writer<StringBuffer> writer5(bf5);
+
+        z.Parse(bf5.GetString());
+
+        z.Accept(writer5);
+
+        std::cout << "A5: " << bf5.GetString() << std::endl;
+
+
+
+        string str = response->message;
+        char buffer2[255];
+        size_t size2;
+        encodeMessage((char*)bf5.GetString(), buffer2, size2);
+
+        send(client, buffer2, size2, 0);
+    
+    }
+
     void WebServer::onMessage(ConnInfo Info) {
+
+
+        Document f;
+        f.SetObject();
+        Value xx;
+        xx = 100;
+
+        Value aa(kArrayType);
+        Document::AllocatorType& allocator = f.GetAllocator();
+        aa.PushBack(Value().SetInt(47), allocator);
+        aa.PushBack(Value(37).Move(), allocator);
+
+        StringBuffer bf4;
+        PrettyWriter<StringBuffer> writer4(bf4);
+        f.Accept(writer4);
+
+        std::cout << "A: " << bf4.GetString() << std::endl;
+
+       
 
 
         //cout << Info.buffer << endl;
@@ -164,18 +283,7 @@ namespace GT {
 
         std::cout << "Type: " << type << std::endl;
        
-        CMDMsg msg = {
-            10010,
-            type,
-            (unsigned short)document["unitId"].GetInt(),
-            (unsigned short)document["deviceId"].GetInt(),
-            "2012000066",
-            (unsigned short)document["commandId"].GetInt(),
-
-            "TAG1",
-            "0000",
-            ""// document["msg"].GetString()
-        };
+       
         
         /*
         const Value& v(int[]);
@@ -209,46 +317,49 @@ namespace GT {
 
         const char* json = bf2.GetString();
 
-        //std::cout << "B: " << bf2.GetString() << std::endl;
+        std::cout << "B: " << bf2.GetString() << std::endl;
 
 
-        strcpy(msg.deviceName, document["deviceName"].GetString());
-        strcpy(msg.params, bf2.GetString());
-        //n = strlen(&szBuff[0]);
-        char buffer2[255];
-        memcpy(buffer2, &msg, sizeof(msg));
-        //Info.valread = sizeof(xx);
-        //send(s, x, (int)sizeof(x), 0);
+       
 
-
+        
         GT::RCommand r = {
             10020,
             1,
             Info.client,
-            "pepe",
             "",
-            "2012000750",
+            "",
+            "",
             (int)document["unitId"].GetInt(),
-            
-            1024
+            document["commandId"].GetInt(),
+            document["mode"].GetInt(),
+            (unsigned short)document["level"].GetInt(),
+            0
         };
-        
+        strcpy(r.user, document["user"].GetString());
+
         unsigned int tag = db->getTag(document["unitId"].GetInt(), document["commandId"].GetInt());
-        
+        r.index = tag;
         std::string str = db->createCommand(
             (unsigned int)document["unitId"].GetInt(),
             (unsigned short)document["commandId"].GetInt(),
             to_string(tag), params, type);
 
-        cout << endl << endl << "COMANDO " << str << endl << endl;
-        db->addPending(document["unitId"].GetInt(), document["commandId"].GetInt(), tag, str, "pepe", type);
         strcpy(r.message, str.c_str());
+        cout << endl << endl << "COMANDO " << str << endl << endl;
+       
+        //db->addPending(document["unitId"].GetInt(), document["commandId"].GetInt(), tag, str, "pepe", type, (unsigned short)document["level"].GetInt());
+        db->addPending(&r);
+        
+        strcpy(r.message, str.c_str());
+        char buffer2[255];
         memcpy(buffer2, &r, sizeof(r));
         send(s, buffer2, (int)sizeof(buffer2), 0);
         //send(Info.client, "yanny", strlen("yanny"), 0);
 
         char buffer[DEFAULT_BUFLEN];
         size_t size = 0;
+        
         encodeMessage((char*)"websocket 2021", buffer, size);
 
         printf("%s(%d)\n", Info.buffer, size);
@@ -256,12 +367,6 @@ namespace GT {
         send(Info.client, buffer, (int)size, 0);
 
 
-        //printf("BUFFER2 es : %s, %d, %d\n", buffer2, sizeof(buffer2), sizeof(msg));
-        //printf("---------------\n");
-        //msg.params = (char *)document["msg"].GetString();
-        //strncpy(msg.params, document["msg"].GetString(), document["msg"].GetStringLength());
-        //printf("%s\n", msg.params);
-        //printf("%s\n", msg.p);
 
     }
 
@@ -281,35 +386,20 @@ namespace GT {
 
 
 void test1(void * app, char* buffer, size_t size) {
+
+    GT::RCommand* x = (GT::RCommand*)buffer;
+
+
+    cout << "TEST 1 Receiving ..." << endl;
+    cout << "Buffer ..." << x->message << endl;
     GT::WebServer* WS = (GT::WebServer*)app;
-    //std::cout << "Token " << WS->Token << std::endl;
-    //std::cout << "uno " << std::endl;
-    //std::cout << "que " << buffer << std::endl;
-
-    GT::RCommand* r = (GT::RCommand*)buffer;
-    if (r->header == 10021) {
-        std::cout << ANSI_COLOR_YELLOW "Header: " << r->header << std::endl;
-        std::cout << "Message: " << r->message << std::endl;
-        std::cout << "Message: " << r->message << std::endl;
-        std::cout << "UnitId: " << r->unitId << std::endl;
-        std::cout << "Mode: " << r->mode << std::endl;
-        std::cout << "User: " << r->user << std::endl;
-        std::cout << "Unit: " << r->unit << std::endl;
-        std::cout << "ID: " << r->id << std::endl;
-        printf(ANSI_COLOR_RED "...%s....\n" ANSI_COLOR_RESET, r->unit);
-        WS->getClient();
-        //send(r->id, "yet 2030", 8, 0);
-        //WS->test2(r->id);
 
 
-        string str = r->message;
-        char buffer2[100];
-        size_t size2;
-        WS->encodeMessage((char*)str.c_str(), buffer2, size2);
-
-        send(r->id, buffer2, size2, 0);
-        //cout << "jamas" << endl;
+    if (WS->getHeader(buffer) == 0) {
+        cout << "ERROR" << endl;
     }
+
+    
     
 }
 
@@ -330,7 +420,7 @@ void test2(GT::CSInfo Info) {
     };
     char buffer2[255];
     memcpy(buffer2, &c, sizeof(c));
-    send(Info.master, buffer2, (int)sizeof(buffer2), 0);
+    send(Info.master, buffer2, sizeof(buffer2), 0);
 
     cout << "YESSSSSSSSSSS " << Info.master << endl;
     send(Info.master, "Barcelona vs Real Madrid", strlen("Barcelona vs Real Madrid"), 0);

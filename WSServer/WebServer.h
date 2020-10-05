@@ -2,6 +2,7 @@
 
 #include "rapidjson/document.h"
 #include "rapidjson/prettywriter.h" // for stringify JSON
+#include "rapidjson/writer.h" // for stringify JSON
 #include "rapidjson/filereadstream.h"
 #include "Types.h"
 #include "WebSocketServer.h"
@@ -32,7 +33,8 @@ namespace GT {
 		void onConnect(ConnInfo Info);
 		void test2(unsigned int);
 		WebClient getClient(void);
-
+		unsigned short getHeader(char * Buffer);
+		void jsonResponse(SOCKET client, RCommand * response);
 		Hub * hub;
 		int Token = 4737;
 	private:

@@ -90,6 +90,8 @@ namespace GT {
 		char tag[21];//10010
 		char password[5];//10010
 		char params[200];
+		unsigned short level;
+		unsigned short mode;
 		
 		
 	};
@@ -118,8 +120,10 @@ namespace GT {
 		char message[101];
 		char unit[11];
 		int unitId;
+		int commandId;
 		int mode;
-
+		unsigned short level;
+		unsigned short index;
 	};
 	
 	

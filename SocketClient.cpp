@@ -69,16 +69,16 @@ namespace GT {
 		info.master = master;
 		onConect();
 		// listen
-		char recvbuf[255];
-		int recvbuflen = 255;
+		char recvbuf[1024];
+		int recvbuflen = 1024;
 		
 		do {
 			
 			puts("Waiting Message....");
 			memset(&recvbuf, 0, sizeof(recvbuf));//clear the buffer
 			iResult = recv(master, recvbuf, recvbuflen, 0);
-			printf(ANSI_COLOR_GREEN);
-			puts(recvbuf);
+			printf(ANSI_COLOR_GREEN "recbuffer %s\ndigitos: %d\n\n", recvbuf, recvbuflen);
+			//puts(recvbuf);
 			//printf(ANSI_COLOR_GREEN);
 			if (iResult > 0) {
 

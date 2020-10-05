@@ -169,7 +169,12 @@ namespace GT {
 
 			rClients[Info.client] = {};
 			strcpy_s(rClients[Info.client].name, sizeof(rClients[Info.client].name), r->name);
+			
+			
+
 			strcpy_s(rClients[Info.client].user, sizeof(rClients[Info.client].user), r->user);
+			
+			
 			rClients[Info.client].type = 3;
 			rClients[Info.client].status = 1;
 			rClients[Info.client].socket = Info.client;
@@ -193,6 +198,7 @@ namespace GT {
 				response.type = 2;
 				response.id = r->id;
  				response.unitId = r->unitId;
+				response.level = r->level;
 				std::string str = r->message;
 				char buffer[255];
 				strcpy_s(response.message, sizeof(response.message), str.c_str());
@@ -334,7 +340,7 @@ namespace GT {
 		if (Info.buffer != NULL) {
 			while (std::getline(ss, to)) {//, '\n'
 
-				broadcast("hola");
+				
 				Tool::getTracking(result, len, to.c_str());
 				if (len >= 5) {
 					cout << ANSI_COLOR_CYAN "RP Track: " << result[4] << endl;
@@ -353,7 +359,7 @@ namespace GT {
 				
 				
 				if (len > 0) {
-					cout << "es un COMANDO" << endl;
+					cout << "es un COMANDO de " << clients[Info.client].device_id <<  endl;
 					CommandResult  rCommand = {
 						result[2],
 						result[3],
@@ -361,12 +367,40 @@ namespace GT {
 						result[5]
 
 					};
+
+					//RCommand response;
+					
+					RCommand unitResponse;
+
+					unitResponse.header = 0;
+					db->infoCommand(clients[Info.client].device_id, &rCommand, &unitResponse);
+					
+					//strcpy(response.unit, clients[Info.client].device_id);
+					cout << ANSI_COLOR_YELLOW "Commando " << unitResponse.message << endl;
+					cout << ANSI_COLOR_YELLOW "Unit Id " << unitResponse.unitId << endl;
+					cout << ANSI_COLOR_YELLOW "Unit " << unitResponse.unit << endl;
+					cout << ANSI_COLOR_YELLOW "Command ID " << unitResponse.commandId << endl;
+					
+					db->saveResponse(&unitResponse, to.c_str());
+
+					cout << ANSI_COLOR_GREEN "Commando " << unitResponse.message << endl;
+					cout << ANSI_COLOR_GREEN "Unit Id " << unitResponse.unitId << endl;
+					cout << ANSI_COLOR_GREEN "Unit " << unitResponse.unit << endl;
+					cout << ANSI_COLOR_YELLOW "Command ID " << unitResponse.commandId << endl;
+					cout << ANSI_COLOR_GREEN "User " << unitResponse.user << endl;
+					cout << ANSI_COLOR_YELLOW "Message " << unitResponse.message << endl;
+
+
+					db->getPending(clients[Info.client].device_id, &rCommand, &unitResponse);
 					bool isRead = db->isReadCommand(clients[Info.client].device_id, &rCommand);
 					cout << ANSI_COLOR_RED "Token " << rCommand.token << endl;
 					cout << ANSI_COLOR_RED "el comando es Read " << isRead << endl;
 
 					db->deviceConfig(clients[Info.client].device_id, & rCommand);
 					db->evalPending(clients[Info.client].device_id, &rCommand);
+					//strcpy_s(response.message, strlen(response.message)+1, to.c_str());
+					strcpy(unitResponse.message, to.c_str());
+					broadcast(&unitResponse);
 				} else {
 					cout << "es un track" << endl;
 					db->saveTrack(clients[Info.client].device_id, to.c_str());
@@ -386,13 +420,46 @@ namespace GT {
 
 		return false;
 	}
-	void Server::broadcast(const char* msg) {
-		cout << "Entrando a un Broadcast; " << rClients.size() << endl;
+	void Server::broadcast(RCommand * response) {
+		cout << endl << "***** *** Entrando a un Broadcast; " << rClients.size() << endl;
 		for (std::map<SOCKET, RClient>::iterator it = rClients.begin(); it != rClients.end(); ++it) {
 			cout << " --- " << it->second.name << endl;
-			send(it->second.socket, "devolviendo", strlen("devolviendo"), 0);
-			
+			char buffer[512];
+			/*
+			strcpy(buffer, response->message);
+			send(it->second.socket, buffer, strlen(buffer), 0);
+			strcpy(buffer, response->user);
+			send(it->second.socket, buffer, strlen(buffer), 0);
+			*/
+			response->header = 10050;
+			cout << ANSI_COLOR_RED "response header " << response->header << endl;
+			//memcpy(buffer, &response, sizeof(response));
+			//send(it->second.socket, buffer, (int)sizeof(buffer), 0);
+			//send(it->second.socket, "adios", strlen("adios")+1, 0);
 
+			RCommand x;
+			
+			x.header = 10050;
+			x.id = 1;
+			x.index = 0;
+			x.level = 0;
+			strcpy(x.message, response->message);
+			strcpy(x.user, response->user);
+			strcpy(x.unit, response->unit);
+
+
+			
+			//strcpy(x.message,response->message);
+			memcpy(buffer, &x, sizeof(x));
+			send(it->second.socket, buffer, (int)sizeof(buffer), 0);
+
+			//send(it->second.socket, "Good Bye", strlen("Good Bye") + 1, 0);
+
+			memset(&buffer, 0, sizeof(buffer));//clear the buffer
+
+			memcpy(buffer, &response, sizeof(response));
+			strcpy(buffer, (const char *)response);
+			//send(it->second.socket, buffer, (int)sizeof(buffer), 0);
 		}
 
 	}

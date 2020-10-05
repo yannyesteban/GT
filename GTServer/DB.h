@@ -81,9 +81,14 @@ namespace GT {
 		InfoClient getInfoClient(string id);
 
 		void deviceConfig(const char* unit_id, CommandResult*  result);
+		void getPending(const char* unit_id, CommandResult* commandResult, RCommand* response);
 		void save(std::string query);
 
-		std::string addPending(unsigned int unitId, unsigned short commandId, unsigned int tag, std::string command, std::string user, unsigned short type);
+		std::string addPending(unsigned int unitId, unsigned short commandId, unsigned int tag, std::string command, std::string user, unsigned short type, unsigned short level);
+		std::string addPending(RCommand * request);
+		void infoCommand(const char* unit_id, CommandResult* commandResult, RCommand* info);
+		void saveResponse(RCommand* info, const char* command);
+
 		unsigned int getTag(unsigned int unitId, unsigned short commandId);
 		void evalPending(const char* unit_id, CommandResult* result);
 		bool isReadCommand(const char* unit_id, CommandResult* result);

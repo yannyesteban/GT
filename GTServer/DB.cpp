@@ -957,6 +957,71 @@ namespace GT {
 		}
 	}
 
+	void DB::getPending(const char* unit_id, CommandResult* commandResult, RCommand* response) {
+
+
+		int unitId = mClients[unit_id].unit_id;
+
+		response->header = 10050;
+		response->unitId = unitId;
+		strcpy_s(response->unit, sizeof(response->unit), unit_id);
+		
+
+		std::string query = R"(SELECT p.*
+			FROM pending as p
+			INNER JOIN units as u ON u.id = p.unit_id
+			INNER JOIN devices as d ON d.id = u.device_id
+			INNER JOIN devices_versions as v ON v.id = d.version_id
+
+
+			INNER JOIN devices_commands as c ON c.id = p.command_id
+
+			WHERE u.id = ? AND c.command = ? AND p.index = ?)";
+
+		try {
+			sql::Statement* stmt;
+
+			sql::PreparedStatement* p_stmt;
+
+			p_stmt = cn->prepareStatement(query.c_str());
+
+			p_stmt->setInt(1, unitId);
+			p_stmt->setString(2, commandResult->command.c_str());
+			p_stmt->setString(3, commandResult->tag.c_str());
+			sql::ResultSet* result = nullptr;
+			if (p_stmt->execute()) {
+				result = p_stmt->getResultSet();
+
+				if (result->next()) {
+					strcpy_s(response->message, sizeof(response->message), result->getString("command").c_str());
+					strcpy_s(response->user, sizeof(response->user), result->getString("user").c_str());
+					response->type = result->getInt("type");
+					response->level = result->getInt("level");
+					response->index = result->getInt("index");
+
+
+				}
+
+				delete result;
+				delete p_stmt;
+				//delete stmt;
+				if (debug) {
+					//printClients();
+				}
+			}
+		} catch (sql::SQLException& e) {
+
+			cout << endl << endl << "# ERR: SQLException in " << __FILE__;
+			cout << endl << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+			//cout << endl << "# ERR: " << e.what();
+			cout << endl << " (MySQL error code: " << e.getErrorCode();
+			cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+		}
+
+
+
+	}
+
 	void DB::evalPending(const char* unit_id, CommandResult* commandResult) {
 		
 
@@ -1054,7 +1119,112 @@ namespace GT {
 		return isRead;
 	}
 
+	void DB::infoCommand(const char* unit_id, CommandResult* commandResult, RCommand * info) {
+		int unitId = mClients[unit_id].unit_id;
 
+		info->header = 0;
+		info->unitId = unitId;
+		int len = strlen(info->unit);
+
+		string str = "yanny";
+		
+
+		strcpy(info->unit, unit_id);
+
+
+		cout << "InfoCommand:  " << commandResult->params <<" - "<< info->unit<< endl;
+		cout << "InfoCommand2:  " << info->unitId << endl;
+		cout << "InfoCommand3:  " << unitId << endl;
+
+
+		
+		sql::PreparedStatement* p_stmt;
+		sql::ResultSet* result = nullptr;
+		bool isRead = false;
+		std:string query = R"(SELECT p.*
+			FROM pending as p
+			INNER JOIN units as u ON u.id = p.unit_id
+			INNER JOIN devices as d ON d.id = u.device_id
+			INNER JOIN devices_versions as v ON v.id = d.version_id
+
+
+			INNER JOIN devices_commands as c ON c.id = p.command_id
+
+			WHERE u.id = ? AND c.command = ? AND p.index = ?
+		)";
+
+		try {
+			p_stmt = cn->prepareStatement(query.c_str());
+
+			p_stmt->setInt(1, unitId);
+			p_stmt->setString(2, commandResult->command.c_str());
+			p_stmt->setString(3, commandResult->tag.c_str());
+
+			if (p_stmt->execute()) {
+
+				result = p_stmt->getResultSet();
+
+				if (result->next()) {
+					info->header = (unsigned short)1;
+					info->index = (unsigned short)result->getInt("index");
+					info->type = (unsigned short)result->getInt("type");
+					info->level = (unsigned short)result->getInt("level");
+					info->mode = (unsigned short)result->getInt("mode");
+					info->commandId = (int)result->getInt("command_id");
+					strcpy(info->user, result->getString("user").c_str());
+					strcpy(info->message, result->getString("command").c_str());
+
+				}
+				delete result;
+			}
+
+			delete p_stmt;
+
+		} catch (sql::SQLException& e) {
+
+		}
+
+		
+	}
+	void DB::saveResponse(RCommand* info, const char* response) {
+
+		std:string query = "";
+		sql::PreparedStatement* p_stmt;
+
+		query = R"(INSERT INTO unit_response
+			(`unit_id`,`unit`,`type`,`level`,`mode`, `command_id`,`index`, `command`,`response`) 
+			VALUES
+			(?,?,?,?,?,?,?,?,?))";
+		try {
+			p_stmt = cn->prepareStatement(query.c_str());
+			cout << ANSI_COLOR_YELLOW "unit name " << info->unit << endl;
+			cout << ANSI_COLOR_MAGENTA "reponse " << response << endl;
+			p_stmt->setInt(1, info->unitId);
+			p_stmt->setString(2, info->unit);
+			p_stmt->setInt(3, info->type);
+			p_stmt->setInt(4, info->level);
+			p_stmt->setInt(5, info->mode);
+			p_stmt->setInt(6, info->commandId);
+			p_stmt->setInt(7, info->index);
+			p_stmt->setString(8, info->message);
+			p_stmt->setString(9, response);
+			if (p_stmt->execute()) {
+				cout << "saving command...!!!" << endl;
+			}
+
+			delete p_stmt;
+
+		} catch (sql::SQLException& e) {
+
+			cout << endl << endl << "# ERR: SQLException in " << __FILE__;
+			cout << endl << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+			cout << endl << "# ERR: " << e.what();
+			cout << endl << " (MySQL error code: " << e.getErrorCode();
+			//cout << ", SQLState: " << e.getSQLState().c_str() << " )" << endl;
+		}
+
+	}
+	
 	void DB::save(std::string query) {
 
 		printf("" ANSI_COLOR_CYAN);
@@ -1084,7 +1254,7 @@ namespace GT {
 		}
 	}
 
-	std::string  DB::addPending(unsigned int unitId, unsigned short commandId, unsigned int tag, std::string command, std::string user, unsigned short type) {
+	std::string  DB::addPending(unsigned int unitId, unsigned short commandId, unsigned int tag, std::string command, std::string user, unsigned short type, unsigned short level) {
 
 		std:string query = "";
 		sql::PreparedStatement* p_stmt;
@@ -1136,7 +1306,62 @@ namespace GT {
 		}
 		return std::to_string(0);
 	}
+	std::string  DB::addPending(RCommand * request) {
 
+		std:string query = "";
+		sql::PreparedStatement* p_stmt;
+
+
+		try {
+			query = "DELETE FROM pending WHERE unit_id = ? AND command_id = ?";
+			p_stmt = cn->prepareStatement(query.c_str());
+
+			p_stmt->setInt(1, request->unitId);
+			p_stmt->setInt(2, request->commandId);
+			p_stmt->execute();
+
+
+		} catch (sql::SQLException& e) {
+
+		}
+
+		query = "INSERT INTO pending (`unit_id`, `command_id`, `command`, `tag`, `index`, `user`, `type`, `mode`) VALUES (?,?,?,?,?,?,?,?)";
+
+		cout << "creando pending " << query << endl;
+		try {
+
+			p_stmt = cn->prepareStatement(query.c_str());
+
+			p_stmt->setInt(1, request->unitId);
+			p_stmt->setInt(2, request->commandId);
+			p_stmt->setString(3, request->message);
+			p_stmt->setString(4, to_string(request->index).c_str());
+			p_stmt->setInt(5, request->index);
+			p_stmt->setString(6, request->user);
+			p_stmt->setInt(7, request->type);
+			p_stmt->setInt(8, request->mode);
+
+			if (p_stmt->execute()) {
+			}
+			//delete res;
+			delete p_stmt;
+
+		} catch (sql::SQLException& e) {
+
+			
+				cout << endl << endl << "# ERR: SQLException in " << __FILE__;
+				cout << endl << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+				cout << endl << "# ERR: " << e.what();
+				cout << endl << " (MySQL error code: " << e.getErrorCode();
+				//cout << ", SQLState: " << e.getSQLState().c_str() << " )" << endl;
+			
+
+		}
+		return std::to_string(0);
+	}
+
+	
+	
 	unsigned int DB::getTag(unsigned int unitId, unsigned short commandId) {
 	
 		

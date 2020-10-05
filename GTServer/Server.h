@@ -52,7 +52,7 @@ namespace GT {
 		bool evalMessage(ConnInfo Info, const char* msg);
 		bool deviceMessage(ConnInfo Info);
 
-		void broadcast(const char* msg);
+		void broadcast(RCommand * response);
 	private:
 		bool debug;
 		DB * db;
@@ -69,6 +69,8 @@ namespace GT {
 		//sql::ResultSet* result = nullptr;
 		std::string getUnitName(int unitId);
 		void setUnitName(int unitId, std::string name);
+
+		//RCommand unitResponse;
 	};
 
 }
