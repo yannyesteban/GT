@@ -325,7 +325,7 @@ namespace GT {
         
         GT::RCommand r = {
             10020,
-            1,
+            type,
             Info.client,
             "",
             "",
@@ -437,8 +437,13 @@ BOOL __stdcall mainhub(LPVOID param) {
     WS->hub->appData = WS;
     WS->hub->CallConection = test2;
     WS->hub->callReceive = test1;
-    WS->hub->start();
+    while (WS->reconnect) {
+        WS->hub->start();
+        cout << ANSI_COLOR_RESET "Reconnecting..." << endl;
+        Sleep(5000);
+    }
 
+    cout << "Godd Bye" << endl;
     return true;
 }
 

@@ -37,6 +37,7 @@ namespace GT {
 		void jsonResponse(SOCKET client, RCommand * response);
 		Hub * hub;
 		int Token = 4737;
+		bool reconnect = true;
 	private:
 		DB* db;
 		

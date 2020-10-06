@@ -785,7 +785,7 @@ namespace GT {
 				"FROM units as u "
 				"INNER JOIN devices as d on d.id = u.device_id "
 				"WHERE device_name = '"  + id + "'";
-			cout << query << endl;
+			
 			p_stmt = cn->prepareStatement(query.c_str());
 
 			if (p_stmt->execute()) {
@@ -801,7 +801,7 @@ namespace GT {
 				delete p_stmt;
 				delete stmt;
 				if (debug) {
-					printClients();
+					
 				}
 				//InfoClient nn = { unit_id, device_id, version_id };
 				//return nn;
@@ -1126,7 +1126,7 @@ namespace GT {
 		info->unitId = unitId;
 		int len = strlen(info->unit);
 
-		string str = "yanny";
+		//string str = "yanny";
 		
 
 		strcpy(info->unit, unit_id);
@@ -1192,9 +1192,9 @@ namespace GT {
 		sql::PreparedStatement* p_stmt;
 
 		query = R"(INSERT INTO unit_response
-			(`unit_id`,`unit`,`type`,`level`,`mode`, `command_id`,`index`, `command`,`response`) 
+			(`unit_id`,`unit`,`type`,`level`,`mode`, `command_id`,`index`, `command`,`response`,`user`) 
 			VALUES
-			(?,?,?,?,?,?,?,?,?))";
+			(?,?,?,?,?,?,?,?,?,?))";
 		try {
 			p_stmt = cn->prepareStatement(query.c_str());
 			cout << ANSI_COLOR_YELLOW "unit name " << info->unit << endl;
@@ -1208,6 +1208,8 @@ namespace GT {
 			p_stmt->setInt(7, info->index);
 			p_stmt->setString(8, info->message);
 			p_stmt->setString(9, response);
+			p_stmt->setString(10, info->user);
+
 			if (p_stmt->execute()) {
 				cout << "saving command...!!!" << endl;
 			}

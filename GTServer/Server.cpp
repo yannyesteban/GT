@@ -53,7 +53,7 @@ namespace GT {
 			printf("error client dead!!!!\n");
 			return;
 		}
-		printf("recibiendo: %i, tag: %s, buffer: %s\n", Info.client,Info.tag, Info.buffer);
+		//printf("recibiendo: %i, tag: %s, buffer: %s\n", Info.client,Info.tag, Info.buffer);
 		/*
 		SyncMsg xx = {
 			63738,
@@ -112,7 +112,7 @@ namespace GT {
 		char name[12];
 
 		if (db->isVersion(sync_msg->Keep_Alive_Header)) {
-			printf(ANSI_COLOR_CYAN "---> verification of sync (%lu)..(%d).\n" ANSI_COLOR_RESET, sync_msg->Keep_Alive_Device_ID, sync_msg->Keep_Alive_Header);
+			//printf(ANSI_COLOR_CYAN "---> verification of sync (%lu)..(%d).\n" ANSI_COLOR_RESET, sync_msg->Keep_Alive_Device_ID, sync_msg->Keep_Alive_Header);
 			//puts(sync_msg->Keep_Alive_Device_ID));
 
 			sprintf(name, "%lu", sync_msg->Keep_Alive_Device_ID);
@@ -123,7 +123,7 @@ namespace GT {
 
 			if (mDevices[name].type != 2) {
 
-				cout << "VERIFICANDO CONEXION" << endl;
+				
 				clients[Info.client].type = 2;
 				mDevices[name].type = 2;
 				strcpy(mDevices[name].device_id, (const char*)name);
@@ -136,8 +136,24 @@ namespace GT {
 				strcpy(clients[Info.client].device_id, (const char*)name);
 				setUnitName(cInfo.unit_id, name);
 				
+				RCommand info;
+				info.header = 0;
+				info.commandId = 0;
+				info.id = 0;
+				info.index = 0;
+				info.level = 0;
+				strcpy(info.message, "connecting");
+				info.mode = 0;
+				info.type = 5;
+				strcpy(info.unit, name);
+				strcpy(info.user, name);
+				info.unitId = cInfo.unit_id;
+				db->saveResponse(&info, "connected");
+				
+
+				cout << "Unit " << cInfo.unit_id << ", name: "<< name << " is connected " << endl;
 			} else {
-				cout << "Algo Raro aqui!!!" << endl;
+				//cout << "Algo Raro aqui!!!" << endl;
 			}
 
 			
@@ -185,45 +201,45 @@ namespace GT {
 		}
 		if (header->header == 10020) {
 			RCommand * r = (RCommand*)Info.buffer;
-			if (header->type == 1) {
+			
 
 
-				std::cout << " mensaje " << r->message << " unit " << r->unit << " unitId " << r->unitId << " Mode: " << r->mode << endl;
-				std::cout << "SOCKET " << mDevices[getUnitName(r->unitId)].socket << std::endl;
-				//send(Info.client, "YANNY 2020 JEJE", 16, 0);
+			std::cout << " mensaje " << r->message << " unit " << r->unit << " unitId " << r->unitId << " Mode: " << r->mode << endl;
+			std::cout << "SOCKET " << mDevices[getUnitName(r->unitId)].socket << std::endl;
+			//send(Info.client, "YANNY 2020 JEJE", 16, 0);
 				
-				RCommand response;
-				response.header = 10021;
-				response.mode = 1024;
-				response.type = 2;
-				response.id = r->id;
- 				response.unitId = r->unitId;
-				response.level = r->level;
-				std::string str = r->message;
-				char buffer[255];
-				strcpy_s(response.message, sizeof(response.message), str.c_str());
+			RCommand response;
+			response.header = 10021;
+			response.mode = r->mode;
+			response.type = r->type;
+			response.id = r->id;
+ 			response.unitId = r->unitId;
+			response.level = r->level;
+			std::string str = r->message;
+			char buffer[255];
+			strcpy_s(response.message, sizeof(response.message), str.c_str());
 				
-				str = r->unit;
-				strcpy_s(response.unit, sizeof(response.unit), str.c_str());
+			str = r->unit;
+			strcpy_s(response.unit, sizeof(response.unit), str.c_str());
 				
-				str = r->user;
-				strcpy_s(response.user, sizeof(response.user),str.c_str());
-				
-				
-				memcpy(buffer, &response, sizeof(response));
-				send(Info.client, buffer, (int)sizeof(buffer), 0);
+			str = r->user;
+			strcpy_s(response.user, sizeof(response.user),str.c_str());
 				
 				
-				send(mDevices[getUnitName(r->unitId)].socket, r->message, strlen(r->message), 0);
-				/*
-				std::cout << "Header: " << response.header << std::endl;
-				std::cout << "Message: " << response.message << std::endl;
-				std::cout << "UnitId: " << response.unitId << std::endl;
-				std::cout << "Mode: " << response.mode << std::endl;
-				std::cout << "User: " << response.user << std::endl;
-				std::cout << "Unit: " << response.unit << std::endl;
-				*/
-			}
+			memcpy(buffer, &response, sizeof(response));
+			send(Info.client, buffer, (int)sizeof(buffer), 0);
+				
+				
+			send(mDevices[getUnitName(r->unitId)].socket, r->message, strlen(r->message), 0);
+			/*
+			std::cout << "Header: " << response.header << std::endl;
+			std::cout << "Message: " << response.message << std::endl;
+			std::cout << "UnitId: " << response.unitId << std::endl;
+			std::cout << "Mode: " << response.mode << std::endl;
+			std::cout << "User: " << response.user << std::endl;
+			std::cout << "Unit: " << response.unit << std::endl;
+			*/
+			
 			
 			return 0;
 
