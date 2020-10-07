@@ -338,12 +338,14 @@ namespace GT {
         };
         strcpy(r.user, document["user"].GetString());
 
-        unsigned int tag = db->getTag(document["unitId"].GetInt(), document["commandId"].GetInt());
-        r.index = tag;
-        std::string str = db->createCommand(
+        //unsigned int tag = db->getTag(document["unitId"].GetInt(), document["commandId"].GetInt(), type);
+        //r.index = tag;
+        /*std::string str = db->createCommand(
             (unsigned int)document["unitId"].GetInt(),
             (unsigned short)document["commandId"].GetInt(),
             to_string(tag), params, type);
+            */
+        std::string str = db->createCommand(&r, params);
 
         strcpy(r.message, str.c_str());
         cout << endl << endl << "COMANDO " << str << endl << endl;

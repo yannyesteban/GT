@@ -489,7 +489,7 @@ namespace GT {
 	}
 
 	std::string DB::createCommand(CMDMsg* msg, unsigned int unitId, unsigned short commandId) {
-
+		
 		//CMDMsg* msg = (CMDMsg*)Info.buffer;
 		Document document;
 		//std::string str = msg->params;
@@ -587,19 +587,22 @@ namespace GT {
 
 	std::string DB::createCommand(unsigned int unitId, unsigned short commandId, std::string tag, std::list<string> params, unsigned short type) {
 
+		cout << "Create Command" << endl;
+
 		std::string command;
 		std::string str = "";
-
+		
 		try {
 			//sql::Statement* stmt;
 			sql::ResultSet* result;
 			sql::PreparedStatement* p_stmt;
 
-
+			int useTag = 1;
 
 			//stmt = cn->createStatement();
 			string query = R"(
 				SELECT count(p.id) as n_commands, c.*, CONCAT(protocol_pre, command) as command1, d.password,
+					c.use_tag,
 					sum(case when p.type='Q' then 1 else 0 end) as qp,
 					sum(case when p.type='A' then 1 else 0 end) as ap,
 					sum(case when p.type='W' then 1 else 0 end) as wp,
@@ -621,9 +624,7 @@ namespace GT {
 
 			std::string typeCommand = "A";
 
-			if (tag != "") {
-				tag = "+" + tag;
-			}
+			
 			p_stmt->setInt(1, commandId);
 			p_stmt->setInt(2, unitId);
 			if (p_stmt->execute()) {
@@ -631,7 +632,7 @@ namespace GT {
 
 				if (result->next()) {
 					typeCommand = result->getString("type").c_str();
-
+					useTag = result->getInt("use_tag");
 					if (type == 1) {
 						if (typeCommand == "A") {
 							n_commands = result->getInt("ap");
@@ -643,8 +644,14 @@ namespace GT {
 						n_commands = result->getInt("qp");
 						
 					}
-					//n_commands = result->getInt("n_commands");
-					command = result->getString("command1").c_str()+tag+"="+ result->getString("password").c_str();
+					cout << "super type " << type << " useTag " << useTag << endl;
+					if (tag != "" && (useTag == 3 || useTag == 1 && type == 1 || useTag == 2 && type == 2)) {
+						tag = "+" + tag;
+					} else {
+						tag = "";
+					}
+					
+					command = result->getString("command1").c_str() + tag + "=" + result->getString("password").c_str();
 
 				}
 
@@ -672,6 +679,123 @@ namespace GT {
 				str = str + ",?";
 			}
 			
+			printf("" ANSI_COLOR_CYAN);
+			std::cout << "Command: " << str << endl;
+			printf("" ANSI_COLOR_RESET);
+
+		} catch (sql::SQLException& e) {
+			cout << "# ERR: SQLException in " << __FILE__;
+			cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+			cout << "# ERR: " << e.what();
+			cout << " (MySQL error code: " << e.getErrorCode();
+			//cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+			//return "";
+		}
+
+
+
+		return str;
+	}
+
+	std::string DB::createCommand(RCommand* request, std::list<string> params) {
+
+		unsigned int index = getTag(request->unitId, request->commandId, request->type);
+
+		request->index = index;
+
+		cout << "Create Command" << endl;
+
+		std::string command;
+		std::string str = "";
+		std::string tag = to_string(index);
+		try {
+			//sql::Statement* stmt;
+			sql::ResultSet* result;
+			sql::PreparedStatement* p_stmt;
+
+			int useTag = 1;
+
+			//stmt = cn->createStatement();
+			string query = R"(
+				SELECT count(p.id) as n_commands, c.*, CONCAT(protocol_pre, command) as command1, d.password,
+					c.use_tag,
+					sum(case when p.type='Q' then 1 else 0 end) as qp,
+					sum(case when p.type='A' then 1 else 0 end) as ap,
+					sum(case when p.type='W' then 1 else 0 end) as wp,
+					sum(case when p.type='R' then 1 else 0 end) as rp 
+				FROM devices_commands as c 
+				LEFT JOIN devices_comm_params as p ON p.command_id = c.id 
+				INNER JOIN devices_versions as v ON v.id = c.version_id 
+				INNER JOIN devices as d ON d.version_id = v.id 
+				INNER JOIN units as u ON u.device_id = d.id 
+
+				WHERE 
+				c.id = ? 
+				and 
+				u.id = ? 
+				order by c.id, `order`;)";
+			//cout << "query: " << query << endl;
+			p_stmt = cn->prepareStatement(query.c_str());
+			int n_commands = 0;
+
+			std::string typeCommand = "A";
+
+
+			p_stmt->setInt(1, request->commandId);
+			p_stmt->setInt(2, request->unitId);
+			if (p_stmt->execute()) {
+				result = p_stmt->getResultSet();
+
+				if (result->next()) {
+					typeCommand = result->getString("type").c_str();
+					useTag = result->getInt("use_tag");
+					if (request->type == 1) {
+						if (typeCommand == "A") {
+							n_commands = result->getInt("ap");
+						}
+						if (typeCommand == "W") {
+							n_commands = result->getInt("wp");
+						}
+					} else {
+						n_commands = result->getInt("qp");
+
+					}
+					cout << "super type " << request->type << " useTag " << useTag << endl;
+					if (tag != "" && (useTag == 3 || useTag == 1 && request->type == 1 || useTag == 2 && request->type == 2)) {
+						tag = "+" + tag;
+					} else {
+						tag = "";
+						request->index = 0;
+					}
+
+					command = result->getString("command1").c_str() + tag + "=" + result->getString("password").c_str();
+
+				}
+
+				delete result;
+				delete p_stmt;
+				//delete stmt;
+				if (debug) {
+					//printClients();
+				}
+
+			}
+
+			//cout << " n Commands " << n_commands << endl;
+			str = command;
+			if (params.size() == n_commands) {
+				for (std::list<std::string>::iterator it = params.begin(); it != params.end(); ++it) {
+					str = str + "," + *it;
+				}
+
+
+			}
+
+
+			if (typeCommand == "A" && request->type == 2) {
+				str = str + ",?";
+			}
+
 			printf("" ANSI_COLOR_CYAN);
 			std::cout << "Command: " << str << endl;
 			printf("" ANSI_COLOR_RESET);
@@ -1022,11 +1146,11 @@ namespace GT {
 
 	}
 
-	void DB::evalPending(const char* unit_id, CommandResult* commandResult) {
+	void DB::evalPending(const char* unit_id, CommandResult* commandResult, unsigned int type) {
 		
 
 		int unitId = mClients[unit_id].unit_id;
-
+		
 		std::string query = R"(DELETE p
 			FROM pending as p
 			INNER JOIN units as u ON u.id = p.unit_id
@@ -1036,9 +1160,11 @@ namespace GT {
 
 			INNER JOIN devices_commands as c ON c.id = p.command_id
 
-			WHERE u.id = ? AND c.command = ? AND p.index = ?)";
+			WHERE u.id = ? AND c.command = ? AND p.index = ? )";
 
 		try {
+			cout << query << endl;
+			cout << ANSI_COLOR_BLUE ANSI_COLOR_WHITE_ "Type: " ANSI_COLOR_RESET <<type  << endl;
 			sql::Statement* stmt;
 			
 			sql::PreparedStatement* p_stmt;
@@ -1050,6 +1176,7 @@ namespace GT {
 			p_stmt->setInt(1, unitId);
 			p_stmt->setString(2, commandResult->command.c_str());
 			p_stmt->setString(3, commandResult->tag.c_str());
+			//p_stmt->setInt(4, type);
 			
 			if (p_stmt->execute()) {
 
@@ -1263,16 +1390,20 @@ namespace GT {
 	
 
 		try {
-			query = "DELETE FROM pending WHERE unit_id = ? AND command_id = ?";
+			query = "DELETE FROM pending WHERE `unit_id` = ? AND `command_id` = ? ";
 			p_stmt = cn->prepareStatement(query.c_str());
-
+			
 			p_stmt->setInt(1, unitId);
 			p_stmt->setInt(2, commandId);
+			//p_stmt->setInt(3, type);
 			p_stmt->execute();
 			
 
 		} catch (sql::SQLException& e) {
-
+			cout << endl << endl << "# ERR: SQLException in " << __FILE__;
+			cout << endl << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+			cout << endl << "# ERR: " << e.what();
+			cout << endl << " (MySQL error code: " << e.getErrorCode();
 		}
 
 		query = "INSERT INTO pending (`unit_id`, `command_id`, `command`, `tag`, `index`, `user`, `type`) VALUES (?,?,?,?,?,?,?)";
@@ -1297,13 +1428,13 @@ namespace GT {
 
 		} catch (sql::SQLException& e) {
 
-			if (1 == 0) {
+			
 				cout << endl << endl << "# ERR: SQLException in " << __FILE__;
 				cout << endl << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
 				cout << endl << "# ERR: " << e.what();
 				cout << endl << " (MySQL error code: " << e.getErrorCode();
-				cout << ", SQLState: " << e.getSQLState() << " )" << endl;
-			}
+			//	cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+			
 
 		}
 		return std::to_string(0);
@@ -1315,16 +1446,22 @@ namespace GT {
 
 
 		try {
-			query = "DELETE FROM pending WHERE unit_id = ? AND command_id = ?";
+			query = "DELETE FROM pending WHERE unit_id = ? AND command_id = ? ";
+			
+			cout << "delete " << query << endl;
 			p_stmt = cn->prepareStatement(query.c_str());
 
 			p_stmt->setInt(1, request->unitId);
 			p_stmt->setInt(2, request->commandId);
+			//p_stmt->setInt(3, request->type);
 			p_stmt->execute();
 
 
 		} catch (sql::SQLException& e) {
-
+			cout << endl << endl << "# ERR: SQLException in " << __FILE__;
+			cout << endl << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+			cout << endl << "# ERR: " << e.what();
+			cout << endl << " (MySQL error code: " << e.getErrorCode();
 		}
 
 		query = "INSERT INTO pending (`unit_id`, `command_id`, `command`, `tag`, `index`, `user`, `type`, `mode`) VALUES (?,?,?,?,?,?,?,?)";
@@ -1351,10 +1488,10 @@ namespace GT {
 		} catch (sql::SQLException& e) {
 
 			
-				cout << endl << endl << "# ERR: SQLException in " << __FILE__;
-				cout << endl << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-				cout << endl << "# ERR: " << e.what();
-				cout << endl << " (MySQL error code: " << e.getErrorCode();
+			cout << endl << endl << "# ERR: SQLException in " << __FILE__;
+			cout << endl << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+			cout << endl << "# ERR: " << e.what();
+			cout << endl << " (MySQL error code: " << e.getErrorCode();
 				//cout << ", SQLState: " << e.getSQLState().c_str() << " )" << endl;
 			
 
@@ -1364,7 +1501,7 @@ namespace GT {
 
 	
 	
-	unsigned int DB::getTag(unsigned int unitId, unsigned short commandId) {
+	unsigned int DB::getTag(unsigned int unitId, unsigned short commandId, unsigned int type) {
 	
 		
 		sql::PreparedStatement* p_stmt;
@@ -1373,7 +1510,7 @@ namespace GT {
 		std:string query = R"(
 			SELECT (COALESCE(MAX(`index`) , 0) % 65535 + 1) as n
 			FROM pending
-			WHERE unit_id = ? AND command_id = ?
+			WHERE unit_id = ? AND command_id = ? 
 		)";
 
 		try {
@@ -1381,6 +1518,7 @@ namespace GT {
 
 			p_stmt->setInt(1, unitId);
 			p_stmt->setInt(2, commandId);
+			//p_stmt->setInt(3, type);
 
 			if (p_stmt->execute()) {
 

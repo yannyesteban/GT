@@ -142,13 +142,13 @@ namespace GT {
 				info.id = 0;
 				info.index = 0;
 				info.level = 0;
-				strcpy(info.message, "connecting");
+				strcpy(info.message, "CONNECTING");
 				info.mode = 0;
 				info.type = 5;
 				strcpy(info.unit, name);
 				strcpy(info.user, name);
 				info.unitId = cInfo.unit_id;
-				db->saveResponse(&info, "connected");
+				db->saveResponse(&info, "CONNECTED");
 				
 
 				cout << "Unit " << cInfo.unit_id << ", name: "<< name << " is connected " << endl;
@@ -376,6 +376,7 @@ namespace GT {
 				
 				if (len > 0) {
 					cout << "es un COMANDO de " << clients[Info.client].device_id <<  endl;
+					cout << "la longitud del resultado es " << len << endl;
 					CommandResult  rCommand = {
 						result[2],
 						result[3],
@@ -413,7 +414,7 @@ namespace GT {
 					cout << ANSI_COLOR_RED "el comando es Read " << isRead << endl;
 
 					db->deviceConfig(clients[Info.client].device_id, & rCommand);
-					db->evalPending(clients[Info.client].device_id, &rCommand);
+					db->evalPending(clients[Info.client].device_id, &rCommand, unitResponse.type);
 					//strcpy_s(response.message, strlen(response.message)+1, to.c_str());
 					strcpy(unitResponse.message, to.c_str());
 					broadcast(&unitResponse);
@@ -421,7 +422,7 @@ namespace GT {
 					cout << "es un track" << endl;
 					db->saveTrack(clients[Info.client].device_id, to.c_str());
 				}
-				std::cout << "LINE: " << to.c_str() << endl;
+				std::cout << ANSI_COLOR_YELLOW "LINE: " << to.c_str() << endl;
 				printf("" ANSI_COLOR_RESET);
 
 

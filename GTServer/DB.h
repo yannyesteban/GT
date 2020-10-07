@@ -77,6 +77,9 @@ namespace GT {
 
 		std::string createCommand(CMDMsg* msg, unsigned int unitId, unsigned short cmdId);
 		std::string createCommand(unsigned int unitId, unsigned short commandId, std::string tag, std::list<string> params, unsigned short mode);
+
+		std::string createCommand(RCommand* request, std::list<string> params);
+
 		std::string loadCommand(CMDMsg* msg, unsigned int historyId);
 		InfoClient getInfoClient(string id);
 
@@ -89,8 +92,8 @@ namespace GT {
 		void infoCommand(const char* unit_id, CommandResult* commandResult, RCommand* info);
 		void saveResponse(RCommand* info, const char* command);
 
-		unsigned int getTag(unsigned int unitId, unsigned short commandId);
-		void evalPending(const char* unit_id, CommandResult* result);
+		unsigned int getTag(unsigned int unitId, unsigned short commandId, unsigned int type);
+		void evalPending(const char* unit_id, CommandResult* result, unsigned int type);
 		bool isReadCommand(const char* unit_id, CommandResult* result);
 	private:
 		bool debug;
