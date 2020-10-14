@@ -1,9 +1,41 @@
 #pragma once
 #include <mysql/jdbc.h>
+#include <vector>
+#include <sstream>
+#include <math.h>
+
 std::string toBin(int n);
 std::string toBinR(int n);
+std::vector<std::string> explode(std::string const& s, char delim);
 
+struct TrackParam {
+	int id;
+	int codequipo;
+	std::string idEquipo;
+	std::string fechaHora;
+	float longitud;
+	float latitud;
+	int velocidad;
+	int input;
+};
 
+struct InfoParam {
+	int id;
+	int codalarma;
+	int codequipo;
+	float longitud;
+	float latitud;
+	int velocidad;
+	int input;
+	std::string idEquipo;
+	std::string fechaHora;
+	int trackId;
+	std::string alarma;
+	std::string descripcion;
+	int velocidad;
+	int geocerca;
+	int sitio;
+};
 
 struct InfoDB {
 
@@ -14,6 +46,16 @@ struct InfoDB {
 	const char* pass;
 	bool debug;
 
+};
+
+
+struct EventParam {
+	int codequipo;
+	int codalarma;
+	int status;
+	int velocidad;
+	int geocerca;
+	int sitio;
 };
 
 struct InfoSite {
@@ -28,7 +70,10 @@ struct InfoGeo {
 	int v;
 };
 
-
+struct WCPoint {
+	float lat;
+	float lng;
+};
 
 struct InfoAlarm {
 	int velMin;
@@ -58,14 +103,28 @@ struct InfoAlarm {
 
 class Webcar {
 public:
+	const float R = 6378137;
+	const float  PI = 3.14159265358979f;
 
 	Webcar(InfoDB pInfo);
 	~Webcar();
 	bool connect();
 	bool test();
-	void evalTrack(int id, int codequipo, float longitud, float latitud, int velocidad, int input);
+	//void evalTrack(int id, int codequipo, float longitud, float latitud, int velocidad, int input);
+	void evalTrack(InfoParam* param);
+	bool evalAlarm(InfoAlarm * alarm, InfoParam * param);
 
-	bool evalAlarm(InfoAlarm alarm);
+	//bool insideCircle(float pLat, float pLng, float rLat, float rLng, float dLat, float dLng);
+	
+	bool insideCircle(WCPoint* p, WCPoint* r, WCPoint* d);
+	bool insideCircle2(WCPoint* p, WCPoint* r, float d);
+
+	//bool insideCircle2(float pLat, float pLng, float rLat, float rLng, float d);
+	bool insidePolygon(std::vector<WCPoint> * list, WCPoint* p);
+	void getPoint(std::string str, WCPoint * point);
+
+	void insertEvent(InfoParam * P);
+	
 private:
 
 	InfoDB info;
@@ -76,6 +135,7 @@ private:
 	sql::ResultSet* result = nullptr;
 	sql::PreparedStatement* stmtMain;
 	sql::PreparedStatement* stmtSpeed;
+	sql::PreparedStatement* stmtEvent;
 	const char* qSpeedVar = "SELECT ? into @_vel;";
 	//const char* qMain = R"(SELECT @_vel:=? as v1,@_vel+1 as z,
 	const char* qMain = R"(SELECT @_vel+1 as z,
@@ -136,5 +196,21 @@ private:
 		
 		
 		ORDER BY  av.codalarma)";
+
+	const char* qInsertEvent = R"(
+			INSERT INTO alarma_eventos
+			(codalarma, codequipo, hora, track_id, activo, status, velocidad, geocerca, input, sitio, alarma, descripcion)
+			VALUES
+			(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			#($kk, $codequipo, '$fecha_hora', $id, 1, 1, $i_velocidad, $i_geocerca, $i_input, $i_sitio, '$_alarma', '$_descripcion'))";
+
+	const char* qUpdateAlarm = R"(
+		UPDATE alarma_vehiculos 
+		SET status = ?, velocidad = ?,
+		geocerca = ?, sitio = ?
+		
+		WHERE codequipo = ? AND codalarma = ?		
+
+	)";
 };
 

@@ -17,7 +17,9 @@ int main()
     };
     Webcar * webcar = new Webcar(info);
     webcar->connect();
-    webcar->evalTrack(1, 2087, 1, 1, 10, 84);
+    InfoParam P({1, 2087, 1, 1, 10, 84,"200210001","2020-10-13 06:51:00"});
+    webcar->evalTrack(&P);
+    //webcar->evalTrack(1, 2087, 1, 1, 10, 84);
 }
 
 // Ejecutar programa: Ctrl + F5 o menú Depurar > Iniciar sin depurar
@@ -29,3 +31,4 @@ int main()
 //   4. Use la ventana Lista de errores para ver los errores
 //   5. Vaya a Proyecto > Agregar nuevo elemento para crear nuevos archivos de código, o a Proyecto > Agregar elemento existente para agregar archivos de código existentes al proyecto
 //   6. En el futuro, para volver a abrir este proyecto, vaya a Archivo > Abrir > Proyecto y seleccione el archivo .sln
+
