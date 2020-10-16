@@ -8,16 +8,16 @@
 int main()
 {
     std::cout << "Hello World 2!\n";
-    InfoDB info = {
+    WC::InfoDB info = {
         "localhost",
         "3306",
         "cota",
         "root",
         "123456"
     };
-    Webcar * webcar = new Webcar(info);
+    WC::Webcar * webcar = new WC::Webcar(info);
     webcar->connect();
-    InfoParam P({1, 2087, 1, 1, 10, 84,"200210001","2020-10-13 06:51:00"});
+    WC::TrackParam P({1, 2087, "200210001","2020-10-13 06:51:00", 10.2121, 60.121,80,15});
     webcar->evalTrack(&P);
     //webcar->evalTrack(1, 2087, 1, 1, 10, 84);
 }
