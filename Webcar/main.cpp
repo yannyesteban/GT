@@ -7,18 +7,14 @@
 
 int main()
 {
-    std::cout << "Hello World 2!\n";
-    WC::InfoDB info = {
-        "localhost",
-        "3306",
-        "cota",
-        "root",
-        "123456"
-    };
-    WC::Webcar * webcar = new WC::Webcar(info);
-    webcar->connect();
+    std::cout << "Webcar Sync Module!\n\n";
+
+   
+    WC::Webcar * webcar = new WC::Webcar("webcar.json");
+    
     WC::TrackParam P({1, 2087, "200210001","2020-10-13 06:51:00", 10.2121, 60.121,80,15});
-    webcar->evalTrack(&P);
+    webcar->insertTrack("2012000316", "2012000750,20201017171030,-68.587445,9.655353,0,0,162.0,0,2,0.0,0,0.01,0.01,0");
+    //webcar->evalTrack(&P);
     //webcar->evalTrack(1, 2087, 1, 1, 10, 84);
 }
 

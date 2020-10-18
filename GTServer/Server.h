@@ -7,7 +7,7 @@
 #include "rapidjson/document.h"
 #include "rapidjson/prettywriter.h" // for stringify JSON
 #include "rapidjson/filereadstream.h"
-
+#include "Webcar.h"
 
 namespace GT {
 
@@ -70,6 +70,7 @@ namespace GT {
 		std::string getUnitName(int unitId);
 		void setUnitName(int unitId, std::string name);
 
+		WC::Webcar * webcar;
 		//RCommand unitResponse;
 	};
 

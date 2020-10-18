@@ -14,6 +14,21 @@ namespace GT {
 		result(nullptr) {
 	}
 
+	DB::~DB() {
+		delete stmtInfoClient;
+	}
+
+	void DB::init() {
+		string query = "";
+		query = R"(SELECT u.id as unit_id, d.id as device_id, device_name, version_id 
+				FROM units as u 
+				INNER JOIN devices as d on d.id = u.device_id 
+				WHERE device_name = ?)";
+
+		stmtInfoClient = cn->prepareStatement(query.c_str());
+
+	}
+
 	bool DB::connect() {
 		try {
 			driver = get_driver_instance();
@@ -27,6 +42,7 @@ namespace GT {
 			cout << "Mysql has connected correctaly " << cn->isValid() << endl;
 			/* Connect to the MySQL test database */
 			cn->setSchema(info.name);
+			init();
 			return 1;
 
 		} catch (sql::SQLException & e) {
@@ -899,21 +915,15 @@ namespace GT {
 		int unit_id = 0, version_id = 0, device_id = 0;
 
 		try {
-			sql::Statement* stmt;
+			//sql::Statement* stmt;
 			sql::ResultSet* result;
-			sql::PreparedStatement* p_stmt;
+			//sql::PreparedStatement* p_stmt;
 
-			stmt = cn->createStatement();
-
-			string query = "SELECT u.id as unit_id, d.id as device_id, device_name, version_id "
-				"FROM units as u "
-				"INNER JOIN devices as d on d.id = u.device_id "
-				"WHERE device_name = '"  + id + "'";
+			//stmt = cn->createStatement();
 			
-			p_stmt = cn->prepareStatement(query.c_str());
-
-			if (p_stmt->execute()) {
-				result = p_stmt->getResultSet();
+			stmtInfoClient->setString(1, id.c_str());
+			if (stmtInfoClient->execute()) {
+				result = stmtInfoClient->getResultSet();
 
 				while (result->next()) {
 					unit_id = result->getInt("unit_id");
@@ -922,8 +932,8 @@ namespace GT {
 				}
 
 				delete result;
-				delete p_stmt;
-				delete stmt;
+				//delete p_stmt;
+				//delete stmt;
 				if (debug) {
 					
 				}

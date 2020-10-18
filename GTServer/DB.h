@@ -53,6 +53,8 @@ namespace GT {
 	class DB {
 	public:
 		DB(InfoDB pInfo);
+		~DB();
+		void init();
 		bool connect();
 
 		void loadProtocols();
@@ -110,5 +112,7 @@ namespace GT {
 		std::map<std::string, InfoClient> mClients;
 		std::map<int, std::list<std::string>> mFormats;
 		std::list<int> mVersions;
+
+		sql::PreparedStatement* stmtInfoClient;
 	};
 }

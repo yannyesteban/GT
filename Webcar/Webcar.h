@@ -1,6 +1,15 @@
 #pragma once
+#define _CRT_SECURE_NO_WARNINGS
+#include "rapidjson/document.h"
+#include "rapidjson/prettywriter.h" // for stringify JSON
+#include "rapidjson/filereadstream.h"
+
 #include <mysql/jdbc.h>
 #include <vector>
+#include <sstream>
+#include <cstdio>
+#include <iostream>
+
 #include <sstream>
 #include <math.h>
 
@@ -9,6 +18,27 @@ std::string toBinR(int n);
 std::vector<std::string> explode(std::string const& s, char delim);
 
 namespace WC {
+	struct InfoDB {
+
+		const char* host;
+		const char* port;
+		const char* name;
+		const char* user;
+		const char* pass;
+		bool debug;
+
+	};
+
+	struct AppConfig {
+		const char* appname;
+		unsigned int port;
+		unsigned int max_clients;
+		const char* version;
+		bool debug;
+		bool show_cache;
+		InfoDB db;
+	};
+
 
 	struct InfoDevice {
 		int codequipo;
@@ -69,16 +99,7 @@ namespace WC {
 		int sitio;
 	};
 
-	struct InfoDB {
-
-		const char* host;
-		const char* port;
-		const char* name;
-		const char* user;
-		const char* pass;
-		bool debug;
-
-	};
+	
 
 
 	struct EventParam {
@@ -144,8 +165,9 @@ namespace WC {
 		const float  PI = 3.14159265358979f;
 
 		Webcar(InfoDB pInfo);
+		Webcar(const char* path);
 		~Webcar();
-		bool connect();
+		bool connect(InfoDB info);
 		bool test();
 		//void evalTrack(int id, int codequipo, float longitud, float latitud, int velocidad, int input);
 		void evalTrack(TrackParam* param);
@@ -165,10 +187,14 @@ namespace WC {
 
 		InfoDevice getInfoDevice(std::string unitId);
 		void insertTrack(std::string name, std::string track);
-
+		AppConfig config;
 	private:
+		
+		rapidjson::Document json;
+		AppConfig loadConfig(const char* path);
 
 		InfoDB info;
+		const char* path;
 		std::map<std::string, std::string> trackParams;
 
 		sql::Driver* driver = nullptr;

@@ -27,4 +27,7 @@
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="webcar.json" />
+  </ItemGroup>
 </Project>

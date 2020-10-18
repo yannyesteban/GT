@@ -33,7 +33,9 @@ std::vector<std::string> explode(std::string const& s, char delim) {
 }
 namespace WC {
 	Webcar::Webcar(InfoDB pInfo) :
-		info(pInfo), driver(nullptr),
+		path(""),
+		info(pInfo),
+		driver(nullptr),
 		cn(nullptr),
 		stmt(nullptr),
 		stmtMain(nullptr),
@@ -44,15 +46,32 @@ namespace WC {
 		result(nullptr) {
 	}
 
+	Webcar::Webcar(const char* pPath) :
+		path(pPath),
+		info({}),
+		driver(nullptr),
+		cn(nullptr),
+		stmt(nullptr),
+		stmtMain(nullptr),
+		stmtEvent(nullptr),
+		stmtSpeed(nullptr),
+		stmtAlarm(nullptr),
+		stmtDevice(nullptr),
+		result(nullptr)
+	{
+		loadConfig(pPath);
+		connect(config.db);
+	}
+
 	Webcar::~Webcar() {
 		delete stmtMain;
-		delete stmtEvent;
 		delete stmtSpeed;
+		delete stmtEvent;
 		delete stmtAlarm;
 		delete stmtDevice;
 	}
 
-	bool Webcar::connect() {
+	bool Webcar::connect(InfoDB info) {
 		try {
 			driver = get_driver_instance();
 
@@ -63,6 +82,7 @@ namespace WC {
 
 			cn = driver->connect(str_host, info.user, info.pass);
 			cout << "Mysql has connected correctaly " << cn->isValid() << endl;
+			cout << "DB: " << info.name << endl;
 			/* Connect to the MySQL test database */
 			cn->setSchema(info.name);
 
@@ -596,7 +616,7 @@ namespace WC {
 		try {
 		
 
-			stmtDevice->setString(1, unitId);
+			stmtDevice->setString(1, unitId.c_str());
 		
 			if (stmtDevice->execute()) {
 
@@ -634,14 +654,16 @@ namespace WC {
 		std::string qFields = info.parametros;
 		std::string qValues = "";
 		int index = 0;
-
+		std::string quot = "'";
+		cout << " trama " << info.parametros << endl;
 		for (int i = 0; i < names.size(); i++) {
 			trackParams[names.at(i)] = values.at(i);
-			qValues += ((qValues != "") ? "," : "") + values.at(i);
+			qValues += ((qValues != "") ? "," : "") + quot + values.at(i)+ quot;
 		}
 		
-		std::string query = "INSERT INTO tracks_2020 (codequipo," + qFields + ") VALUES (" + to_string(codequipo) + qValues + ")";
-
+		std::string query = "INSERT INTO tracks_2020 (codequipo," + qFields + ") VALUES (" + to_string(codequipo).c_str() +","+ qValues + ")";
+		cout << "codequipo " << codequipo << endl;
+		cout << " query " << query.c_str() << endl;
 		try {
 			sql::Statement* stmt = cn->createStatement();
 			stmt->execute(query.c_str());
@@ -674,6 +696,56 @@ namespace WC {
 
 
 		}
+	}
+
+	AppConfig Webcar::loadConfig(const char* path) {
+
+		//"C:\\source\\cpp\\XT\\XTServer\\config.json"
+		FILE* fp = fopen(path, "rb"); // non-Windows use "r"
+
+		if (fp == NULL) {
+			perror("Error while opening the file.\n");
+			exit(EXIT_FAILURE);
+		}
+
+		char* readBuffer;
+
+		readBuffer = (char*)malloc(1500);
+		rapidjson::FileReadStream is(fp, readBuffer, sizeof(readBuffer));
+		//Document d;
+
+		json.ParseStream(is);
+		fclose(fp);
+
+		//strcpy_s(info.appname, sizeof(info.appname), d["appname"].GetString());
+		config.appname = json["appname"].GetString();
+		config.port = json["port"].GetInt();
+		config.max_clients = json["max_clients"].GetInt();
+		config.version = json["version"].GetString();
+		config.debug = json["debug"].GetBool();
+		config.show_cache = json["show_cache"].GetBool();
+
+		config.db.host = json["db"]["host"].GetString();
+		config.db.port = json["db"]["port"].GetString();
+		config.db.user = json["db"]["user"].GetString();
+		config.db.pass = json["db"]["pass"].GetString();
+		config.db.name = json["db"]["name"].GetString();
+
+		/*
+		strcpy_s(info.version, sizeof(info.version), d["version"].GetString());
+
+		strcpy_s(info.db.dbname, sizeof(info.db.dbname), d["db"]["dbname"].GetString());
+		strcpy_s(info.db.host, sizeof(info.db.host), d["db"]["host"].GetString());
+		strcpy_s(info.db.user, sizeof(info.db.user), d["db"]["user"].GetString());
+		strcpy_s(info.db.pass, sizeof(info.db.pass), d["db"]["pass"].GetString());
+		strcpy_s(info.db.port, sizeof(info.db.port), d["db"]["port"].GetString());
+		*/
+		if (readBuffer != NULL) {
+			readBuffer[0] = '\0';
+			free(readBuffer);
+		}
+
+		return config;
 	}
 
 }
