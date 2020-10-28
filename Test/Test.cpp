@@ -2,13 +2,35 @@
 //
 
 #include <iostream>
+#include <regex>
 #include "suma.h"
+bool isNumber(std::string str);
 int main()
 {
    
+	std::string t = "T44";
+	if (isNumber(t)) {
+		std::cout << "si es un numero " << t << std::endl;
+	} else {
+		std::cout << "NO es un numero " << t << std::endl;
+	}
     std::cout << "Hello World!\n" << suma(3,4);
 }
+bool isNumber(std::string ss) {
 
+	std::smatch m;
+	//std::string ss(buffer);
+
+	//std::regex Pala("[0-9.a-zA-ZñÑáéíóúÁÉÍÓÚäëïöüÄËÏÖÜ]+");
+	std::regex re("^-?[0-9][0-9,\.]+$");
+	
+	if (std::regex_search(ss, m, re)) {
+		return true;
+		
+	}
+	return false;
+
+}
 // Ejecutar programa: Ctrl + F5 o menú Depurar > Iniciar sin depurar
 // Depurar programa: F5 o menú Depurar > Iniciar depuración
 

@@ -141,7 +141,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\source\cpp\GT;C:\source\cpp\rapidjson-master\include;C:\source\cpp\boost_1_72_0;C:\source\cpp\mysql-connector-c++-8.0.21-winx64\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\source\cpp\GT;C:\source\cpp\rapidjson-master\include;C:\source\cpp\boost_1_72_0;C:\source\cpp\mysql-connector-c++-8.0.21-winx64\include;C:\source\cpp\GT\Webcar</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

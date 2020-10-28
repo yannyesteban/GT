@@ -9,10 +9,11 @@
 #include <sstream>
 #include <cstdio>
 #include <iostream>
-
+#include <string>
 #include <sstream>
 #include <math.h>
-
+#include <regex>
+bool isNumber(std::string str);
 std::string toBin(int n);
 std::string toBinR(int n);
 std::vector<std::string> explode(std::string const& s, char delim);
@@ -206,6 +207,7 @@ namespace WC {
 		sql::PreparedStatement* stmtEvent;
 		sql::PreparedStatement* stmtAlarm;
 		sql::PreparedStatement* stmtDevice;
+		sql::PreparedStatement* stmtLastId;
 		const char* qSpeedVar = "SELECT ? into @_vel;";
 		//const char* qMain = R"(SELECT @_vel:=? as v1,@_vel+1 as z,
 		const char* qMain = R"(SELECT @_vel+1 as z,
@@ -293,6 +295,7 @@ namespace WC {
 			INNER JOIN modelo_param as p ON p.codmodelo = version
 			INNER JOIN codigos_equipos as ce ON ce.id=e.codigo_und
 			WHERE ce.codigo=?)";
+		const char* qLastId = "SELECT LAST_INSERT_ID() AS last_id";
 
 	};
 

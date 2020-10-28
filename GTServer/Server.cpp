@@ -30,7 +30,7 @@ namespace GT {
 		//db->saveTrack("", 1, 21, "");
 
 
-		//webcar = new WC::Webcar("webcar.json");
+		webcar = new WC::Webcar("webcar.json");
 
 		//WC::TrackParam P({ 1, 2087, "200210001","2020-10-13 06:51:00", 10.2121, 60.121,80,15 });
 		//webcar->evalTrack(&P);
@@ -428,7 +428,7 @@ namespace GT {
 				} else {
 					cout << "es un track" << endl;
 					db->saveTrack(clients[Info.client].device_id, to.c_str());
-					//webcar->insertTrack(clients[Info.client].device_id, to.c_str());
+					webcar->insertTrack(clients[Info.client].device_id, to.c_str());
 				}
 				std::cout << ANSI_COLOR_YELLOW "LINE: " << to.c_str() << endl;
 				printf("" ANSI_COLOR_RESET);

@@ -1,6 +1,19 @@
 #include "Webcar.h"
-#include<string>
+
 using namespace std;
+
+bool isNumber(std::string ss) {
+
+	std::smatch m;
+	
+	std::regex re("^-?[0-9][0-9,\.]+$");
+
+	if (std::regex_search(ss, m, re)) {
+		return true;
+	}
+	return false;
+
+}
 
 std::string toBin(int n) {
 	std::string r;
@@ -69,6 +82,7 @@ namespace WC {
 		delete stmtEvent;
 		delete stmtAlarm;
 		delete stmtDevice;
+		delete stmtLastId;
 	}
 
 	bool Webcar::connect(InfoDB info) {
@@ -91,6 +105,7 @@ namespace WC {
 			stmtEvent = cn->prepareStatement(qInsertEvent);
 			stmtAlarm = cn->prepareStatement(qUpdateAlarm);
 			stmtDevice = cn->prepareStatement(qDeviceInfo);
+			stmtLastId = cn->prepareStatement(qLastId);
 
 			return 1;
 
@@ -655,20 +670,49 @@ namespace WC {
 		std::string qValues = "";
 		int index = 0;
 		std::string quot = "'";
-		cout << " trama " << info.parametros << endl;
-		for (int i = 0; i < names.size(); i++) {
-			trackParams[names.at(i)] = values.at(i);
-			qValues += ((qValues != "") ? "," : "") + quot + values.at(i)+ quot;
+		//cout << " trama " << info.parametros << endl;
+		int nameSize = names.size();
+		int valueSize = values.size();
+
+		for (int i = 0; i < nameSize; i++) {
+			
+			//cout << " names.at " << i << ", " << names.at(i) << endl;
+			
+			
+			if (i < valueSize) {
+				//cout << " values.at " << i << ", " << values.at(i) << endl;
+				trackParams[names.at(i)] = values.at(i);
+				qValues += ((qValues != "") ? "," : "") + quot + values.at(i) + quot;
+			} else {
+				//cout << " values.at " << i << ", " << " NULLLL" << endl;
+				qValues += ((qValues != "") ? "," : "") + (string)"null";
+			}
+
+			
+			
+			
 		}
 		
 		std::string query = "INSERT INTO tracks_2020 (codequipo," + qFields + ") VALUES (" + to_string(codequipo).c_str() +","+ qValues + ")";
-		cout << "codequipo " << codequipo << endl;
-		cout << " query " << query.c_str() << endl;
+		//cout << "codequipo " << codequipo << endl;
+		//cout << " query " << query.c_str() << endl;
+		
 		try {
 			sql::Statement* stmt = cn->createStatement();
 			stmt->execute(query.c_str());
+			delete stmt;
 			int trackId = 0;
-			
+			sql::ResultSet* result = nullptr;
+			if (stmtLastId->execute()) {
+
+				result = stmtLastId->getResultSet();
+
+				if (result->next()) {
+					trackId = result->getInt("last_id");
+				}
+				delete result;
+			}
+			cout << " last ID : " << trackId << endl;
 			/*
 			P.codequipo = codequipo;
 			P.trackId = trackId;
@@ -679,10 +723,25 @@ namespace WC {
 			P.longitud = trackParams["longitud"];
 			P.longitud = trackParams["longitud"];
 			*/
+
+			if (!isNumber(trackParams["longitud"])) {
+				return;
+			}
+			if (!isNumber(trackParams["latitud"])) {
+				return;
+			}
+			if (!isNumber(trackParams["velocidad"])) {
+				return;
+			}
+			if (!isNumber(trackParams["input"])) {
+				return;
+			}
+
+
 			WC::TrackParam P ({ trackId, codequipo, name.c_str(),trackParams["fecha_hora"].c_str(), stof(trackParams["longitud"]), stof(trackParams["latitud"]),stoi(trackParams["velocidad"]), stoi(trackParams["input"]) });
 			evalTrack(&P);
 
-			delete stmt;
+			
 
 
 		} catch (sql::SQLException& e) {
@@ -696,6 +755,7 @@ namespace WC {
 
 
 		}
+		
 	}
 
 	AppConfig Webcar::loadConfig(const char* path) {
