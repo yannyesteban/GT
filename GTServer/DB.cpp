@@ -957,9 +957,16 @@ namespace GT {
 	}
 
 	void DB::deviceConfig(const char* unit_id, CommandResult* commandResult) {
+
+		cout << "............\n\n\n\n\n";
+
 		std::string paramsList[20];
 		int length = 0;
 		Tool::getItem(paramsList, length, commandResult->params.c_str());
+
+		std::vector<std::string> v;
+		
+		split2(commandResult->params.c_str(), v, ',');
 
 		int unitId = mClients[unit_id].unit_id;
 
@@ -1049,7 +1056,7 @@ namespace GT {
 					str = "(";
 					if (str != "") {
 
-						str = str + to_string(unitId) + ",2," + param_id + ",'" + paramsList[x++]+"', now()";
+						str = str + to_string(unitId) + ",2," + param_id + ",'" + v[x++]+"', now()";
 					} else {
 						str = str + param_id;
 					}
@@ -1324,7 +1331,7 @@ namespace GT {
 		
 	}
 	void DB::saveResponse(RCommand* info, const char* response) {
-
+		cout << "saveResponse..." << endl;
 		std:string query = "";
 		sql::PreparedStatement* p_stmt;
 
@@ -1476,7 +1483,7 @@ namespace GT {
 
 		query = "INSERT INTO pending (`unit_id`, `command_id`, `command`, `tag`, `index`, `user`, `type`, `mode`) VALUES (?,?,?,?,?,?,?,?)";
 
-		cout << "creando pending " << query << endl;
+		//cout << "creando pending " << query << endl;
 		try {
 
 			p_stmt = cn->prepareStatement(query.c_str());

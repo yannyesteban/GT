@@ -53,6 +53,111 @@ namespace GT {
 		}
 	}
 
+	unsigned short Server::getHeader(ConnInfo Info) {
+		IdHeader* header = (IdHeader*)Info.buffer;
+		std::string command = "";
+		if (header->header == 10001) {
+			std::string str;
+
+			RequestConnection* r = (RequestConnection*)Info.buffer;
+
+
+			rClients[Info.client] = {};
+			strcpy_s(rClients[Info.client].name, sizeof(rClients[Info.client].name), r->name);
+
+
+
+			strcpy_s(rClients[Info.client].user, sizeof(rClients[Info.client].user), r->user);
+
+
+			rClients[Info.client].type = 3;
+			rClients[Info.client].status = 1;
+			rClients[Info.client].socket = Info.client;
+
+			cout << "Hub " << rClients[Info.client].user << endl;
+			return 0;
+
+		}
+		if (header->header == 10020) {
+			RCommand* r = (RCommand*)Info.buffer;
+
+
+			cout << "length " << Info.valread << endl;
+			std::cout << " mensaje " << r->message << " unit " << r->unit << " unitId " << r->unitId << " Mode: " << r->mode << endl;
+			std::cout << "SOCKET " << mDevices[getUnitName(r->unitId)].socket << std::endl;
+			//send(Info.client, "YANNY 2020 JEJE", 16, 0);
+
+			RCommand response;
+			response.header = 10021;
+			response.mode = r->mode;
+			response.type = r->type;
+			response.id = r->id;
+			response.unitId = r->unitId;
+			response.level = r->level;
+			std::string str = r->message;
+			char buffer[1024];
+			strcpy_s(response.message, sizeof(response.message), str.c_str());
+			//strcpy(response.message, str.c_str());
+
+			int hhh = 9;
+
+
+			str = r->unit;
+
+
+			int jjj = 10;
+
+
+			strcpy_s(response.unit, sizeof(response.unit), r->unit);
+			//strcpy_s(response.unit, str.c_str());
+
+			str = r->user;
+			strcpy_s(response.user, sizeof(response.user), str.c_str());
+			//strcpy_s(response.user, str.c_str());
+
+
+			memcpy(buffer, &response, sizeof(response));
+			send(Info.client, buffer, (int)sizeof(buffer), 0);
+
+
+			send(mDevices[getUnitName(r->unitId)].socket, r->message, strlen(r->message), 0);
+			/*
+			std::cout << "Header: " << response.header << std::endl;
+			std::cout << "Message: " << response.message << std::endl;
+			std::cout << "UnitId: " << response.unitId << std::endl;
+			std::cout << "Mode: " << response.mode << std::endl;
+			std::cout << "User: " << response.user << std::endl;
+			std::cout << "Unit: " << response.unit << std::endl;
+			*/
+
+
+			return 0;
+
+		}
+
+		if (header->header == 10010) {
+			CMDMsg* msg = (CMDMsg*)Info.buffer;
+			cout << "type msg: " << msg->type << endl;
+			cout << "Unit ID: " << msg->unitId << endl;
+			if (msg->type == 1 || msg->type == 2) {
+				command = db->createCommand(msg, msg->unitId, msg->cmdId);
+			}
+			if (msg->type == 3) {
+				command = db->loadCommand(msg, msg->cmdId);
+			}
+			if (mDevices[msg->deviceName].type == 2) {
+				cout << "Sending command!!!" << endl;
+			} else {
+				cout << "Unit disconected!!!" << endl;
+			}
+			send(Info.client, command.c_str(), strlen(command.c_str()), 0);
+		}
+		printf("header: %d\n", header->header);
+
+
+		return header->type;
+	}
+
 	void Server::onMessage(ConnInfo Info) {
 		
 
@@ -181,99 +286,7 @@ namespace GT {
 		return false;
 	}
 
-	unsigned short Server::getHeader(ConnInfo Info) {
-		IdHeader* header = (IdHeader*)Info.buffer;
-		std::string command = "";
-		if (header->header == 10001) {
-			std::string str;
-
-			RequestConnection* r = (RequestConnection*)Info.buffer;
-			
-
-			rClients[Info.client] = {};
-			strcpy_s(rClients[Info.client].name, sizeof(rClients[Info.client].name), r->name);
-			
-			
-
-			strcpy_s(rClients[Info.client].user, sizeof(rClients[Info.client].user), r->user);
-			
-			
-			rClients[Info.client].type = 3;
-			rClients[Info.client].status = 1;
-			rClients[Info.client].socket = Info.client;
-
-			cout << "Hub " << rClients[Info.client].user << endl;
-			return 0;
-		
-		}
-		if (header->header == 10020) {
-			RCommand * r = (RCommand*)Info.buffer;
-			
-
-
-			std::cout << " mensaje " << r->message << " unit " << r->unit << " unitId " << r->unitId << " Mode: " << r->mode << endl;
-			std::cout << "SOCKET " << mDevices[getUnitName(r->unitId)].socket << std::endl;
-			//send(Info.client, "YANNY 2020 JEJE", 16, 0);
-				
-			RCommand response;
-			response.header = 10021;
-			response.mode = r->mode;
-			response.type = r->type;
-			response.id = r->id;
- 			response.unitId = r->unitId;
-			response.level = r->level;
-			std::string str = r->message;
-			char buffer[255];
-			strcpy_s(response.message, sizeof(response.message), str.c_str());
-				
-			str = r->unit;
-			strcpy_s(response.unit, sizeof(response.unit), str.c_str());
-				
-			str = r->user;
-			strcpy_s(response.user, sizeof(response.user),str.c_str());
-				
-				
-			memcpy(buffer, &response, sizeof(response));
-			send(Info.client, buffer, (int)sizeof(buffer), 0);
-				
-				
-			send(mDevices[getUnitName(r->unitId)].socket, r->message, strlen(r->message), 0);
-			/*
-			std::cout << "Header: " << response.header << std::endl;
-			std::cout << "Message: " << response.message << std::endl;
-			std::cout << "UnitId: " << response.unitId << std::endl;
-			std::cout << "Mode: " << response.mode << std::endl;
-			std::cout << "User: " << response.user << std::endl;
-			std::cout << "Unit: " << response.unit << std::endl;
-			*/
-			
-			
-			return 0;
-
-		}
-
-		if (header->header == 10010) {
-			CMDMsg* msg = (CMDMsg*)Info.buffer;
-			cout << "type msg: " << msg->type << endl;
-			cout << "Unit ID: " << msg->unitId << endl;
-			if (msg->type == 1 || msg->type == 2) {
-				command = db->createCommand(msg, msg->unitId, msg->cmdId);
-			}
-			if (msg->type == 3) {
-				command = db->loadCommand(msg, msg->cmdId);
-			}
-			if (mDevices[msg->deviceName].type == 2) {
-				cout << "Sending command!!!"<< endl;
-			} else {
-				cout << "Unit disconected!!!" << endl;
-			}
-			send(Info.client, command.c_str(), strlen(command.c_str()), 0);
-		}
-		printf("header: %d\n", header->header);
-		
-
-		return header->type;
-	}
+	
 
 	IdHeader * Server::getMsgHeader(const char* msg) {
 		IdHeader * header = (IdHeader*)msg;
@@ -419,8 +432,12 @@ namespace GT {
 					bool isRead = db->isReadCommand(clients[Info.client].device_id, &rCommand);
 					cout << ANSI_COLOR_RED "Token " << rCommand.token << endl;
 					cout << ANSI_COLOR_RED "el comando es Read " << isRead << endl;
-
-					db->deviceConfig(clients[Info.client].device_id, & rCommand);
+					cout << ANSI_COLOR_CYAN "el comando es Read " << unitResponse.mode << endl;
+					if (unitResponse.type == 2) {
+						
+						db->deviceConfig(clients[Info.client].device_id, &rCommand);
+					}
+					
 					db->evalPending(clients[Info.client].device_id, &rCommand, unitResponse.type);
 					//strcpy_s(response.message, strlen(response.message)+1, to.c_str());
 					strcpy(unitResponse.message, to.c_str());
@@ -428,7 +445,7 @@ namespace GT {
 				} else {
 					cout << "es un track" << endl;
 					db->saveTrack(clients[Info.client].device_id, to.c_str());
-					webcar->insertTrack(clients[Info.client].device_id, to.c_str());
+					//webcar->insertTrack(clients[Info.client].device_id, to.c_str());
 				}
 				std::cout << ANSI_COLOR_YELLOW "LINE: " << to.c_str() << endl;
 				printf("" ANSI_COLOR_RESET);

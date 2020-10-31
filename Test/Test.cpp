@@ -1,10 +1,22 @@
 // Test.cpp : Este archivo contiene la función "main". La ejecución del programa comienza y termina ahí.
 //
-
+#define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
 #include <regex>
+
+#include <string>
+#include <sstream>
+#include <algorithm>
+#include <iterator>
+
 #include "suma.h"
 bool isNumber(std::string str);
+void getItem(std::string w[], int& len, const char* buffer);
+std::vector<std::string> split(std::string str, const char* token);
+template <class Container>
+void split1(const std::string& str, Container& cont);
+template <class Container>
+void split2(const std::string& str, Container& cont, char delim = ' ');
 int main()
 {
    
@@ -15,6 +27,27 @@ int main()
 		std::cout << "NO es un numero " << t << std::endl;
 	}
     std::cout << "Hello World!\n" << suma(3,4);
+	std::string paramsList[20];
+	int length = 0;
+
+	const std::string cmd = "one,two,three,,,,,seven";
+
+	std::vector<std::string> v;
+
+	split2(cmd, v, ',');
+
+	for (std::vector<std::string>::iterator it = v.begin(); it != v.end(); ++it) {
+		std::cout << " : " << *it << std::endl;
+	}
+
+	/*
+	getItem(paramsList, length, "uno,dos,tres,cinco,seis");
+
+	for (int i = 0; i < length; i++) {
+		std::cout << "param: " << paramsList[i] << std::endl;
+	}
+	*/
+	std::cout << "bye" << std::endl;
 }
 bool isNumber(std::string ss) {
 
@@ -30,6 +63,60 @@ bool isNumber(std::string ss) {
 	}
 	return false;
 
+}
+
+std::vector<std::string> split(std::string str, const char* token) {
+	const char* cstr = (const char*)str.c_str();
+
+
+	
+	char* current = strtok((char *)cstr, token);
+	std::vector<std::string> v;
+	while (current != NULL) {
+		v.push_back(current);
+		current = strtok(NULL, token);
+	}
+	return v;
+}
+
+void getItem(std::string w[], int& len, const char* buffer) {
+
+	std::smatch m;
+	std::string ss(buffer);
+
+	//std::regex Pala("[0-9.a-zA-ZñÑáéíóúÁÉÍÓÚäëïöüÄËÏÖÜ]+");
+	//std::regex Pala("(?:[^,]+)");
+	std::regex Pala("(?:[^,]+)");
+	len = 0;
+	while (std::regex_search(ss, m, Pala)) {
+
+		for (int i = 0; i < m.size(); i++) {
+			w[len++] = m[i].str();
+		}
+
+		ss = m.suffix().str();
+
+	}
+
+
+
+}
+
+template <class Container>
+void split1(const std::string& str, Container& cont) {
+	std::istringstream iss(str);
+	std::copy(std::istream_iterator<std::string>(iss),
+		std::istream_iterator<std::string>(),
+		std::back_inserter(cont));
+}
+
+template <class Container>
+void split2(const std::string& str, Container& cont, char delim ) {
+	std::stringstream ss(str);
+	std::string token;
+	while (std::getline(ss, token, delim)) {
+		cont.push_back(token);
+	}
 }
 // Ejecutar programa: Ctrl + F5 o menú Depurar > Iniciar sin depurar
 // Depurar programa: F5 o menú Depurar > Iniciar depuración

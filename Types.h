@@ -40,14 +40,14 @@ namespace GT {
 		char token;
 		char id[11];
 		//char type;
-		char message[120];
+		char message[255];
 		
 		
 	} Command;
 
 	typedef struct {
 		char id[11];
-		char message[100];
+		char message[255];
 	} DeviceMSG;
 
 	struct IdHeader {
@@ -62,7 +62,7 @@ namespace GT {
 		char user[41];
 		unsigned short type = 0;
 		int version_id = -2;
-		char message[101];
+		char message[255];
 		short int status = 0;
 		
 		
@@ -75,7 +75,7 @@ namespace GT {
 		unsigned short device_id;
 		char device_name[11];
 		
-		char msg[100];
+		char msg[255];
 	};
 
 	struct CMDMsg {
@@ -89,7 +89,7 @@ namespace GT {
 		
 		char tag[21];//10010
 		char password[5];//10010
-		char params[200];
+		char params[255];
 		unsigned short level;
 		unsigned short mode;
 		
@@ -117,7 +117,7 @@ namespace GT {
 		unsigned short type;
 		unsigned int id;
 		char user[41];
-		char message[101];
+		char message[255];
 		char unit[11];
 		int unitId;
 		int commandId;

@@ -40,7 +40,7 @@ namespace GT {
 
     void WebServer::test2(unsigned int socket) {
         string str = "yanny esteban";
-        char buffer[100];
+        char buffer[512];
         size_t size;
         encodeMessage((char*)str.c_str(), buffer, size);
 
@@ -75,7 +75,7 @@ namespace GT {
                 cout << " --- Name: " << it->second.name << endl;
                 cout << " --- socket: " << it->first << endl;
                 string str = response->message;
-                char buffer2[255];
+                char buffer2[512];
                 size_t size2;
                 encodeMessage((char*)str.c_str(), buffer2, size2);
 
@@ -112,7 +112,7 @@ namespace GT {
 
 
             string str = response->message;
-            char buffer2[100];
+            char buffer2[512];
             size_t size2;
            encodeMessage((char*)str.c_str(), buffer2, size2);
 
@@ -131,7 +131,7 @@ namespace GT {
        
 
         Value msg;
-        char buffer[255];
+        char buffer[512];
         int len = sprintf(buffer, "%s", response->message);
         msg.SetString(response->message, strlen(response->message), z.GetAllocator());
         z.AddMember("message", msg, z.GetAllocator());
@@ -152,7 +152,7 @@ namespace GT {
 
 
         string str = response->message;
-        char buffer2[255];
+        char buffer2[512];
         size_t size2;
         encodeMessage((char*)bf5.GetString(), buffer2, size2);
 
@@ -336,6 +336,8 @@ namespace GT {
             (unsigned short)document["level"].GetInt(),
             0
         };
+
+
         strcpy(r.user, document["user"].GetString());
 
         //unsigned int tag = db->getTag(document["unitId"].GetInt(), document["commandId"].GetInt(), type);
@@ -354,7 +356,7 @@ namespace GT {
         db->addPending(&r);
         
         strcpy(r.message, str.c_str());
-        char buffer2[255];
+        char buffer2[1024];
         memcpy(buffer2, &r, sizeof(r));
         send(s, buffer2, (int)sizeof(buffer2), 0);
         //send(Info.client, "yanny", strlen("yanny"), 0);
@@ -420,7 +422,7 @@ void test2(GT::CSInfo Info) {
 
 
     };
-    char buffer2[255];
+    char buffer2[512];
     memcpy(buffer2, &c, sizeof(c));
     send(Info.master, buffer2, sizeof(buffer2), 0);
 

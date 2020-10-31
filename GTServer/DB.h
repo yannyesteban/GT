@@ -6,12 +6,21 @@
 #include "Tool.h"
 #include "ConsoleColors.h"
 #include <mysql/jdbc.h>
-#include<string>
+#include <string>
 //
 #include "rapidjson/document.h"
 #include "rapidjson/prettywriter.h" // for stringify JSON
 #include "rapidjson/filereadstream.h"
-
+template <class Container>
+void split2(const std::string& str, Container& cont, char delim = ' ');
+template <class Container>
+void split2(const std::string& str, Container& cont, char delim) {
+	std::stringstream ss(str);
+	std::string token;
+	while (std::getline(ss, token, delim)) {
+		cont.push_back(token);
+	}
+}
 namespace GT {
 	struct InfoProto {
 		

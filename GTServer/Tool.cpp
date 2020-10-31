@@ -1,7 +1,11 @@
 #include "Tool.h"
 
 
+
+
 using namespace std;
+
+
 
 namespace GT {
 	list<string> Tool::split(string text, char delimeter) {
@@ -68,7 +72,7 @@ namespace GT {
 		}
 	}
 	void Tool::getTracking(std::string w[], int& len, const char* buffer) {
-	std:string subject(buffer);
+		std:string subject(buffer);
 		std::smatch match;
 		std::regex re("(\\$(RP):(\\w+),(.+))");
 		len = 0;
@@ -83,5 +87,16 @@ namespace GT {
 			subject = match.suffix().str();
 		}
 	}
+
+	template <class Container>
+	void Tool::split2(const std::string& str, Container& cont, char delim) {
+		std::stringstream ss(str);
+		std::string token;
+		while (std::getline(ss, token, delim)) {
+			cont.push_back(token);
+		}
+	}
+
+
 }
 
