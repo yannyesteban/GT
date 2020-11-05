@@ -55,13 +55,14 @@ namespace GT {
 		SOCKET master = 0;
 		SOCKET tSocket = 0;
 		SOCKET clients[200];
-		SocketInfo info = {};
-		u_short maxClients = 200;
+		
 
 		sockaddr_in server;
 		sockaddr_in address;
 
-		
+	protected:
+		SocketInfo info = {};
+		u_short maxClients = 200;
 
 	};
 

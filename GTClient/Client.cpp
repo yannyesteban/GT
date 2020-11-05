@@ -20,8 +20,8 @@ namespace GT {
 BOOL __stdcall keyboard(LPVOID param) {
 	GT::Client* Info = (GT::Client*)param;
 
-	char message[255] = "";
-	char buff[255];
+	char message[1024] = "";
+	char buff[1024];
 	int iResult;
 	//printf("que %s", "hey");
 	while (strcmp(message, "*exit")) {

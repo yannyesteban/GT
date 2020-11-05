@@ -1,5 +1,6 @@
 {
-  "appname": "GTComm",
+  "appname": "WS Server",
+
   "db": {
     "host": "localhost",
     "name": "sevian_2020",
@@ -7,9 +8,14 @@
     "port": "3306",
     "user": "root"
   },
+  "hub": {
+    "host": "localhost",
+    "port": 3322
+  },
+
   "debug": false,
   "max_clients": 35,
-  "port": 3320,
+  "port": 3323,
   "show_cache": false,
   "version": "1.0.0.1"
 }

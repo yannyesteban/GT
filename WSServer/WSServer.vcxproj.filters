@@ -48,6 +48,9 @@
     <ClCompile Include="..\GTServer\Tool.cpp">
       <Filter>Archivos de origen</Filter>
     </ClCompile>
+    <ClCompile Include="JsonConfig.cpp">
+      <Filter>Archivos de origen</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Hub.h">
@@ -56,8 +59,12 @@
     <ClInclude Include="WebServer.h">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
+    <ClInclude Include="JsonConfig.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram.cd" />
+    <None Include="wsserver.json" />
   </ItemGroup>
 </Project>

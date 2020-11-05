@@ -4,7 +4,7 @@
 #include <iostream>
 #include "Conn.h"
 #include "WebServer.h"
-
+#include "JsonConfig.h"
 #include "Color.h"
 #include <iomanip> // para la fecha
 
@@ -20,6 +20,9 @@ int main()
     auto t = std::time(nullptr);
     auto tm = *std::localtime(&t);
     std::cout << std::put_time(&tm, "%d-%m-%Y %H-%M-%S") << std::endl;
+
+    auto appInfo = GT::JsonConfig::load("wsserver.json");
+    printf("APP NAME: %s\n", appInfo.appname);
 
     Color::set(4);
     std::cout << "GT WEB-Socket v1.0 (2020)!\n\n\n";

@@ -1,5 +1,5 @@
 #pragma once
-
+#include <string>
 #include "rapidjson/document.h"
 #include "rapidjson/prettywriter.h" // for stringify JSON
 #include "rapidjson/writer.h" // for stringify JSON
@@ -8,6 +8,7 @@
 #include "WebSocketServer.h"
 #include "Hub.h"
 #include "Config.h"
+#include "JsonConfig.h"
 #include "DB.h"
 BOOL WINAPI mainhub(LPVOID param);
 
@@ -35,7 +36,9 @@ namespace GT {
 		WebClient getClient(void);
 		unsigned short getHeader(char * Buffer);
 		void jsonResponse(SOCKET client, RCommand * response);
+		//AppConfig loadConfig(const char* path);
 		Hub * hub;
+		WSAppConfig configInit;
 		int Token = 4737;
 		bool reconnect = true;
 	private:
@@ -44,6 +47,7 @@ namespace GT {
 		HANDLE hClientThread;
 		DWORD dwThreadId;
 		std::map<SOCKET, WebClient> clients;
+		
 	};
 }
 

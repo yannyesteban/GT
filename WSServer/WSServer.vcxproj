@@ -162,11 +162,13 @@
     <ClCompile Include="..\SocketClient.cpp" />
     <ClCompile Include="..\WebSocketServer.cpp" />
     <ClCompile Include="Hub.cpp" />
+    <ClCompile Include="JsonConfig.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="WebServer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Hub.h" />
+    <ClInclude Include="JsonConfig.h" />
     <ClInclude Include="WebServer.h" />
   </ItemGroup>
   <ItemGroup>
@@ -176,6 +178,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram.cd" />
+    <None Include="wsserver.json" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

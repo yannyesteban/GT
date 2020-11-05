@@ -12,13 +12,21 @@ namespace GT {
     void WebServer::init() {
 
 
-        auto appInfo = GT::Config::load("config.json");
+        //auto appInfo = GT::Config::load("config.json");
+        this->configInit = GT::JsonConfig::load("wsserver.json");
 
-        cout << appInfo.db.name << endl;
+        auto appInfo = this->configInit;// GT::JsonConfig::load("wsserver.json");
+        //this->configInit = &appInfo;
+        cout << "APP: ** " <<appInfo.db.name << endl;
+        cout << "Hub port: " << appInfo.hub.port << endl;
         //config = pConfig;
         // pConfig.db.debug = pConfig.debug;
         db = new DB(appInfo.db);
         db->connect();
+
+
+        info.port = configInit.port;
+        info.maxClients = configInit.max_clients;
 
 
         hClientThread = CreateThread(
@@ -28,9 +36,6 @@ namespace GT {
             this,
             0,
             &dwThreadId);
-
-
-        
        
 	}
 
@@ -434,16 +439,19 @@ BOOL __stdcall mainhub(LPVOID param) {
     GT::WebServer* WS = (GT::WebServer*)param;
 
     GT::CSInfo Info;
-    Info.host = (char*)"127.0.0.1";
-    Info.port = "3320";
+    Info.host = (char *)WS->configInit.hub.host;
+    Info.port = WS->configInit.hub.port;// std::to_string(WS->configInit.hub.port).c_str();
+
+    cout << "el puerto del hug es " << WS->configInit.hub.port << endl << endl;
     puts("Activate the HUB server");
     WS->hub = new GT::Hub(Info);
     WS->hub->appData = WS;
     WS->hub->CallConection = test2;
     WS->hub->callReceive = test1;
+    cout << ANSI_COLOR_RESET "Asking for Connection..." << WS->configInit.port << endl;
     while (WS->reconnect) {
         WS->hub->start();
-        cout << ANSI_COLOR_RESET "Reconnecting..." << endl;
+        cout << ANSI_COLOR_RESET "Reconnecting..."<< WS->configInit.port << endl;
         Sleep(5000);
     }
 

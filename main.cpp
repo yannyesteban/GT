@@ -35,7 +35,7 @@ int main() {
     Color::set(0);
     CSInfo Info;
     Info.host = (char*)"127.0.0.1";
-    Info.port = "3311";
+    Info.port = 3311;
     Info.maxClients = 30;
 
     //CSocket* S = new CSocket(Info);
