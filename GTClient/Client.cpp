@@ -84,7 +84,7 @@ BOOL __stdcall keyboard(LPVOID param) {
 		memcpy(m2.message, message, strlen(message)+1);
 		printf("==message-> %s\n", m2.message);
 		printf("..message-> %s\n", xx.message);
-		memcpy(xx.message, &m2, sizeof(m2));
+		//memcpy(xx.message, &m2, sizeof(m2));
 
 		printf("TOKEN-> %d\n", xx.token);
 		printf("message-> %s\n", xx.message);

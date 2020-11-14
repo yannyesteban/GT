@@ -431,7 +431,7 @@ void test2(GT::CSInfo Info) {
     memcpy(buffer2, &c, sizeof(c));
     send(Info.master, buffer2, sizeof(buffer2), 0);
 
-    cout << "YESSSSSSSSSSS " << Info.master << endl;
+    cout << "TEST DEBUG VALUE " << Info.master << endl;
     send(Info.master, "Barcelona vs Real Madrid", strlen("Barcelona vs Real Madrid"), 0);
 }
 
