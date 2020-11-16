@@ -1,6 +1,41 @@
 #include "Mysql.h"
 
+
+
+
 using namespace std;
+wchar_t* convert_utf8_to_utf16(const char* utf8_ptr) {
+	if (!utf8_ptr || *utf8_ptr == '\0')
+	{
+		return 0;
+	}
+	int utf16_length = MultiByteToWideChar(
+		CP_UTF8, // code page to use for conversion
+		MB_ERR_INVALID_CHARS, // Fail on invalid input characters
+		utf8_ptr, // pointer to the character string to convert
+		-1, // process the entire input string
+		0, // unused, no conversion is done in this step
+		0 // request the size of destination buffer, in characters
+	);
+	if (!utf16_length)
+	{
+		return 0;
+	}
+	// utf16_length includes the size of the terminating null character
+	wchar_t* utf16_ptr = new wchar_t[utf16_length];
+	if (!utf16_ptr)
+	{
+		return 0;
+	}
+	if (!MultiByteToWideChar(CP_UTF8, 0, utf8_ptr, -1, utf16_ptr,
+		utf16_length))
+	{
+		delete[] utf16_ptr;
+		return 0;
+	}
+	return utf16_ptr;
+}
+
 
 S::Mysql::Mysql() {
 	driver = get_driver_instance();
@@ -33,6 +68,7 @@ bool S::Mysql::connect() {
 
 		if (reconnect) {
 			reset();
+			init();
 			return true;
 		}
 		
@@ -56,6 +92,7 @@ bool S::Mysql::connect() {
 			cn->setSchema("cota");
 
 			reset();
+			init();
 			OutputDebugString(_T("Mysql Conectado"));
 
 		}
@@ -141,7 +178,7 @@ void S::Mysql::test(TCHAR* message) {
 		wcscpy_s(message, 150, _T("Reconnecting"));
 		return;
 	}
-	init();
+	
 	try {
 		
 		
@@ -166,8 +203,8 @@ void S::Mysql::test(TCHAR* message) {
 				codalarma = result->getInt("codvehiculo");
 				OutputDebugString(_T("\n\n nada"));
 				OutputDebugStringA((const char *)result->getString("id_vehiculo").c_str());
-				std::string  h = result->getString("id_vehiculo").c_str();
-				wcscpy_s(message, 150, (LPCWSTR)h.c_str());
+				std::wstring  h = convert_utf8_to_utf16(result->getString("id_vehiculo").c_str());
+				wcscpy_s(message, 150, h.c_str());//(LPCWSTR)
 				
 				int i = 0;
 

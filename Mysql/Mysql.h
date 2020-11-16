@@ -8,6 +8,8 @@
 #include <cstdlib> 
 //#include <stdlib.h>
 #include <tchar.h>
+/**/
+wchar_t* convert_utf8_to_utf16(const char* utf8_ptr);
 
 
 namespace S {
