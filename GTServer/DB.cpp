@@ -39,9 +39,11 @@ namespace GT {
 			strcat_s(str_host, info.port);
 
 			cn = driver->connect(str_host, info.user, info.pass);
-			cout << "Mysql has connected correctaly " << cn->isValid() << endl;
+			
 			/* Connect to the MySQL test database */
 			cn->setSchema(info.name);
+			//cn->isValid()
+			cout << "Mysql has connected correctaly, db: " << info.name << endl;
 			init();
 			return 1;
 
@@ -339,8 +341,8 @@ namespace GT {
 
 		version = mClients[unit_id].version_id;
 
-		std::cout << "unit_id : " << unit_id << " version(Format) " << version  << endl;
-		std::cout << "buffer: " << buffer << std::endl;
+		//std::cout << "unit_id : " << unit_id << " version(Format) " << version  << endl;
+		//std::cout << "buffer: " << buffer << std::endl;
 		std::string  mm[30];
 		int n;
 		GT::Tool::getItem(mm, n, buffer);
@@ -367,25 +369,26 @@ namespace GT {
 		query = query + "(" + qfields + ") VALUES (" + qvalues + ");";
 
 
-		cout << "*****************************" << endl;
+		//cout << "*****************************" << endl;
 
 		try {
 			
 			
-			printf("" ANSI_COLOR_MAGENTA);
-			std::cout << query << endl;
-			printf("" ANSI_COLOR_RESET);
+			//printf("" ANSI_COLOR_MAGENTA);
+			//std::cout << query << endl;
+			//printf("" ANSI_COLOR_RESET);
 			sql::Statement* stmt;
 			//sql::ResultSet* res;
 			stmt = cn->createStatement();
 			stmt->execute(query.c_str());
 			//delete res;
+			//cout << ANSI_COLOR_CYAN "Saving Track: " << mClients[unit_id].device_id << endl;
 			delete stmt;
-			
+			return true;
 
 		} catch (sql::SQLException & e) {
 			printf("" ANSI_COLOR_BLUE ANSI_COLOR_CYAN_);
-			std::cout << query << endl;
+			std::cout <<" ERROR en 390 -"<< query << endl;
 			printf("" ANSI_COLOR_RESET);
 
 			
@@ -397,7 +400,7 @@ namespace GT {
 
 		}
 		
-		return true;
+		return false;
 	}
 	
 	
@@ -496,7 +499,7 @@ namespace GT {
 
 			
 			if (value == *it) {
-				printf("is sync..%d...%d....\n", value, *it);
+				//printf("is sync..%d...%d....\n", value, *it);
 				return true;
 			}
 		}
@@ -719,7 +722,7 @@ namespace GT {
 
 		request->index = index;
 
-		cout << "Create Command" << endl;
+		//cout << "Create Command" << endl;
 
 		std::string command;
 		std::string str = "";
@@ -734,7 +737,7 @@ namespace GT {
 			//stmt = cn->createStatement();
 			string query = R"(
 				SELECT count(p.id) as n_commands, c.*, CONCAT(protocol_pre, command) as command1, d.password,
-					c.use_tag,
+					c.use_tag, n.name as unit, 
 					sum(case when p.type='Q' then 1 else 0 end) as qp,
 					sum(case when p.type='A' then 1 else 0 end) as ap,
 					sum(case when p.type='W' then 1 else 0 end) as wp,
@@ -744,6 +747,7 @@ namespace GT {
 				INNER JOIN devices_versions as v ON v.id = c.version_id 
 				INNER JOIN devices as d ON d.version_id = v.id 
 				INNER JOIN units as u ON u.device_id = d.id 
+				INNER JOIN units_names as n ON n.id = u.name_id
 
 				WHERE 
 				c.id = ? 
@@ -763,6 +767,9 @@ namespace GT {
 				result = p_stmt->getResultSet();
 
 				if (result->next()) {
+
+					strcpy_s(request->unit, sizeof(request->unit), result->getString("unit").c_str());
+
 					typeCommand = result->getString("type").c_str();
 					useTag = result->getInt("use_tag");
 					if (request->type == 1) {
@@ -776,7 +783,7 @@ namespace GT {
 						n_commands = result->getInt("qp");
 
 					}
-					cout << "super type " << request->type << " useTag " << useTag << endl;
+					//cout << "super type " << request->type << " useTag " << useTag << endl;
 					if (tag != "" && (useTag == 3 || useTag == 1 && request->type == 1 || useTag == 2 && request->type == 2)) {
 						tag = "+" + tag;
 					} else {
@@ -812,9 +819,9 @@ namespace GT {
 				str = str + ",?";
 			}
 
-			printf("" ANSI_COLOR_CYAN);
-			std::cout << "Command: " << str << endl;
-			printf("" ANSI_COLOR_RESET);
+			//printf("" ANSI_COLOR_CYAN);
+			std::cout << Color::_red() << Color::byellow() << "\nCommand: " << str << Color::_reset() << endl;
+			//printf("" ANSI_COLOR_RESET);
 
 		} catch (sql::SQLException& e) {
 			cout << "# ERR: SQLException in " << __FILE__;
@@ -958,7 +965,7 @@ namespace GT {
 
 	void DB::deviceConfig(const char* unit_id, CommandResult* commandResult) {
 
-		cout << "............\n\n\n\n\n";
+		//cout << "............\n\n\n\n\n";
 
 		std::string paramsList[20];
 		int length = 0;
@@ -1063,7 +1070,7 @@ namespace GT {
 					str += ")";
 
 					str = "INSERT INTO `devices_config` " + strFields + " VALUES " + str;
-					cout << str << endl;
+					//cout << str << endl;
 
 					save(str);
 
@@ -1082,9 +1089,9 @@ namespace GT {
 
 
 			}
-			printf("" ANSI_COLOR_GREEN);
+			//printf("" ANSI_COLOR_GREEN);
 			cout << commandResult->command << " " << commandResult->token << " " << commandResult->params << endl;
-			printf("" ANSI_COLOR_RESET);
+			//printf("" ANSI_COLOR_RESET);
 		} catch (sql::SQLException& e) {
 
 			
@@ -1139,6 +1146,7 @@ namespace GT {
 					response->type = result->getInt("type");
 					response->level = result->getInt("level");
 					response->index = result->getInt("index");
+					strcpy_s(response->date, sizeof(response->date), result->getString("datetime").c_str());
 
 
 				}
@@ -1180,8 +1188,8 @@ namespace GT {
 			WHERE u.id = ? AND c.command = ? AND p.index = ? )";
 
 		try {
-			cout << query << endl;
-			cout << ANSI_COLOR_BLUE ANSI_COLOR_WHITE_ "Type: " ANSI_COLOR_RESET <<type  << endl;
+			//cout << query << endl;
+			//cout << ANSI_COLOR_BLUE ANSI_COLOR_WHITE_ "Type: " ANSI_COLOR_RESET <<type  << endl;
 			sql::Statement* stmt;
 			
 			sql::PreparedStatement* p_stmt;
@@ -1276,9 +1284,9 @@ namespace GT {
 		strcpy(info->unit, unit_id);
 
 
-		cout << "InfoCommand:  " << commandResult->params <<" - "<< info->unit<< endl;
-		cout << "InfoCommand2:  " << info->unitId << endl;
-		cout << "InfoCommand3:  " << unitId << endl;
+		//cout << "InfoCommand:  " << commandResult->params <<" - "<< info->unit<< endl;
+		//cout << "InfoCommand2:  " << info->unitId << endl;
+		//cout << "InfoCommand3:  " << unitId << endl;
 
 
 		
@@ -1314,9 +1322,15 @@ namespace GT {
 					info->type = (unsigned short)result->getInt("type");
 					info->level = (unsigned short)result->getInt("level");
 					info->mode = (unsigned short)result->getInt("mode");
+					
 					info->commandId = (int)result->getInt("command_id");
-					strcpy(info->user, result->getString("user").c_str());
-					strcpy(info->message, result->getString("command").c_str());
+					//strcpy(info->message, result->getString("command").c_str());
+					//strcpy(info->date, result->getString("date").c_str());
+					//strcpy(info->user, result->getString("user").c_str());
+					
+					strcpy_s(info->message, sizeof(info->message), result->getString("command").c_str());
+					strcpy_s(info->date, sizeof(info->date), result->getString("datetime").c_str());
+					strcpy_s(info->user, sizeof(info->user), result->getString("user").c_str());
 
 				}
 				delete result;
@@ -1330,19 +1344,20 @@ namespace GT {
 
 		
 	}
+	
 	void DB::saveResponse(RCommand* info, const char* response) {
-		cout << "saveResponse..." << endl;
+		//cout << "saveResponse..." << endl;
 		std:string query = "";
 		sql::PreparedStatement* p_stmt;
 
 		query = R"(INSERT INTO unit_response
-			(`unit_id`,`unit`,`type`,`level`,`mode`, `command_id`,`index`, `command`,`response`,`user`) 
+			(`unit_id`,`unit`,`type`,`level`,`mode`, `command_id`,`index`, `command`,`response`,`user`,`date_from`) 
 			VALUES
-			(?,?,?,?,?,?,?,?,?,?))";
+			(?,?,?,?,?,?,?,?,?,?,IF(?='0000-00-00 00:00:00',now(),?)))";
 		try {
 			p_stmt = cn->prepareStatement(query.c_str());
-			cout << ANSI_COLOR_YELLOW "unit name " << info->unit << endl;
-			cout << ANSI_COLOR_MAGENTA "reponse " << response << endl;
+			//cout << ANSI_COLOR_YELLOW "unit name " << info->unit << endl;
+			//cout << ANSI_COLOR_MAGENTA "reponse " << response << endl;
 			p_stmt->setInt(1, info->unitId);
 			p_stmt->setString(2, info->unit);
 			p_stmt->setInt(3, info->type);
@@ -1353,9 +1368,12 @@ namespace GT {
 			p_stmt->setString(8, info->message);
 			p_stmt->setString(9, response);
 			p_stmt->setString(10, info->user);
+			p_stmt->setString(11, info->date);
+			p_stmt->setString(12, info->date);
+			
 
 			if (p_stmt->execute()) {
-				cout << "saving command...!!!" << endl;
+				//cout << "saving command...!!!" << endl;
 			}
 
 			delete p_stmt;
@@ -1373,11 +1391,11 @@ namespace GT {
 	
 	void DB::save(std::string query) {
 
-		printf("" ANSI_COLOR_CYAN);
+		//printf("" ANSI_COLOR_CYAN);
 
-		cout << query << endl;
+		//cout << query << endl;
 
-		printf("" ANSI_COLOR_RESET);
+		//printf("" ANSI_COLOR_RESET);
 
 		try {
 			sql::Statement* stmt;
@@ -1465,7 +1483,7 @@ namespace GT {
 		try {
 			query = "DELETE FROM pending WHERE unit_id = ? AND command_id = ? ";
 			
-			cout << "delete " << query << endl;
+			//cout << "delete " << query << endl;
 			p_stmt = cn->prepareStatement(query.c_str());
 
 			p_stmt->setInt(1, request->unitId);

@@ -87,3 +87,65 @@ int Color::cyan = 7;
 int Color::gray = 8;
 int Color::white = 9;
 int Color::reset = 0;
+
+const char* Color::_black() {
+	return ANSI_COLOR_BLACK;
+}
+const char* Color::_red() {
+	return ANSI_COLOR_RED;
+}
+const char* Color::_green() {
+	return ANSI_COLOR_GREEN;
+}
+const char* Color::_yellow() {
+	return ANSI_COLOR_YELLOW;
+}
+const char* Color::_blue() {
+	return ANSI_COLOR_BLUE;
+}
+const char* Color::_magenta() {
+	return ANSI_COLOR_MAGENTA;
+}
+
+const char* Color::_cyan() {
+	return ANSI_COLOR_CYAN;
+}
+const char* Color::_gray() {
+	return ANSI_COLOR_GRAY;
+}
+const char* Color::_white() {
+	return ANSI_COLOR_RESET;
+}
+const char* Color::_reset() {
+	return ANSI_COLOR_RESET;
+}
+
+
+const char* Color::bblack() {
+	return ANSI_COLOR_BLACK_;
+}
+const char* Color::bred() {
+	return ANSI_COLOR_RED_;
+}
+const char* Color::bgreen() {
+	return ANSI_COLOR_GREEN_;
+}
+const char* Color::byellow() {
+	return ANSI_COLOR_YELLOW_;
+}
+const char* Color::bblue() {
+	return ANSI_COLOR_BLUE_;
+}
+const char* Color::bmagenta() {
+	return ANSI_COLOR_MAGENTA_;
+}
+
+const char* Color::bcyan() {
+	return ANSI_COLOR_CYAN_;
+}
+const char* Color::bgray() {
+	return ANSI_COLOR_BOLD;
+}
+const char* Color::bwhite() {
+	return ANSI_COLOR_WHITE_;
+}

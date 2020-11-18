@@ -95,11 +95,11 @@ namespace WC {
 			strcat_s(str_host, info.port);
 
 			cn = driver->connect(str_host, info.user, info.pass);
-			cout << "Mysql has connected correctaly " << cn->isValid() << endl;
-			cout << "DB: " << info.name << endl;
+			//cout << "Mysql has connected correctaly " << cn->isValid() << endl;
+			//cout << "DB: " << info.name << endl;
 			/* Connect to the MySQL test database */
 			cn->setSchema(info.name);
-
+			cout << "Mysql has connected correctaly, db: " << info.name << endl;
 			stmtMain = cn->prepareStatement(qMain);
 			stmtSpeed = cn->prepareStatement(qSpeedVar);
 			stmtEvent = cn->prepareStatement(qInsertEvent);

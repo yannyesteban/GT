@@ -355,7 +355,7 @@ namespace GT {
         std::string str = db->createCommand(&r, params);
 
         strcpy(r.message, str.c_str());
-        cout << endl << endl << "COMANDO " << str << endl << endl;
+        cout << endl << "Unidad" <<  r.unit << endl << "COMANDO " << str << endl << endl;
        
         //db->addPending(document["unitId"].GetInt(), document["commandId"].GetInt(), tag, str, "pepe", type, (unsigned short)document["level"].GetInt());
         db->addPending(&r);

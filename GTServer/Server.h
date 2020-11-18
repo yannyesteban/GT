@@ -1,6 +1,7 @@
 #pragma once
 #include <sstream>
 #include <mysql/jdbc.h>
+#include "Color.h"
 #include "Types.h"
 #include "Socket.h"
 #include "DB.h"

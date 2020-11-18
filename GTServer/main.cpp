@@ -25,16 +25,16 @@ int main()
     Color::set(0);
 
     auto appInfo = GT::Config::load("config.json");
-    printf("APP NAME: %s\n", appInfo.appname);
+    std::cout << Color::_yellow() << "APP NAME: " << appInfo.appname << Color::_reset() << std::endl;
     printf("Version: %s \n", appInfo.version);
     printf("DB Name: %s\n", appInfo.db.name);
-    printf("Socket Port: %d\n", appInfo.port);
-    ///printf("Time: %s", XT::Time::now());
+    printf("Socket Port: %d\n\n", appInfo.port);
+    //printf("Time: %s\n\n", XT::Time::now());
 
     SocketInfo Info;
     Info.host = (char*)"127.0.0.1";
     Info.port = appInfo.port;
-    Info.maxClients = 30;
+    Info.maxClients = appInfo.max_clients;
 
     Server * S = new Server(Info);
     S->init(appInfo);

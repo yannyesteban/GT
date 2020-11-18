@@ -27,6 +27,7 @@ namespace GT {
 			printf("Bind failed with error code : %d", WSAGetLastError());
 			exit(EXIT_FAILURE);
 		}
+
 		startListen();
 	}
 
@@ -113,9 +114,10 @@ namespace GT {
 						Info.tag = (char*)"yanny";
 						clients[i] = tSocket;
 						//CallConection(Info);
-						onConnect(Info);
+						
 						//CallConection(master, new_socket, clients, i, maxClients, info);
-						printf("Adding to list of sockets at index %d \n", i);
+						//printf("Adding to list of sockets at index %d \n", i);
+						onConnect(Info);
 						break;
 					}
 				}

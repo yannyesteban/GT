@@ -122,6 +122,7 @@ namespace GT {
 		int unitId;
 		int commandId;
 		int mode;
+		char date[20];
 		unsigned short level;
 		unsigned short index;
 	};

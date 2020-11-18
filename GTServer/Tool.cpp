@@ -64,7 +64,7 @@ namespace GT {
 
 			for (int i = 0; i < match.size(); i++) {
 				w[i] = match[i].str();
-				cout << "W es : " << i << ", " << w[i] << endl;
+				//cout << "W es : " << i << ", " << w[i] << endl;
 				len++;
 			}
 
@@ -80,7 +80,7 @@ namespace GT {
 
 			for (int i = 0; i < match.size(); i++) {
 				w[i] = match[i].str();
-				cout << "ZZZZ es : " << i << ", " << w[i] << endl;
+				//cout << "ZZZZ es : " << i << ", " << w[i] << endl;
 				len++;
 			}
 
