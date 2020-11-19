@@ -10,6 +10,21 @@ namespace GT {
 
 	bool Server::init(AppConfig pConfig) {
 
+		time_t now;
+		struct tm newyear;
+		double seconds;
+
+		time(&now);  /* get current time; same as: now = time(NULL)  */
+
+		newyear = *localtime(&now);
+
+		newyear.tm_hour = 0; newyear.tm_min = 0; newyear.tm_sec = 0;
+		newyear.tm_mon = 0;  newyear.tm_mday = 1;
+
+		seconds = difftime(now, mktime(&newyear));
+
+		printf("%.f seconds since new year in the current timezone.\n", seconds);
+
 		/*
 		std::string result[20];
 		int len;
@@ -101,6 +116,7 @@ namespace GT {
 	unsigned short Server::getHeader(ConnInfo Info) {
 		IdHeader* header = (IdHeader*)Info.buffer;
 		std::string command = "";
+		
 		if (header->header == 10001) {
 			std::string str;
 
@@ -109,11 +125,7 @@ namespace GT {
 
 			rClients[Info.client] = {};
 			strcpy_s(rClients[Info.client].name, sizeof(rClients[Info.client].name), r->name);
-
-
-
 			strcpy_s(rClients[Info.client].user, sizeof(rClients[Info.client].user), r->user);
-
 
 			rClients[Info.client].type = 3;
 			rClients[Info.client].status = 1;
@@ -123,14 +135,10 @@ namespace GT {
 			return 0;
 
 		}
+		
 		if (header->header == 10020) {
 			RCommand* r = (RCommand*)Info.buffer;
 
-
-			//cout << "length " << Info.valread << endl;
-			//std::cout << " mensaje " << r->message << " unit " << r->unit << " unitId " << r->unitId << " Mode: " << r->mode << endl;
-			//std::cout << "SOCKET " << mDevices[getUnitName(r->unitId)].socket << std::endl;
-			//send(Info.client, "YANNY 2020 JEJE", 16, 0);
 
 			RCommand response;
 			response.header = 10021;
@@ -144,13 +152,7 @@ namespace GT {
 			strcpy_s(response.message, sizeof(response.message), str.c_str());
 			//strcpy(response.message, str.c_str());
 
-			//int hhh = 9;
-
-
 			str = r->unit;
-
-
-			//int jjj = 10;
 
 
 			strcpy_s(response.unit, sizeof(response.unit), r->unit);
@@ -167,7 +169,9 @@ namespace GT {
 
 			send(mDevices[getUnitName(r->unitId)].socket, r->message, strlen(r->message), 0);
 			
-			std::cout << Color::_green() << "Sending To: " << r->unitId << " (" << r->unit << ") => " << response.message << Color::_reset() << std::endl;
+			std::cout << Color::_green() << "Sending: " << response.message 
+				<<  Color::_reset() << " to: "
+				<< mDevices[getUnitName(r->unitId)].device_id << " (" << r->unit << ")\n";
 			/*
 			std::cout << "Header: " << response.header << std::endl;
 			std::cout << "Message: " << response.message << std::endl;
@@ -204,8 +208,6 @@ namespace GT {
 
 		return header->type;
 	}
-
-	
 
 	void Server::onClose(ConnInfo Info) {
 		printf("ERROR ESTOY DESCONECTANDO (%i): %s client: %d\n", Info.error, Info.tag, Info.client);
@@ -269,7 +271,7 @@ namespace GT {
 				//strcpy(info.date, "");
 				info.unitId = cInfo.unit_id;
 				db->saveResponse(&info, "CONNECTED");
-				
+				time(&info.time);
 
 				cout << "Unit " << cInfo.unit_id << ", name: "<< name << " is connected " << endl;
 			} else {
@@ -387,7 +389,7 @@ namespace GT {
 					//db->saveTrack(clients[Info.client].device_id, result[4].c_str());
 					
 					if (clients[Info.client].device_id, result[4].c_str()) {
-						cout << Color::_yellow() << "Saving Track from " << Color::_reset() << getUnitName(clients[Info.client].id)  << endl;
+						cout << Color::_yellow() << "Saving Track from: " << Color::_reset() << getUnitName(clients[Info.client].id)  << endl;
 					}
 					continue;
 				}
@@ -403,6 +405,10 @@ namespace GT {
 				
 				
 				if (len > 0) {
+
+					std::cout << Color::_yellow() << "Receiving From: " << Color::_reset()
+						<< clients[Info.client].device_id << Color::_green() << " Message: " << Color::_yellow() << to.c_str() << std::endl;
+						
 					//cout << "es un COMANDO de " << clients[Info.client].device_id <<  endl;
 					//cout << "la longitud del resultado es " << len << endl;
 					CommandResult  rCommand = {
@@ -420,8 +426,17 @@ namespace GT {
 					unitResponse.header = 0;
 					db->infoCommand(clients[Info.client].device_id, &rCommand, &unitResponse);
 					
-					
+					time_t now;
+					time(&now);
+					double seconds;
+
+					seconds = difftime(now, unitResponse.time);
+
+					std::cout << Color::_magenta() << " delay Time: " << seconds << Color::_reset() << std::endl;
+
+
 					db->saveResponse(&unitResponse, to.c_str());
+					
 					db->getPending(clients[Info.client].device_id, &rCommand, &unitResponse);
 
 

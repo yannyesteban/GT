@@ -175,8 +175,6 @@ namespace WC {
 					info[codalarma].alarma = result->getString("alarma").c_str();
 					info[codalarma].descripcion = result->getString("descripcion").c_str();
 
-
-
 					info[codalarma].velMin = result->getInt("vel_min");
 					info[codalarma].velMax = result->getInt("vel_max");
 
@@ -194,8 +192,6 @@ namespace WC {
 					info[codalarma].fHasta = result->getString("hasta").c_str();
 
 					//info[codalarma].ii = result->getInt("input");
-
-
 
 					it = _input.begin();
 					for (i = 0; i < 8; i++) {

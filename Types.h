@@ -125,6 +125,7 @@ namespace GT {
 		char date[20];
 		unsigned short level;
 		unsigned short index;
+		time_t time;
 	};
 	
 	

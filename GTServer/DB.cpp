@@ -1058,12 +1058,16 @@ namespace GT {
 				result = p_stmt->getResultSet();
 
 				while (result->next()) {
+
+					if (x < v.size()) {
+						continue;
+					}
 					param_id = result->getString("param_id").c_str();
 
 					str = "(";
 					if (str != "") {
 
-						str = str + to_string(unitId) + ",2," + param_id + ",'" + v[x++]+"', now()";
+						str = str + to_string(unitId) + ",2," + param_id + ",'" + v[x]+"', now()";
 					} else {
 						str = str + param_id;
 					}
@@ -1073,6 +1077,7 @@ namespace GT {
 					//cout << str << endl;
 
 					save(str);
+					x++;
 
 				}
 
@@ -1089,9 +1094,9 @@ namespace GT {
 
 
 			}
-			//printf("" ANSI_COLOR_GREEN);
-			cout << commandResult->command << " " << commandResult->token << " " << commandResult->params << endl;
-			//printf("" ANSI_COLOR_RESET);
+			
+			//cout << commandResult->command << " " << commandResult->token << " " << commandResult->params << endl;
+			
 		} catch (sql::SQLException& e) {
 
 			
@@ -1332,6 +1337,7 @@ namespace GT {
 					strcpy_s(info->date, sizeof(info->date), result->getString("datetime").c_str());
 					strcpy_s(info->user, sizeof(info->user), result->getString("user").c_str());
 
+					info->time = result->getInt64("server_time");
 				}
 				delete result;
 			}
@@ -1474,6 +1480,7 @@ namespace GT {
 		}
 		return std::to_string(0);
 	}
+	
 	std::string  DB::addPending(RCommand * request) {
 
 		std:string query = "";
@@ -1499,7 +1506,7 @@ namespace GT {
 			cout << endl << " (MySQL error code: " << e.getErrorCode();
 		}
 
-		query = "INSERT INTO pending (`unit_id`, `command_id`, `command`, `tag`, `index`, `user`, `type`, `mode`) VALUES (?,?,?,?,?,?,?,?)";
+		query = "INSERT INTO pending (`unit_id`, `command_id`, `command`, `tag`, `index`, `user`, `type`, `mode`,`server_time`) VALUES (?,?,?,?,?,?,?,?,?)";
 
 		//cout << "creando pending " << query << endl;
 		try {
@@ -1514,6 +1521,11 @@ namespace GT {
 			p_stmt->setString(6, request->user);
 			p_stmt->setInt(7, request->type);
 			p_stmt->setInt(8, request->mode);
+
+			time_t now;
+			time(&now);  /* get current time; same as: now = time(NULL)  */
+
+			p_stmt->setInt(9, now);
 
 			if (p_stmt->execute()) {
 			}

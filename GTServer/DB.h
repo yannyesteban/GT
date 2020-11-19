@@ -1,6 +1,7 @@
 #pragma once
 #define _CRT_SECURE_NO_WARNINGS
 #define MULTILINE(...) #__VA_ARGS__
+#include <ctime>
 #include "Color.h"
 #include "Types.h"
 #include "Tool.h"
