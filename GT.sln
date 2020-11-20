@@ -29,6 +29,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Mysql", "Mysql\Mysql.vcxpro
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Mysql2", "Mysql2\Mysql2.vcxproj", "{B7D018DB-4E7E-4D26-927F-52145E6940D4}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Device", "Device\Device.vcxproj", "{53A44CD6-50CD-4BF0-A98E-9F66B2152F2C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM = Debug|ARM
@@ -161,6 +163,18 @@ Global
 		{B7D018DB-4E7E-4D26-927F-52145E6940D4}.Release|x64.Build.0 = Release|x64
 		{B7D018DB-4E7E-4D26-927F-52145E6940D4}.Release|x86.ActiveCfg = Release|Win32
 		{B7D018DB-4E7E-4D26-927F-52145E6940D4}.Release|x86.Build.0 = Release|Win32
+		{53A44CD6-50CD-4BF0-A98E-9F66B2152F2C}.Debug|ARM.ActiveCfg = Debug|Win32
+		{53A44CD6-50CD-4BF0-A98E-9F66B2152F2C}.Debug|ARM64.ActiveCfg = Debug|Win32
+		{53A44CD6-50CD-4BF0-A98E-9F66B2152F2C}.Debug|x64.ActiveCfg = Debug|x64
+		{53A44CD6-50CD-4BF0-A98E-9F66B2152F2C}.Debug|x64.Build.0 = Debug|x64
+		{53A44CD6-50CD-4BF0-A98E-9F66B2152F2C}.Debug|x86.ActiveCfg = Debug|Win32
+		{53A44CD6-50CD-4BF0-A98E-9F66B2152F2C}.Debug|x86.Build.0 = Debug|Win32
+		{53A44CD6-50CD-4BF0-A98E-9F66B2152F2C}.Release|ARM.ActiveCfg = Release|Win32
+		{53A44CD6-50CD-4BF0-A98E-9F66B2152F2C}.Release|ARM64.ActiveCfg = Release|Win32
+		{53A44CD6-50CD-4BF0-A98E-9F66B2152F2C}.Release|x64.ActiveCfg = Release|x64
+		{53A44CD6-50CD-4BF0-A98E-9F66B2152F2C}.Release|x64.Build.0 = Release|x64
+		{53A44CD6-50CD-4BF0-A98E-9F66B2152F2C}.Release|x86.ActiveCfg = Release|Win32
+		{53A44CD6-50CD-4BF0-A98E-9F66B2152F2C}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

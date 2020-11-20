@@ -2,6 +2,7 @@
 #include "Types.h"
 namespace GT {
 	Client::Client(CSInfo pInfo) :SocketClient(pInfo) {}
+	
 	void Client::onConect() {
 
 		hClientThread = CreateThread(

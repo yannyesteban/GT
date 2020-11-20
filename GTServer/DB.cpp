@@ -1059,7 +1059,7 @@ namespace GT {
 
 				while (result->next()) {
 
-					if (x < v.size()) {
+					if (x >= v.size()) {
 						continue;
 					}
 					param_id = result->getString("param_id").c_str();

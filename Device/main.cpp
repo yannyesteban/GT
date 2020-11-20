@@ -1,32 +1,25 @@
-// GTClient.cpp : Este archivo contiene la función "main". La ejecución del programa comienza y termina ahí.
+// Device.cpp : Este archivo contiene la función "main". La ejecución del programa comienza y termina ahí.
 //
 
 #include <iostream>
-#include "Color.h"
-#include "Client.h"
 
-
-
-using namespace GT;
-
-void startConsole();
+#include "Device.h"
 int main()
 {
     setlocale(LC_CTYPE, "Spanish");
     system("cls");
     Color::set(4);
-    std::cout << "GT Client v1.0 (2020)!\n";
+    std::cout << "GT Device v1.0 (2020)!\n";
     Color::set(0);
     std::cout << "Hello World!\n";
-    CSInfo Info;
+    GT::CSInfo Info;
     Info.host = (char*)"127.0.0.1";
-    Info.port = 3321;
+    Info.port = 3322;
 
-    Client* C = new Client(Info);
+    auto C = new GT::Device(Info);
     C->start();
-
-	
-
+    
+    
 }
 
 // Ejecutar programa: Ctrl + F5 o menú Depurar > Iniciar sin depurar
@@ -38,9 +31,3 @@ int main()
 //   4. Use la ventana Lista de errores para ver los errores
 //   5. Vaya a Proyecto > Agregar nuevo elemento para crear nuevos archivos de código, o a Proyecto > Agregar elemento existente para agregar archivos de código existentes al proyecto
 //   6. En el futuro, para volver a abrir este proyecto, vaya a Archivo > Abrir > Proyecto y seleccione el archivo .sln
-
-
-void startConsole() {
-	
-	return ;
-}
