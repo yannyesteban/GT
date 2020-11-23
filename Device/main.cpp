@@ -1,12 +1,29 @@
 // Device.cpp : Este archivo contiene la función "main". La ejecución del programa comienza y termina ahí.
 //
+#define _CRT_SECURE_NO_WARNINGS
 
 #include <iostream>
 
 #include "Device.h"
+#include "DeviceAdmin.h"
+
+
 int main()
 {
     setlocale(LC_CTYPE, "Spanish");
+
+    /*
+    struct timespec ts;
+    int k = timespec_get(&ts, TIME_UTC);
+    char buff[100];
+
+    std::cout << "tiempo en SEGUNDOS " << ts.tv_sec  << std::endl << std::endl;
+    std::cout << "tiempo en nano " << ts.tv_nsec * 1E-9 << std::endl  << std::endl;
+    strftime(buff, sizeof buff, "%D %T", gmtime(&ts.tv_sec));
+    printf("Current time: %s.%09ld UTC\n", buff, ts.tv_nsec);
+
+    return 0;
+    */
     system("cls");
     Color::set(4);
     std::cout << "GT Device v1.0 (2020)!\n";
@@ -16,8 +33,21 @@ int main()
     Info.host = (char*)"127.0.0.1";
     Info.port = 3322;
 
-    auto C = new GT::Device(Info);
-    C->start();
+    bool option = false;
+
+    if (option) {
+        auto A = new GT::DeviceAdmin();
+        A->run();
+    } else {
+        auto C = new GT::Device(Info);
+        C->start();
+    }
+
+    /*
+    
+    return 0;
+    */
+    
     
     
 }

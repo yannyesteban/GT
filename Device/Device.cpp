@@ -13,7 +13,7 @@ void GT::Device::onConect() {
 
 	
 	time(&now);  /* get current time; same as: now = time(NULL)  */
-
+	timespec_get(&ts, TIME_UTC);
 	beginTasks();
 }
 
@@ -30,14 +30,26 @@ bool GT::Device::isSyncMsg(char* buffer) {
 }
 
 void GT::Device::onReceive(char* buffer, size_t size) {
+	
+	std::cout << "................ HOLAAAAAAAA" << std::endl;
 
 	if (isSyncMsg(buffer)) {
 		std::cout << "OK conectado correctamente" << std::endl;
+		return;
+	} else {
+		std::cout << "enviando Response !!!" << std::endl;
+		//char buffer[100];
+		const char *s = "$OK:VER+3=X0_C8_2.057XT_SG111";
+		//memcpy(buffer, "$wp+ver+1=yanny", sizeof("$wp+ver+1=yanny"));
+		send(getHost(), s, strlen(s), 0);
 	}
+
+
 }
 
 void GT::Device::syncTask() {
-	SyncMsg s = { 63738,999,3024000100 };
+	//SyncMsg s = { 63738,999,3024000100 };
+	SyncMsg s = { 63738,999,std::stoll(unitName) };
 	std::cout << "sincronizacion " << std::endl;
 
 	char buffer[100];
@@ -56,7 +68,7 @@ void GT::Device::trackingTask() {
 
 
 
-
+	std::cout << "Track " << track << std::endl;
 
 	send(getHost(), track.c_str(), track.size(), 0);
 
@@ -64,33 +76,45 @@ void GT::Device::trackingTask() {
 
 bool GT::Device::beginTasks() {
 	time_t time2;
-
-	double elapsed;
-
+	timespec ts2;
+	float elapsed;
+	int base;
 
 	while (true) {
 		Sleep(10);
-		time(&time2);
-		elapsed = difftime(time2, now);
+		//time(&time2);
+		base = timespec_get(&ts2, TIME_UTC);
 
-		std::cout << elapsed << std::endl;
+		elapsed = (ts2.tv_sec + ts2.tv_nsec * 1e-9) - (ts.tv_sec + ts.tv_nsec * 1e-9);
+		//elapsed = difftime(time2, now);
+
+		
 		if (trackingDelay >= trackingTime) {
+			std::cout << unitName << " Tracking: " << elapsed << std::endl;
 			trackingTask();
 			trackingDelay = 0;
 		}
 
 		if (syncDelay >= syncTime) {
+			std::cout << unitName << " Sync: " << elapsed << std::endl;
 			syncTask();
 			syncDelay = 0;
 		}
 
 		trackingDelay += elapsed;
 		syncDelay += elapsed;
-		now = time2;
+		//now = time2;
+		ts = ts2;
+
+		break;
 
 	}
 
 	return false;
+}
+
+void GT::Device::setUnitName(std::string name) {
+	unitName = name;
 }
 
 void GT::Device::getDateTime(std::string & datetime) {

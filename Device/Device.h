@@ -22,9 +22,11 @@ namespace GT {
 
 		bool beginTasks();
 
+		void setUnitName(std::string name);
+
 	private:
-		float syncTime = 10;
-		float trackingTime = 5;
+		float syncTime = 5;
+		float trackingTime = 8;
 
 		float trackingDelay = 0;
 		float syncDelay = 0;
@@ -39,6 +41,7 @@ namespace GT {
 		float getLat();
 
 		time_t now = 0;
+		timespec ts;
 
 	};
 }

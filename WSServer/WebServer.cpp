@@ -131,26 +131,50 @@ namespace GT {
     }
 
     void WebServer::jsonResponse(SOCKET client, RCommand * response) {
-        Document z;
-        z.SetObject();
+        Document json;
+        json.SetObject();
        
 
         Value msg;
-        char buffer[512];
-        int len = sprintf(buffer, "%s", response->message);
-        msg.SetString(response->message, strlen(response->message), z.GetAllocator());
-        z.AddMember("message", msg, z.GetAllocator());
-        z.AddMember("lastname", "Esteban", z.GetAllocator());
-        z["lastname"].SetString(response->user, strlen(response->user), z.GetAllocator());
+        //char buffer[512];
+        //int len = sprintf(buffer, "%s", response->message);
+        msg.SetString(response->message, strlen(response->message), json.GetAllocator());
+        json.AddMember("message", msg, json.GetAllocator());
+
+        //strcpy_s(buffer, strlen(response->unit), response->unit);
+        msg.SetString(response->unit, strlen(response->unit), json.GetAllocator());
+        json.AddMember("unit", msg, json.GetAllocator());
+        msg.SetString(response->date, strlen(response->date), json.GetAllocator());
+        json.AddMember("date", msg, json.GetAllocator());
+
+
+        msg.SetString(response->name, strlen(response->name), json.GetAllocator());
+        json.AddMember("name", msg, json.GetAllocator());
+
+        msg.SetString(response->user, strlen(response->user), json.GetAllocator());
+        json.AddMember("user", msg, json.GetAllocator());
+        
+        json.AddMember("header", response->header, json.GetAllocator());
+        
+        json.AddMember("unitId", response->unitId, json.GetAllocator());
+        json.AddMember("delay", response->delay, json.GetAllocator());
+        json.AddMember("type", (int)response->typeMessage, json.GetAllocator());
+        
+        //Value v;
+        //v.SetString(response->user, strlen(response->user), z.GetAllocator());
+        //z["user"].SetString(v);
+            //z["user"].SetString(response->user, strlen(response->user), z.GetAllocator());
+        //z["unit"].SetString(response->unit, strlen(response->unit), z.GetAllocator());
+        //z["date"].SetString(response->date, strlen(response->date), z.GetAllocator());
       
             
 
         StringBuffer bf5;
         Writer<StringBuffer> writer5(bf5);
 
-        z.Parse(bf5.GetString());
+        json.Parse(bf5.GetString());
 
-        z.Accept(writer5);
+        json.Accept(writer5);
 
         std::cout << "A5: " << bf5.GetString() << std::endl;
 
@@ -164,7 +188,7 @@ namespace GT {
         send(client, buffer2, size2, 0);
     
     }
-
+    /* Message from web app */
     void WebServer::onMessage(ConnInfo Info) {
 
 
@@ -335,11 +359,16 @@ namespace GT {
             "",
             "",
             "",
+            "",//name
             (int)document["unitId"].GetInt(),
             document["commandId"].GetInt(),
             document["mode"].GetInt(),
+            "",// date
             (unsigned short)document["level"].GetInt(),
-            0
+            0,//index
+            ClientMsg::Request,
+            0,// time
+            0// Delay
         };
 
 
@@ -430,7 +459,7 @@ void test2(GT::CSInfo Info) {
     char buffer2[512];
     memcpy(buffer2, &c, sizeof(c));
     send(Info.master, buffer2, sizeof(buffer2), 0);
-
+    
     cout << "TEST DEBUG VALUE " << Info.master << endl;
     send(Info.master, "Barcelona vs Real Madrid", strlen("Barcelona vs Real Madrid"), 0);
 }

@@ -3,6 +3,18 @@
 
 namespace GT {
 
+	enum class ClientMsg {
+		Nothing,
+		Connecting,
+		Disconnecting,
+		Message,
+		CommandResponse,
+		CommandError,
+		Error,
+		Request
+
+
+	};
 	
 	struct InfoDB {
 
@@ -102,6 +114,7 @@ namespace GT {
 		int unit_id;
 		int device_id;
 		int version_id;
+		char name[41] = "";
 	};
 
 	struct CommandResult {
@@ -116,16 +129,20 @@ namespace GT {
 		unsigned short header;
 		unsigned short type;
 		unsigned int id;
-		char user[41];
-		char message[255];
-		char unit[11];
+		char user[41] = "";
+		char message[255] = "";
+		char unit[11] = "";
+		char name[41] = "";
 		int unitId;
 		int commandId;
 		int mode;
-		char date[20];
+		char date[20] = "";
+		
 		unsigned short level;
 		unsigned short index;
+		ClientMsg typeMessage = ClientMsg::Nothing;
 		time_t time;
+		double delay = 0;
 	};
 	
 	

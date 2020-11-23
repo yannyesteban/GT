@@ -20,9 +20,10 @@ namespace GT {
 
 	void DB::init() {
 		string query = "";
-		query = R"(SELECT u.id as unit_id, d.id as device_id, device_name, version_id 
-				FROM units as u 
-				INNER JOIN devices as d on d.id = u.device_id 
+		query = R"(SELECT u.id as unit_id, d.id as device_id, device_name, version_id, n.name
+				FROM units as u
+				INNER JOIN devices as d on d.id = u.device_id
+				INNER JOIN units_names as n ON n.id = u.name_id
 				WHERE device_name = ?)";
 
 		stmtInfoClient = cn->prepareStatement(query.c_str());
@@ -920,7 +921,7 @@ namespace GT {
 
 	InfoClient DB::getInfoClient(string id) {
 		int unit_id = 0, version_id = 0, device_id = 0;
-
+		InfoClient info = {0,0,0,"xxxxx"};
 		try {
 			//sql::Statement* stmt;
 			sql::ResultSet* result;
@@ -933,9 +934,10 @@ namespace GT {
 				result = stmtInfoClient->getResultSet();
 
 				while (result->next()) {
-					unit_id = result->getInt("unit_id");
-					device_id = result->getInt("device_id");
-					version_id = result->getInt("version_id");
+					info.unit_id = result->getInt("unit_id");
+					info.device_id = result->getInt("device_id");
+					info.version_id = result->getInt("version_id");
+					strcpy_s(info.name, sizeof(info.name), result->getString("name").c_str());
 				}
 
 				delete result;
@@ -959,8 +961,8 @@ namespace GT {
 		}
 
 
-		InfoClient nn = { unit_id, device_id, version_id };
-		return nn;
+		
+		return info;
 	}
 
 	void DB::deviceConfig(const char* unit_id, CommandResult* commandResult) {

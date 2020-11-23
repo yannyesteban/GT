@@ -33,6 +33,7 @@ namespace GT {
 		short int status = 0;
 		SOCKET socket;
 		short int type = 0;
+		
 
 	};
 
@@ -63,6 +64,7 @@ namespace GT {
 		std::map<SOCKET, GTClient> clients;
 		std::map<string, GTClient > mDevices;
 		std::map<int, string> mUnitName;
+		std::map<int, string> mClientName;
 		//AppConfig * config;
 		//Versions versions;
 		//sql::Driver* driver = nullptr;
@@ -71,6 +73,9 @@ namespace GT {
 		//sql::ResultSet* result = nullptr;
 		std::string getUnitName(int unitId);
 		void setUnitName(int unitId, std::string name);
+
+		std::string getClientName(int unitId);
+		void setClientName(int unitId, std::string name);
 
 		WC::Webcar * webcar;
 		//RCommand unitResponse;

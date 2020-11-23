@@ -9,12 +9,12 @@ namespace GT {
 	}
 
 	bool Server::init(AppConfig pConfig) {
-
+		/*
 		time_t now;
 		struct tm newyear;
 		double seconds;
 
-		time(&now);  /* get current time; same as: now = time(NULL)  */
+		time(&now);  // get current time; same as: now = time(NULL)  
 
 		newyear = *localtime(&now);
 
@@ -24,7 +24,7 @@ namespace GT {
 		seconds = difftime(now, mktime(&newyear));
 
 		printf("%.f seconds since new year in the current timezone.\n", seconds);
-
+		*/
 		/*
 		std::string result[20];
 		int len;
@@ -117,6 +117,8 @@ namespace GT {
 		IdHeader* header = (IdHeader*)Info.buffer;
 		std::string command = "";
 		
+
+		/* message from Websocket Server == 10001 */
 		if (header->header == 10001) {
 			std::string str;
 
@@ -254,8 +256,10 @@ namespace GT {
 				clients[Info.client].id = cInfo.unit_id;
 				clients[Info.client].version_id = cInfo.version_id;
 				strcpy(clients[Info.client].device_id, (const char*)name);
-				setUnitName(cInfo.unit_id, name);
 				
+				setUnitName(cInfo.unit_id, name);
+				setClientName(cInfo.unit_id, cInfo.name);
+
 				RCommand info;
 				info.header = 0;
 				info.commandId = 0;
@@ -265,12 +269,25 @@ namespace GT {
 				strcpy(info.message, "CONNECTING");
 				info.mode = 0;
 				info.type = 5;
+				info.typeMessage = ClientMsg::Connecting;
 				strcpy(info.unit, name);
 				strcpy(info.user, name);
-				strcpy(info.date, "0000-00-00 00:00:00");
+				strcpy(info.name, cInfo.name);
+				
+				time_t rawtime;
+				struct tm* timeinfo;
+				
+
+				time(&rawtime);
+				timeinfo = localtime(&rawtime);
+
+				strftime(info.date, sizeof(info.date), "%F %T", timeinfo);
+
+				//strcpy(info.date, "0000-00-00 00:00:00");
 				//strcpy(info.date, "");
 				info.unitId = cInfo.unit_id;
 				db->saveResponse(&info, "CONNECTED");
+				broadcast(&info);
 				time(&info.time);
 
 				cout << "Unit " << cInfo.unit_id << ", name: "<< name << " is connected " << endl;
@@ -428,11 +445,11 @@ namespace GT {
 					
 					time_t now;
 					time(&now);
-					double seconds;
+					
 
-					seconds = difftime(now, unitResponse.time);
-
-					std::cout << Color::_magenta() << " delay Time: " << seconds << Color::_reset() << std::endl;
+					
+					unitResponse.delay = difftime(now, unitResponse.time);
+					std::cout << Color::_magenta() << " delay Time: " << unitResponse.delay << Color::_reset() << std::endl;
 
 
 					db->saveResponse(&unitResponse, to.c_str());
@@ -448,6 +465,8 @@ namespace GT {
 					//db->evalPending(clients[Info.client].device_id, &rCommand, unitResponse.type);
 					//strcpy_s(response.message, strlen(response.message)+1, to.c_str());
 					strcpy(unitResponse.message, to.c_str());
+					strcpy(unitResponse.name, getClientName(unitResponse.unitId).c_str());
+					unitResponse.typeMessage = ClientMsg::CommandResponse;
 					broadcast(&unitResponse);
 				} else {
 					//cout << "es un track" << endl;
@@ -468,49 +487,19 @@ namespace GT {
 	
 	void Server::broadcast(RCommand * response) {
 		//cout << endl << "***** *** Entrando a un Broadcast; " << rClients.size() << endl;
+		
 		char buffer[512];
+		
+		response->header = 10050;
+
+		memcpy(buffer, &(*response), sizeof(RCommand));
+		
 		for (std::map<SOCKET, RClient>::iterator it = rClients.begin(); it != rClients.end(); ++it) {
-			//cout << " --- " << it->second.name << endl;
-			
-			/*
-			strcpy(buffer, response->message);
-			send(it->second.socket, buffer, strlen(buffer), 0);
-			strcpy(buffer, response->user);
-			send(it->second.socket, buffer, strlen(buffer), 0);
-			*/
-			response->header = 10050;
-			//cout << ANSI_COLOR_RED "response header " << response->header << endl;
-			//memcpy(buffer, &response, sizeof(response));
-			//send(it->second.socket, buffer, (int)sizeof(buffer), 0);
-			//send(it->second.socket, "adios", strlen("adios")+1, 0);
-
-			RCommand x;
-			
-			x.header = 10050;
-			x.id = 1;
-			x.index = 0;
-			x.level = 0;
-			strcpy(x.message, response->message);
-			strcpy(x.user, response->user);
-			strcpy(x.unit, response->unit);
-
-
-			
-			//strcpy(x.message,response->message);
-			memcpy(buffer, &x, sizeof(x));
 			send(it->second.socket, buffer, (int)sizeof(buffer), 0);
-
-			//send(it->second.socket, "Good Bye", strlen("Good Bye") + 1, 0);
-
-			memset(&buffer, 0, sizeof(buffer));//clear the buffer
-
-			memcpy(buffer, &response, sizeof(response));
-			strcpy(buffer, (const char *)response);
-			//send(it->second.socket, buffer, (int)sizeof(buffer), 0);
-			
 		}
-
-		//delete buffer;
+		
+		memset(&buffer, 0, sizeof(buffer));//clear the buffer
+		
 	}
 	
 	std::string Server::getUnitName(int unitId) {
@@ -520,4 +509,13 @@ namespace GT {
 	void Server::setUnitName(int unitId, std::string name) {
 		mUnitName[unitId] = name;
 	}
+
+	std::string Server::getClientName(int unitId) {
+		return mClientName[unitId];
+	}
+
+	void Server::setClientName(int unitId, std::string name) {
+		mClientName[unitId] = name;
+	}
+
 }
