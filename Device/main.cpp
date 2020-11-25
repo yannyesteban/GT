@@ -33,7 +33,7 @@ int main()
     Info.host = (char*)"127.0.0.1";
     Info.port = 3322;
 
-    bool option = false;
+    bool option = true;
 
     if (option) {
         auto A = new GT::DeviceAdmin();

@@ -212,6 +212,43 @@ namespace GT {
 	}
 
 	void Server::onClose(ConnInfo Info) {
+
+
+		clients[Info.client].device_id;
+		RCommand resp;
+		resp.unitId = clients[Info.client].id;
+		resp.header = 0;
+		resp.commandId = 0;
+		resp.id = 0;
+		resp.index = 0;
+		resp.level = 0;
+		
+		resp.mode = 0;
+		resp.type = 5;
+		resp.typeMessage = ClientMsg::Disconnecting;
+		strcpy(resp.message, "DISCONNECTED");
+		strcpy(resp.unit, clients[Info.client].device_id);
+		strcpy(resp.user, clients[Info.client].device_id);
+		strcpy(resp.name, getClientName(clients[Info.client].id).c_str());
+
+		time_t rawtime;
+		struct tm* timeinfo;
+
+
+		time(&rawtime);
+		timeinfo = localtime(&rawtime);
+
+		strftime(resp.date, sizeof(resp.date), "%F %T", timeinfo);
+
+		//strcpy(info.date, "0000-00-00 00:00:00");
+		//strcpy(info.date, "");
+		
+		db->saveResponse(&resp, "DISCONNECTED");
+		broadcast(&resp);
+
+
+
+
 		printf("ERROR ESTOY DESCONECTANDO (%i): %s client: %d\n", Info.error, Info.tag, Info.client);
 		
 		for (std::map<SOCKET, GTClient >::iterator it = clients.begin(); it != clients.end(); it++) {
