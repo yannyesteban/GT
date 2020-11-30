@@ -513,7 +513,7 @@ namespace GT {
 						cout << Color::_cyan() << "Saving Track from: " << Color::_reset() << getUnitName(clients[Info.client].id)   << endl;
 					}
 					
-					//webcar->insertTrack(clients[Info.client].device_id, to.c_str());
+					webcar->insertTrack(clients[Info.client].device_id, to.c_str());
 				}
 				
 			}

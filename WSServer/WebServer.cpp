@@ -398,12 +398,39 @@ namespace GT {
         char buffer[DEFAULT_BUFLEN];
         size_t size = 0;
         
+        RCommand response;
+        response.unitId = r.unitId;
+        response.commandId = r.commandId;
+
+        //char message[100] = "Receiving ";
+        //strcat_s(message, sizeof(message), r.message);
+        strcpy_s(response.message, sizeof(response.message), r.message);
+        strcpy_s(response.user, sizeof(response.user), r.user);
+        strcpy_s(response.name, sizeof(response.name), r.unit);
+        strcpy_s(response.unit, sizeof(response.unit), "Sending...");
+        //strcpy_s(response., sizeof(response.name), r.unit);
+
+        time_t rawtime;
+        struct tm* timeinfo;
+
+
+        time(&rawtime);
+        timeinfo = localtime(&rawtime);
+
+        strftime(response.date, sizeof(response.date), "%F %T", timeinfo);
+
+
+
+        response.unitId = r.unitId;
+        jsonResponse(Info.client, &response);
+        /*
+
         encodeMessage((char*)"websocket 2021", buffer, size);
 
         printf("%s(%d)\n", Info.buffer, size);
 
         send(Info.client, buffer, (int)size, 0);
-
+    */
 
 
     }
