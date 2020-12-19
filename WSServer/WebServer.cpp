@@ -294,7 +294,7 @@ namespace GT {
 
 
 
-
+        int header = 10020;
         if (msgType == "SET") {
             type = 1;
             cout << "configuración" << endl;
@@ -303,6 +303,12 @@ namespace GT {
         if (msgType == "GET") {
             type = 2;
             cout << "recuperación" << endl;
+        }
+
+        if (msgType == "RC") {
+            type = 10;
+            header = 10100;
+            cout << "reconnection" << endl;
         }
 
         if (msgType == "h") {
@@ -353,7 +359,8 @@ namespace GT {
 
         
         GT::RCommand r = {
-            10020,
+            //10020,
+            header,
             type,
             Info.client,
             "",

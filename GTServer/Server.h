@@ -1,6 +1,8 @@
 #pragma once
 #include <sstream>
 #include <ctime>
+#include <thread>         // std::thread
+#include <chrono>         // std::chrono::seconds
 #include <mysql/jdbc.h>
 #include "Color.h"
 #include "Types.h"
@@ -12,7 +14,7 @@
 #include "Webcar.h"
 
 namespace GT {
-
+	
 
 	struct RClient {
 		SOCKET socket;
@@ -37,9 +39,14 @@ namespace GT {
 
 	};
 
+	
+
+	void runPending(std::map<string, GTClient > * mDevices, DB* db);
+
 	class Server: public Socket {
 	public:
 		Server(SocketInfo pInfo);
+		~Server();
 		bool init(AppConfig pConfig);
 		void onConnect(ConnInfo Info);
 		void onMessage(ConnInfo Info);

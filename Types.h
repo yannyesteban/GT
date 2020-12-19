@@ -42,6 +42,12 @@ namespace GT {
 		unsigned long Keep_Alive_Device_ID;
 	} SyncMsg;
 
+	struct ClientInfo{
+		unsigned int unitId;
+		unsigned char status;
+		
+	};
+
 	struct Versions {
 		int e[50];
 		int n = 0;
@@ -143,6 +149,11 @@ namespace GT {
 		ClientMsg typeMessage = ClientMsg::Nothing;
 		time_t time;
 		double delay = 0;
+	};
+
+	struct PendingCommand {
+		std::string name;
+		std::string command;
 	};
 	
 	

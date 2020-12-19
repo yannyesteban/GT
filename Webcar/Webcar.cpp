@@ -708,7 +708,7 @@ namespace WC {
 				}
 				delete result;
 			}
-			cout << " last ID : " << trackId << endl;
+			//cout << " last ID : " << trackId << endl;
 			/*
 			P.codequipo = codequipo;
 			P.trackId = trackId;

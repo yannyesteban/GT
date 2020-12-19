@@ -5,20 +5,108 @@ using namespace std;
 
 namespace GT {
 	DB::DB(InfoDB pInfo):
-		info(pInfo),
-		debug(pInfo.debug),
-		nVersions(0),
-		driver(nullptr),
-		cn(nullptr),
-		stmt(nullptr),
-		result(nullptr) {
+			info(pInfo),
+			debug(pInfo.debug),
+			nVersions(0),
+			driver(nullptr),
+			cn(nullptr),
+			stmt(nullptr),
+			result(nullptr)
+		{
+		
+		driver = get_driver_instance();
 	}
 
 	DB::~DB() {
-		delete stmtInfoClient;
+		//delete stmtInfoClient;
 	}
+	
+	bool DB::connect() {
+		try {
 
+			bool reconnect = false;
+			bool connected = false;
+
+			if (cn == NULL) {
+				connected = false;
+			} else {
+				if (cn->isValid()) {
+					return true;
+				}
+				//OutputDebugString(_T("\ncn->isValid() || cn->reconnect()"));
+				reconnect = (cn->isValid() || cn->reconnect());
+			}
+
+			if (reconnect) {
+				reset();
+				init();
+				return true;
+			}
+
+
+			if (!connected) {
+
+				//reconnect = (cn->isValid() || cn->reconnect());
+
+				char str_host[100] = "tcp://";
+				strcat_s(str_host, info.host);
+				strcat_s(str_host, ":");
+				strcat_s(str_host, info.port);
+				
+				cn = driver->connect(str_host, info.user, info.pass);
+				connected = cn->isValid();
+				bool myTrue = true;
+				cn->setClientOption("OPT_RECONNECT", &myTrue);
+				cn->setSchema(info.name);
+
+				//std::cout << "Mysql has connected correctaly, db: " << info.name << endl;
+
+				reset();
+				init();
+				//OutputDebugString(_T("Mysql Conectado"));
+
+			}
+
+			if (connected) {
+				
+				cout << "Mysql has connected correctaly " << cn->isValid() << endl;
+				/* Connect to the MySQL test database */
+
+				//OutputDebugString(_T("Mysql Todo bien"));
+				return true;
+			}
+
+
+
+			char str_host[100] = "tcp://";
+			strcat_s(str_host, info.host);
+			strcat_s(str_host, ":");
+			strcat_s(str_host, info.port);
+
+			cn = driver->connect(str_host, info.user, info.pass);
+
+			/* Connect to the MySQL test database */
+			cn->setSchema(info.name);
+			//cn->isValid()
+			cout << "Mysql has connected correctaly, db: " << info.name << endl;
+			init();
+			return true;
+
+		} catch (sql::SQLException& e) {
+			SQLException(e, __LINE__);
+		}
+
+		return false;
+	}
+	
 	void DB::init() {
+
+		if (initialized) {
+			return;
+		}
+		
+		initialized = true;
+
 		string query = "";
 		query = R"(SELECT u.id as unit_id, d.id as device_id, device_name, version_id, n.name
 				FROM units as u
@@ -28,52 +116,254 @@ namespace GT {
 
 		stmtInfoClient = cn->prepareStatement(query.c_str());
 
+		query = R"(UPDATE units SET conn_status=?, conn_date=? WHERE id=?)";
+		stmtUpdateClientStatus = cn->prepareStatement(query.c_str());
+
+		query = R"(SELECT n.name, p.command, d.device_name
+			FROM pending as p
+			INNER JOIN units as u ON u.id = p.unit_id
+			INNER JOIN units_names as n ON n.id = u.name_id
+			INNER JOIN devices as d ON d.id = u.device_id WHERE FIND_IN_SET(p.unit_id, ?); )";
+		stmtPendingCommand = cn->prepareStatement(query.c_str());
+		
+
+		stmtLoadProtocols = cn->prepareStatement(
+			R"(SELECT id, tag_length, pass_default, protocol_pre,sync_header, format_id, token_ok, token_error,token_resp
+				FROM devices_versions as d )"
+		);
+
+		stmtLoadVersions = cn->prepareStatement(
+			"SELECT sync_dec FROM devices_versions d GROUP BY sync_dec; "
+		);
+
+
+		stmtCreateCommand = cn->prepareStatement(
+			R"(
+				SELECT count(p.id) as n_commands, c.*, CONCAT(protocol_pre, command) as command1, d.password,
+					c.use_tag, n.name as unit, 
+					sum(case when p.type='Q' then 1 else 0 end) as qp,
+					sum(case when p.type='A' then 1 else 0 end) as ap,
+					sum(case when p.type='W' then 1 else 0 end) as wp,
+					sum(case when p.type='R' then 1 else 0 end) as rp 
+				FROM devices_commands as c 
+				LEFT JOIN devices_comm_params as p ON p.command_id = c.id 
+				INNER JOIN devices_versions as v ON v.id = c.version_id 
+				INNER JOIN devices as d ON d.version_id = v.id 
+				INNER JOIN units as u ON u.device_id = d.id 
+				INNER JOIN units_names as n ON n.id = u.name_id
+
+				WHERE 
+				c.id = ? 
+				and 
+				u.id = ? 
+				order by c.id, `order`;)");
+		
+
+		stmtDelDeviceConfig = cn->prepareStatement(
+			R"(DELETE dc
+			FROM devices_config as dc
+			INNER JOIN units as u ON u.id = dc.unit_id
+			INNER JOIN devices as d ON d.id = u.device_id
+			INNER JOIN devices_versions as v ON v.id = d.version_id
+			INNER JOIN devices_comm_params as p ON p.id = dc.param_id
+
+			INNER JOIN devices_commands as c ON c.id = p.command_id
+
+			WHERE c.command = ? and u.id = ?)");
+
+
+		stmtDeviceConfig = cn->prepareStatement(
+			R"(SELECT
+			p.id as param_id, param, u.id as unit_id, c.command
+
+
+			FROM devices_commands as c
+			INNER JOIN devices_comm_params as p ON p.command_id = c.id
+			INNER JOIN devices_versions as v ON v.id = c.version_id
+			INNER JOIN devices as d ON d.version_id = v.id
+			INNER JOIN units as u ON u.device_id = d.id
+
+			WHERE c.command = ? and u.id = ?
+			ORDER BY p.order)");
+
+
+		stmtGetPending = cn->prepareStatement(
+			R"(SELECT p.*
+			FROM pending as p
+			INNER JOIN units as u ON u.id = p.unit_id
+			INNER JOIN devices as d ON d.id = u.device_id
+			INNER JOIN devices_versions as v ON v.id = d.version_id
+
+
+			INNER JOIN devices_commands as c ON c.id = p.command_id
+
+			WHERE u.id = ? AND c.command = ? AND p.index = ?)");
+
+
+		stmtEvalPending = cn->prepareStatement(
+			R"(DELETE p
+			FROM pending as p
+			INNER JOIN units as u ON u.id = p.unit_id
+			INNER JOIN devices as d ON d.id = u.device_id
+			INNER JOIN devices_versions as v ON v.id = d.version_id
+
+
+			INNER JOIN devices_commands as c ON c.id = p.command_id
+
+			WHERE u.id = ? AND c.command = ? AND p.index = ? )");
+
+
+
+		stmtReadCommand = cn->prepareStatement(
+			R"(SELECT IF(p.type = 2, true, false) as result
+			FROM pending as p
+			INNER JOIN units as u ON u.id = p.unit_id
+			INNER JOIN devices as d ON d.id = u.device_id
+			INNER JOIN devices_versions as v ON v.id = d.version_id
+
+
+			INNER JOIN devices_commands as c ON c.id = p.command_id
+
+			WHERE u.id = ? AND c.command = ? AND p.index = ?)");
+
+
+		//if (!stmtGetTag) {
+			stmtGetTag = cn->prepareStatement(R"(
+				SELECT (COALESCE(MAX(`index`) , 0) % 65535 + 1) as n
+				FROM pending
+				WHERE unit_id = ? AND command_id = ? 
+			)");
+		//}
+
+
+
+		//	if (!stmtInfoCommand) {
+		stmtInfoCommand = cn->prepareStatement(
+			R"(SELECT p.*
+			FROM pending as p
+			INNER JOIN units as u ON u.id = p.unit_id
+			INNER JOIN devices as d ON d.id = u.device_id
+			INNER JOIN devices_versions as v ON v.id = d.version_id
+
+
+			INNER JOIN devices_commands as c ON c.id = p.command_id
+
+			WHERE u.id = ? AND c.command = ? AND p.index = ?
+		)");
+		//	}
+
+
+		//if (!stmtSaveResponse) {
+		stmtSaveResponse = cn->prepareStatement(
+			R"(INSERT INTO unit_response
+				(`unit_id`,`unit`,`type`,`level`,`mode`, `command_id`,`index`, `command`,`response`,`user`,`date_from`) 
+				VALUES
+				(?,?,?,?,?,?,?,?,?,?,IF(?='0000-00-00 00:00:00',now(),?)))");
+		//}
+
+		
+		stmtDeletePending = cn->prepareStatement("DELETE FROM pending WHERE unit_id = ? AND command_id = ? ");
+		stmtInsertPending = cn->prepareStatement("INSERT INTO pending (`unit_id`, `command_id`, `command`, `tag`, `index`, `user`, `type`, `mode`,`server_time`) VALUES (?,?,?,?,?,?,?,?,?)");
+		
+
+		initStatus();
+		loadProtocols();
+		loadVersions();
+		loadClients();
+		loadFormats();
 	}
 
-	bool DB::connect() {
+	
+
+	bool DB::isValid() {
+		if (cn == NULL) {
+			return false;
+		}
+		cn->reconnect();
+
+		return cn->isValid();
+	}
+
+	void DB::reset() {
+
+		
+		delete stmtLoadProtocols;
+		delete stmtLoadVersions;
+
+		delete stmtCreateCommand;
+		delete stmtDelDeviceConfig;
+		delete stmtDeviceConfig;
+		delete stmtGetPending;
+		delete stmtEvalPending;
+		delete stmtReadCommand;
+		delete stmtInfoCommand;
+		delete stmtSaveResponse;
+		delete stmtDeletePending;
+		delete stmtInsertPending;
+		delete stmtGetTag;
+		delete stmtInfoClient;
+		delete stmtUpdateClientStatus;
+		delete stmtPendingCommand;
+
+
+		
+		//delete stmtMain;
+		initialized = false;
+	}
+
+	void DB::SQLException(sql::SQLException& e, long line) {
+
+		cout << "# ERR: SQLException in " << __FILE__;
+		cout << "(" << __FUNCTION__ << ") on line " << line << endl;
+		cout << "# ERR: " << e.what();
+		cout << " (MySQL error code: " << e.getErrorCode();
+		//cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+	}
+
+	void DB::SQLException(sql::SQLException& e) {
+		
+		cout << "# ERROR: SQLException in " << __FILE__;
+		cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+		cout << "# ERROR - : " << e.what();
+		cout << " (MySQL error code: " << e.getErrorCode() << endl;
+		//cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+	}
+
+	void DB::initStatus() {
+
+		if (!connect()) {
+			return;
+		}
+
 		try {
-			driver = get_driver_instance();
-
-			char str_host[100] = "tcp://";
-			strcat_s(str_host, info.host);
-			strcat_s(str_host, ":");
-			strcat_s(str_host, info.port);
-
-			cn = driver->connect(str_host, info.user, info.pass);
+			sql::Statement* stmt;
 			
-			/* Connect to the MySQL test database */
-			cn->setSchema(info.name);
-			//cn->isValid()
-			cout << "Mysql has connected correctaly, db: " << info.name << endl;
-			init();
-			return 1;
+			stmt = cn->createStatement();
 
-		} catch (sql::SQLException & e) {
-			cout << "# ERR: SQLException in " << __FILE__;
-			cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-			cout << "# ERR: " << e.what();
-			cout << " (MySQL error code: " << e.getErrorCode();
-			//cout << ", SQLState: " << e.getSQLState() << " )" << endl;
-			return 0;
+			stmt->execute("UPDATE units SET conn_status = 0");
+
+			
+			delete stmt;
+
+
+
+		} catch (sql::SQLException& e) {
+			SQLException(e, __LINE__);
 		}
 	}
 
 	void DB::loadProtocols() {
 		
+		if (!connect()) {
+			return;
+		}
+
 		try {
-			sql::Statement* stmt;
+			
 			sql::ResultSet* result;
-			sql::PreparedStatement* p_stmt;
 
-			stmt = cn->createStatement();
-
-			p_stmt = cn->prepareStatement(
-				R"(SELECT id, tag_length, pass_default, protocol_pre,sync_header, format_id, token_ok, token_error,token_resp
-				FROM devices_versions as d )"
-			);
-
-			if (p_stmt->execute()) {
-				result = p_stmt->getResultSet();
+			if (stmtLoadProtocols->execute()) {
+				result = stmtLoadProtocols->getResultSet();
 
 				while (result->next()) {
 
@@ -93,8 +383,7 @@ namespace GT {
 				}
 				
 				delete result;
-				delete p_stmt;
-				delete stmt;
+				
 				if (debug) {
 					printProtocols();
 				}
@@ -103,11 +392,7 @@ namespace GT {
 
 
 		} catch (sql::SQLException & e) {
-			cout << "# ERR: SQLException in " << __FILE__;
-			cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-			cout << "# ERR: " << e.what();
-			cout << " (MySQL error code: " << e.getErrorCode();
-			//cout << ", SQLState: " << e.getSQLState().c_str() << " )" << endl;
+			SQLException(e, __LINE__);
 		}
 
 	}
@@ -141,19 +426,16 @@ namespace GT {
 
 	void DB::loadVersions() {
 
+		if (!connect()) {
+			return;
+		}
+
 		try {
-			sql::Statement* stmt;
+			
 			sql::ResultSet* result;
-			sql::PreparedStatement* p_stmt;
 
-			stmt = cn->createStatement();
-
-			p_stmt = cn->prepareStatement(
-				"SELECT sync_dec FROM devices_versions d GROUP BY sync_dec; "
-			);
-
-			if (p_stmt->execute()) {
-				result = p_stmt->getResultSet();
+			if (stmtLoadVersions->execute()) {
+				result = stmtLoadVersions->getResultSet();
 
 				while (result->next()) {
 
@@ -162,8 +444,8 @@ namespace GT {
 				}
 
 				delete result;
-				delete p_stmt;
-				delete stmt;
+				
+				
 				if (debug) {
 					printVersions();
 				}
@@ -172,11 +454,7 @@ namespace GT {
 
 
 		} catch (sql::SQLException & e) {
-			cout << "# ERR: SQLException in " << __FILE__;
-			cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-			cout << "# ERR: " << e.what();
-			cout << " (MySQL error code: " << e.getErrorCode();
-			//cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+			SQLException(e, __LINE__);
 		}
 	}
 
@@ -194,7 +472,9 @@ namespace GT {
 	}
 
 	void DB::loadClients() {
-
+		if (!connect()) {
+			return;
+		}
 		try {
 			sql::Statement* stmt;
 			sql::ResultSet* result;
@@ -234,11 +514,7 @@ namespace GT {
 
 
 		} catch (sql::SQLException & e) {
-			cout << "# ERR: SQLException in " << __FILE__;
-			cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-			cout << "# ERR: " << e.what();
-			cout << " (MySQL error code: " << e.getErrorCode();
-			//cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+			SQLException(e, __LINE__);
 		}
 	}
 
@@ -258,6 +534,11 @@ namespace GT {
 	}
 
 	void DB::loadFormats() {
+
+		if (!connect()) {
+			return;
+		}
+
 		try {
 			sql::Statement* stmt;
 			sql::ResultSet* result;
@@ -289,11 +570,7 @@ namespace GT {
 
 
 		} catch (sql::SQLException & e) {
-			cout << "# ERR: SQLException in " << __FILE__;
-			cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-			cout << "# ERR: " << e.what();
-			cout << " (MySQL error code: " << e.getErrorCode();
-			//cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+			SQLException(e, __LINE__);
 		}
 	
 	
@@ -388,22 +665,11 @@ namespace GT {
 			return true;
 
 		} catch (sql::SQLException & e) {
-			printf("" ANSI_COLOR_BLUE ANSI_COLOR_CYAN_);
-			std::cout <<" ERROR en 390 -"<< query << endl;
-			printf("" ANSI_COLOR_RESET);
-
-			
-			cout << endl << endl << "# ERR: SQLException in " << __FILE__;
-			cout << endl << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-			cout << endl << "# ERR: " << e.what();
-			cout << endl << " (MySQL error code: " << e.getErrorCode();
-			//cout << ", SQLState: " << e.getSQLState() << " )" << endl;
-
+			SQLException(e, __LINE__);
 		}
 		
 		return false;
 	}
-	
 	
 	bool DB::saveTrack(const char* unit_id, int id, int version, const char* buffer) {
 
@@ -449,13 +715,7 @@ namespace GT {
 
 		} catch (sql::SQLException & e) {
 
-			if (1 == 0) {
-				cout << endl << endl << "# ERR: SQLException in " << __FILE__;
-				cout << endl << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-				cout << endl << "# ERR: " << e.what();
-				cout << endl << " (MySQL error code: " << e.getErrorCode();
-				cout << ", SQLState: " << e.getSQLState() << " )" << endl;
-			}
+			//SQLException(e, __LINE__);
 
 		}
 
@@ -464,6 +724,10 @@ namespace GT {
 	}
 
 	bool DB::saveEvent(const char* unit_id, int type_id) {
+
+		if (!connect()) {
+			return false;
+		}
 
 		printf("unit_id: %s, type: %d\n", unit_id, type_id);
 
@@ -482,13 +746,7 @@ namespace GT {
 
 		} catch (sql::SQLException & e) {
 
-			if (1 == 0) {
-				cout << endl << endl << "# ERR: SQLException in " << __FILE__;
-				cout << endl << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-				cout << endl << "# ERR: " << e.what();
-				cout << endl << " (MySQL error code: " << e.getErrorCode();
-				cout << ", SQLState: " << e.getSQLState() << " )" << endl;
-			}
+			SQLException(e, __LINE__);
 			return false;
 
 		}
@@ -496,6 +754,8 @@ namespace GT {
 	}
 
 	bool DB::isVersion(int value) {
+
+
 		for (std::list<int>::iterator it = mVersions.begin(); it != mVersions.end(); it++) {
 
 			
@@ -508,8 +768,13 @@ namespace GT {
 		return false;
 	}
 
+	/* NO */
 	std::string DB::createCommand(CMDMsg* msg, unsigned int unitId, unsigned short commandId) {
 		
+		if (!connect()) {
+			return "";
+		}
+
 		//CMDMsg* msg = (CMDMsg*)Info.buffer;
 		Document document;
 		//std::string str = msg->params;
@@ -591,12 +856,7 @@ namespace GT {
 			printf("" ANSI_COLOR_RESET);
 
 		} catch (sql::SQLException & e) {
-			cout << "# ERR: SQLException in " << __FILE__;
-			cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-			cout << "# ERR: " << e.what();
-			cout << " (MySQL error code: " << e.getErrorCode();
-			//cout << ", SQLState: " << e.getSQLState() << " )" << endl;
-			//return "";
+			SQLException(e, __LINE__);
 		}
 
 
@@ -604,9 +864,11 @@ namespace GT {
 		return str;
 	}
 
-
+	/* NO*/
 	std::string DB::createCommand(unsigned int unitId, unsigned short commandId, std::string tag, std::list<string> params, unsigned short type) {
-
+		if (!connect()) {
+			return "";
+		}
 		cout << "Create Command" << endl;
 
 		std::string command;
@@ -704,12 +966,7 @@ namespace GT {
 			printf("" ANSI_COLOR_RESET);
 
 		} catch (sql::SQLException& e) {
-			cout << "# ERR: SQLException in " << __FILE__;
-			cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-			cout << "# ERR: " << e.what();
-			cout << " (MySQL error code: " << e.getErrorCode();
-			//cout << ", SQLState: " << e.getSQLState() << " )" << endl;
-			//return "";
+			SQLException(e, __LINE__);
 		}
 
 
@@ -718,7 +975,9 @@ namespace GT {
 	}
 
 	std::string DB::createCommand(RCommand* request, std::list<string> params) {
-
+		if (!connect()) {
+			return "";
+		}
 		unsigned int index = getTag(request->unitId, request->commandId, request->type);
 
 		request->index = index;
@@ -729,13 +988,13 @@ namespace GT {
 		std::string str = "";
 		std::string tag = to_string(index);
 		try {
-			//sql::Statement* stmt;
+			
 			sql::ResultSet* result;
-			sql::PreparedStatement* p_stmt;
+			
 
 			int useTag = 1;
 
-			//stmt = cn->createStatement();
+			
 			string query = R"(
 				SELECT count(p.id) as n_commands, c.*, CONCAT(protocol_pre, command) as command1, d.password,
 					c.use_tag, n.name as unit, 
@@ -756,16 +1015,17 @@ namespace GT {
 				u.id = ? 
 				order by c.id, `order`;)";
 			//cout << "query: " << query << endl;
-			p_stmt = cn->prepareStatement(query.c_str());
+			
 			int n_commands = 0;
 
 			std::string typeCommand = "A";
 
 
-			p_stmt->setInt(1, request->commandId);
-			p_stmt->setInt(2, request->unitId);
-			if (p_stmt->execute()) {
-				result = p_stmt->getResultSet();
+			stmtCreateCommand->setInt(1, request->commandId);
+			stmtCreateCommand->setInt(2, request->unitId);
+
+			if (stmtCreateCommand->execute()) {
+				result = stmtCreateCommand->getResultSet();
 
 				if (result->next()) {
 
@@ -797,11 +1057,6 @@ namespace GT {
 				}
 
 				delete result;
-				delete p_stmt;
-				//delete stmt;
-				if (debug) {
-					//printClients();
-				}
 
 			}
 
@@ -811,10 +1066,7 @@ namespace GT {
 				for (std::list<std::string>::iterator it = params.begin(); it != params.end(); ++it) {
 					str = str + "," + *it;
 				}
-
-
 			}
-
 
 			if (typeCommand == "A" && request->type == 2) {
 				str = str + ",?";
@@ -825,20 +1077,17 @@ namespace GT {
 			//printf("" ANSI_COLOR_RESET);
 
 		} catch (sql::SQLException& e) {
-			cout << "# ERR: SQLException in " << __FILE__;
-			cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-			cout << "# ERR: " << e.what();
-			cout << " (MySQL error code: " << e.getErrorCode();
-			//cout << ", SQLState: " << e.getSQLState() << " )" << endl;
-			//return "";
+			SQLException(e, __LINE__);
 		}
-
-
 
 		return str;
 	}
 
 	std::string DB::loadCommand(CMDMsg* msg, unsigned int historyId) {
+		if (!connect()) {
+			return "";
+		}
+		
 		std::string str = "";
 		
 		std::string query = 
@@ -904,11 +1153,7 @@ namespace GT {
 
 
 		} catch (sql::SQLException& e) {
-			cout << "# ERR: SQLException in " << __FILE__;
-			cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-			cout << "# ERR: " << e.what();
-			cout << " (MySQL error code: " << e.getErrorCode();
-			//cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+			SQLException(e, __LINE__);
 		}
 
 
@@ -920,16 +1165,17 @@ namespace GT {
 	}
 
 	InfoClient DB::getInfoClient(string id) {
+		if (!connect()) {
+			return InfoClient();
+		}
+		
 		int unit_id = 0, version_id = 0, device_id = 0;
-		InfoClient info = {0,0,0,"xxxxx"};
+		InfoClient info = {0,0,0,""};
 		try {
-			//sql::Statement* stmt;
 			sql::ResultSet* result;
-			//sql::PreparedStatement* p_stmt;
-
-			//stmt = cn->createStatement();
 			
 			stmtInfoClient->setString(1, id.c_str());
+
 			if (stmtInfoClient->execute()) {
 				result = stmtInfoClient->getResultSet();
 
@@ -941,23 +1187,11 @@ namespace GT {
 				}
 
 				delete result;
-				//delete p_stmt;
-				//delete stmt;
-				if (debug) {
-					
-				}
-				//InfoClient nn = { unit_id, device_id, version_id };
-				//return nn;
-
 			}
 
 
 		} catch (sql::SQLException & e) {
-			cout << "# ERR: SQLException in " << __FILE__;
-			cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-			cout << "# ERR: " << e.what();
-			cout << " (MySQL error code: " << e.getErrorCode();
-			//cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+			SQLException(e, __LINE__);
 		}
 
 
@@ -966,9 +1200,12 @@ namespace GT {
 	}
 
 	void DB::deviceConfig(const char* unit_id, CommandResult* commandResult) {
-
-		//cout << "............\n\n\n\n\n";
-
+		
+		if (!connect()) {
+			return;
+		}
+		
+		int unitId = mClients[unit_id].unit_id;
 		std::string paramsList[20];
 		int length = 0;
 		Tool::getItem(paramsList, length, commandResult->params.c_str());
@@ -977,87 +1214,31 @@ namespace GT {
 		
 		split2(commandResult->params.c_str(), v, ',');
 
-		int unitId = mClients[unit_id].unit_id;
-
-		std::string query = R"(DELETE dc
-			FROM devices_config as dc
-			INNER JOIN units as u ON u.id = dc.unit_id
-			INNER JOIN devices as d ON d.id = u.device_id
-			INNER JOIN devices_versions as v ON v.id = d.version_id
-			INNER JOIN devices_comm_params as p ON p.id = dc.param_id
-
-			INNER JOIN devices_commands as c ON c.id = p.command_id
-
-			WHERE c.command = ? and u.id = ?)";
-
 		try {
-			sql::Statement* stmt;
-			sql::ResultSet* result;
-			sql::PreparedStatement* p_stmt;
-
-			//stmt = cn->createStatement();
-
-			p_stmt = cn->prepareStatement(query.c_str());
-
-			p_stmt->setString(1, commandResult->command.c_str());
-			p_stmt->setInt(2, unitId);
-			if (p_stmt->execute()) {
-				
-				delete p_stmt;
-				//delete stmt;
-				if (debug) {
-					//printClients();
-				}
-			}
+			stmtDelDeviceConfig->setString(1, commandResult->command.c_str());
+			stmtDelDeviceConfig->setInt(2, unitId);
+			stmtDelDeviceConfig->execute();
+			
 		} catch (sql::SQLException& e) {
 
-			cout << endl << endl << "# ERR: SQLException in " << __FILE__;
-			cout << endl << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-			cout << endl << "# ERR: " << e.what();
-			cout << endl << " (MySQL error code: " << e.getErrorCode();
-			cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+			SQLException(e, __LINE__);
 		}
 
-
-		query = R"(SELECT
-			p.id as param_id, param, u.id as unit_id, c.command
-
-
-			FROM devices_commands as c
-			INNER JOIN devices_comm_params as p ON p.command_id = c.id
-			INNER JOIN devices_versions as v ON v.id = c.version_id
-			INNER JOIN devices as d ON d.version_id = v.id
-			INNER JOIN units as u ON u.device_id = d.id
-
-			WHERE c.command = ? and u.id = ?
-			ORDER BY p.order)";
-
-
 		try {
-			sql::Statement* stmt;
+			
 			sql::ResultSet* result;
-			sql::PreparedStatement* p_stmt;
-
+			
 			std::string param_id = "";
 			std::string str = "(";
 			std::string strFields = " (`unit_id`,`device_id`,`param_id`, `value`, `update`) ";
 
-
-			stmt = cn->createStatement();
-
-			p_stmt = cn->prepareStatement(query.c_str());
-
-
-			p_stmt->setString(1, commandResult->command.c_str());
-			p_stmt->setInt(2, unitId);
+			stmtDeviceConfig->setString(1, commandResult->command.c_str());
+			stmtDeviceConfig->setInt(2, unitId);
+			
 			int x = 0;
-			if (p_stmt->execute()) {
+			if (stmtDeviceConfig->execute()) {
 
-
-				
-
-
-				result = p_stmt->getResultSet();
+				result = stmtDeviceConfig->getResultSet();
 
 				while (result->next()) {
 
@@ -1080,40 +1261,21 @@ namespace GT {
 
 					save(str);
 					x++;
-
 				}
-
 				
 				delete result;
-				delete p_stmt;
-				delete stmt;
-				if (debug) {
-					//printClients();
-				}
-
-
-				
-
-
 			}
-			
 			//cout << commandResult->command << " " << commandResult->token << " " << commandResult->params << endl;
 			
 		} catch (sql::SQLException& e) {
-
-			
-			cout << endl << endl << "# ERR: SQLException in " << __FILE__;
-			cout << endl << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-			cout << endl << "# ERR: " << e.what();
-			cout << endl << " (MySQL error code: " << e.getErrorCode();
-			cout << ", SQLState: " << e.getSQLState() << " )" << endl;
-			
-
+			SQLException(e, __LINE__);
 		}
 	}
 
 	void DB::getPending(const char* unit_id, CommandResult* commandResult, RCommand* response) {
-
+		if (!connect()) {
+			return;
+		}
 
 		int unitId = mClients[unit_id].unit_id;
 
@@ -1121,31 +1283,15 @@ namespace GT {
 		response->unitId = unitId;
 		strcpy_s(response->unit, sizeof(response->unit), unit_id);
 		
-
-		std::string query = R"(SELECT p.*
-			FROM pending as p
-			INNER JOIN units as u ON u.id = p.unit_id
-			INNER JOIN devices as d ON d.id = u.device_id
-			INNER JOIN devices_versions as v ON v.id = d.version_id
-
-
-			INNER JOIN devices_commands as c ON c.id = p.command_id
-
-			WHERE u.id = ? AND c.command = ? AND p.index = ?)";
-
 		try {
-			sql::Statement* stmt;
-
-			sql::PreparedStatement* p_stmt;
-
-			p_stmt = cn->prepareStatement(query.c_str());
-
-			p_stmt->setInt(1, unitId);
-			p_stmt->setString(2, commandResult->command.c_str());
-			p_stmt->setString(3, commandResult->tag.c_str());
 			sql::ResultSet* result = nullptr;
-			if (p_stmt->execute()) {
-				result = p_stmt->getResultSet();
+
+			stmtGetPending->setInt(1, unitId);
+			stmtGetPending->setString(2, commandResult->command.c_str());
+			stmtGetPending->setString(3, commandResult->tag.c_str());
+			
+			if (stmtGetPending->execute()) {
+				result = stmtGetPending->getResultSet();
 
 				if (result->next()) {
 					strcpy_s(response->message, sizeof(response->message), result->getString("command").c_str());
@@ -1154,24 +1300,14 @@ namespace GT {
 					response->level = result->getInt("level");
 					response->index = result->getInt("index");
 					strcpy_s(response->date, sizeof(response->date), result->getString("datetime").c_str());
-
-
 				}
 
 				delete result;
-				delete p_stmt;
-				//delete stmt;
-				if (debug) {
-					//printClients();
-				}
+				
 			}
 		} catch (sql::SQLException& e) {
 
-			cout << endl << endl << "# ERR: SQLException in " << __FILE__;
-			cout << endl << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-			//cout << endl << "# ERR: " << e.what();
-			cout << endl << " (MySQL error code: " << e.getErrorCode();
-			cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+			SQLException(e, __LINE__);
 		}
 
 
@@ -1179,52 +1315,24 @@ namespace GT {
 	}
 
 	void DB::evalPending(const char* unit_id, CommandResult* commandResult, unsigned int type) {
-		
+		if (!connect()) {
+			return;
+		}
 
 		int unitId = mClients[unit_id].unit_id;
 		
-		std::string query = R"(DELETE p
-			FROM pending as p
-			INNER JOIN units as u ON u.id = p.unit_id
-			INNER JOIN devices as d ON d.id = u.device_id
-			INNER JOIN devices_versions as v ON v.id = d.version_id
-
-
-			INNER JOIN devices_commands as c ON c.id = p.command_id
-
-			WHERE u.id = ? AND c.command = ? AND p.index = ? )";
-
 		try {
-			//cout << query << endl;
-			//cout << ANSI_COLOR_BLUE ANSI_COLOR_WHITE_ "Type: " ANSI_COLOR_RESET <<type  << endl;
-			sql::Statement* stmt;
-			
-			sql::PreparedStatement* p_stmt;
 
-			//stmt = cn->createStatement();
-
-			p_stmt = cn->prepareStatement(query.c_str());
-
-			p_stmt->setInt(1, unitId);
-			p_stmt->setString(2, commandResult->command.c_str());
-			p_stmt->setString(3, commandResult->tag.c_str());
+			stmtEvalPending->setInt(1, unitId);
+			stmtEvalPending->setString(2, commandResult->command.c_str());
+			stmtEvalPending->setString(3, commandResult->tag.c_str());
 			//p_stmt->setInt(4, type);
-			
-			if (p_stmt->execute()) {
 
-				delete p_stmt;
-				//delete stmt;
-				if (debug) {
-					//printClients();
-				}
-			}
+			stmtEvalPending->execute();
+			
 		} catch (sql::SQLException& e) {
 
-			cout << endl << endl << "# ERR: SQLException in " << __FILE__;
-			cout << endl << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-			//cout << endl << "# ERR: " << e.what();
-			cout << endl << " (MySQL error code: " << e.getErrorCode();
-			cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+			SQLException(e, __LINE__);
 		}
 
 
@@ -1232,34 +1340,25 @@ namespace GT {
 	}
 
 	bool DB::isReadCommand(const char* unit_id, CommandResult* commandResult) {
+		if (!connect()) {
+			return false;
+		}
+		
 		int unitId = mClients[unit_id].unit_id;
 		
-
-		sql::PreparedStatement* p_stmt;
-		sql::ResultSet* result = nullptr;
 		bool isRead = false;
-		std:string query = R"(SELECT IF(p.type = 2, true, false) as result
-			FROM pending as p
-			INNER JOIN units as u ON u.id = p.unit_id
-			INNER JOIN devices as d ON d.id = u.device_id
-			INNER JOIN devices_versions as v ON v.id = d.version_id
-
-
-			INNER JOIN devices_commands as c ON c.id = p.command_id
-
-			WHERE u.id = ? AND c.command = ? AND p.index = ?
-		)";
+		
 
 		try {
-			p_stmt = cn->prepareStatement(query.c_str());
+			sql::ResultSet* result = nullptr;
 
-			p_stmt->setInt(1, unitId);
-			p_stmt->setString(2, commandResult->command.c_str());
-			p_stmt->setString(3, commandResult->tag.c_str());
+			stmtReadCommand->setInt(1, unitId);
+			stmtReadCommand->setString(2, commandResult->command.c_str());
+			stmtReadCommand->setString(3, commandResult->tag.c_str());
 
-			if (p_stmt->execute()) {
+			if (stmtReadCommand->execute()) {
 
-				result = p_stmt->getResultSet();
+				result = stmtReadCommand->getResultSet();
 
 				if (result->next()) {
 
@@ -1269,59 +1368,157 @@ namespace GT {
 				delete result;
 			}
 
-			delete p_stmt;
 
 		} catch (sql::SQLException& e) {
-
+			SQLException(e, __LINE__);
 		}
 		
 		return isRead;
 	}
 
+	void DB::setClientStatus(unsigned int unitId, unsigned short status, char* date) {
+		if (!connect()) {
+			return;
+		}
+
+		try {
+
+			
+			stmtUpdateClientStatus->setInt(1, status);
+			stmtUpdateClientStatus->setString(2, date);
+			stmtUpdateClientStatus->setInt(3, unitId);
+			stmtUpdateClientStatus->execute();
+
+
+		} catch (sql::SQLException& e) {
+			SQLException(e, __LINE__);
+		}
+	}
+
+	bool DB::getPendingCommand(std::vector<GT::PendingCommand>* pending, std::vector<std::string> units) {
+		if (!connect()) {
+			return false;
+		}
+		std::string str = "";
+		//std::map<std::string, std::vector<string>> map;
+		for (std::vector<std::string>::iterator it = units.begin(); it != units.end(); ++it) {
+			if (str != "") {
+				str += "," + *it;
+			} else {
+				str = *it;
+			}
+			
+		}
+		//std::cout << str << std::endl << "\n\n\n";
+		
+		
+		std::string name = "";
+		std::string command = "";
+		
+		try {
+			sql::ResultSet* result = nullptr;
+			stmtPendingCommand->setString(1, str.c_str());
+			
+			
+			if (stmtPendingCommand->execute()) {
+			
+				result = stmtPendingCommand->getResultSet();
+
+				while (result->next()) {
+					name = result->getString("device_name").c_str();
+					command = result->getString("command").c_str();
+					pending->push_back({ name, command });
+					//map[name].push_back(command);
+					
+					
+					
+					//mapCommand[name] = std:vpush_back(command);
+					//index = result->getInt("T");
+
+				}
+				delete result;
+			}
+
+			
+
+		} catch (sql::SQLException& e) {
+			SQLException(e, __LINE__);
+			return false;
+		}
+
+		return true;
+
+	}
+
+	void DB::test(int id) {
+		if (!connect()) {
+			return;
+		}
+
+		sql::PreparedStatement* p_stmt;
+		sql::ResultSet* result = nullptr;
+		unsigned short index = 0;
+		std:string query = R"(
+				SELECT count(*) as T FROM pending p 
+			)";
+
+		try {
+			p_stmt = cn->prepareStatement(query.c_str());
+
+			//p_stmt->setInt(1, id);
+			
+			//p_stmt->setInt(3, type);
+
+			if (p_stmt->execute()) {
+
+				result = p_stmt->getResultSet();
+
+				if (result->next()) {
+
+					index = result->getInt("T");
+
+				}
+				delete result;
+			}
+
+			delete p_stmt;
+
+		} catch (sql::SQLException& e) {
+			SQLException(e, __LINE__);
+		}
+
+		std::cout << "Mysql Test " << index << std::endl;
+		return;
+	}
+
 	void DB::infoCommand(const char* unit_id, CommandResult* commandResult, RCommand * info) {
+		if (!connect()) {
+			return;
+		}
+		
 		int unitId = mClients[unit_id].unit_id;
+		bool isRead = false;
 
 		info->header = 0;
 		info->unitId = unitId;
 		int len = strlen(info->unit);
 
-		//string str = "yanny";
-		
-
 		strcpy(info->unit, unit_id);
-
-
-		//cout << "InfoCommand:  " << commandResult->params <<" - "<< info->unit<< endl;
-		//cout << "InfoCommand2:  " << info->unitId << endl;
-		//cout << "InfoCommand3:  " << unitId << endl;
-
-
 		
-		sql::PreparedStatement* p_stmt;
 		sql::ResultSet* result = nullptr;
-		bool isRead = false;
-		std:string query = R"(SELECT p.*
-			FROM pending as p
-			INNER JOIN units as u ON u.id = p.unit_id
-			INNER JOIN devices as d ON d.id = u.device_id
-			INNER JOIN devices_versions as v ON v.id = d.version_id
-
-
-			INNER JOIN devices_commands as c ON c.id = p.command_id
-
-			WHERE u.id = ? AND c.command = ? AND p.index = ?
-		)";
 
 		try {
-			p_stmt = cn->prepareStatement(query.c_str());
 
-			p_stmt->setInt(1, unitId);
-			p_stmt->setString(2, commandResult->command.c_str());
-			p_stmt->setString(3, commandResult->tag.c_str());
+			
+			
 
-			if (p_stmt->execute()) {
+			stmtInfoCommand->setInt(1, unitId);
+			stmtInfoCommand->setString(2, commandResult->command.c_str());
+			stmtInfoCommand->setString(3, commandResult->tag.c_str());
 
-				result = p_stmt->getResultSet();
+			if (stmtInfoCommand->execute()) {
+
+				result = stmtInfoCommand->getResultSet();
 
 				if (result->next()) {
 					info->header = (unsigned short)1;
@@ -1344,61 +1541,47 @@ namespace GT {
 				delete result;
 			}
 
-			delete p_stmt;
-
 		} catch (sql::SQLException& e) {
-
+			SQLException(e, __LINE__);
 		}
 
 		
 	}
 	
 	void DB::saveResponse(RCommand* info, const char* response) {
-		//cout << "saveResponse..." << endl;
-		std:string query = "";
-		sql::PreparedStatement* p_stmt;
-
-		query = R"(INSERT INTO unit_response
-			(`unit_id`,`unit`,`type`,`level`,`mode`, `command_id`,`index`, `command`,`response`,`user`,`date_from`) 
-			VALUES
-			(?,?,?,?,?,?,?,?,?,?,IF(?='0000-00-00 00:00:00',now(),?)))";
+		if (!connect()) {
+			return;
+		}
+		
 		try {
-			p_stmt = cn->prepareStatement(query.c_str());
+			
 			//cout << ANSI_COLOR_YELLOW "unit name " << info->unit << endl;
 			//cout << ANSI_COLOR_MAGENTA "reponse " << response << endl;
-			p_stmt->setInt(1, info->unitId);
-			p_stmt->setString(2, info->unit);
-			p_stmt->setInt(3, info->type);
-			p_stmt->setInt(4, info->level);
-			p_stmt->setInt(5, info->mode);
-			p_stmt->setInt(6, info->commandId);
-			p_stmt->setInt(7, info->index);
-			p_stmt->setString(8, info->message);
-			p_stmt->setString(9, response);
-			p_stmt->setString(10, info->user);
-			p_stmt->setString(11, info->date);
-			p_stmt->setString(12, info->date);
+			stmtSaveResponse->setInt(1, info->unitId);
+			stmtSaveResponse->setString(2, info->unit);
+			stmtSaveResponse->setInt(3, info->type);
+			stmtSaveResponse->setInt(4, info->level);
+			stmtSaveResponse->setInt(5, info->mode);
+			stmtSaveResponse->setInt(6, info->commandId);
+			stmtSaveResponse->setInt(7, info->index);
+			stmtSaveResponse->setString(8, info->message);
+			stmtSaveResponse->setString(9, response);
+			stmtSaveResponse->setString(10, info->user);
+			stmtSaveResponse->setString(11, info->date);
+			stmtSaveResponse->setString(12, info->date);
 			
-
-			if (p_stmt->execute()) {
-				//cout << "saving command...!!!" << endl;
-			}
-
-			delete p_stmt;
+			stmtSaveResponse->execute();
 
 		} catch (sql::SQLException& e) {
-
-			cout << endl << endl << "# ERR: SQLException in " << __FILE__;
-			cout << endl << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-			cout << endl << "# ERR: " << e.what();
-			cout << endl << " (MySQL error code: " << e.getErrorCode();
-			//cout << ", SQLState: " << e.getSQLState().c_str() << " )" << endl;
+			SQLException(e, __LINE__);
 		}
 
 	}
 	
 	void DB::save(std::string query) {
-
+		if (!connect()) {
+			return;
+		}
 		//printf("" ANSI_COLOR_CYAN);
 
 		//cout << query << endl;
@@ -1415,19 +1598,15 @@ namespace GT {
 
 		} catch (sql::SQLException& e) {
 
-			if (1 == 0) {
-				cout << endl << endl << "# ERR: SQLException in " << __FILE__;
-				cout << endl << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-				cout << endl << "# ERR: " << e.what();
-				cout << endl << " (MySQL error code: " << e.getErrorCode();
-				cout << ", SQLState: " << e.getSQLState() << " )" << endl;
-			}
+			//SQLException(e, __LINE__);
 
 		}
 	}
 
 	std::string  DB::addPending(unsigned int unitId, unsigned short commandId, unsigned int tag, std::string command, std::string user, unsigned short type, unsigned short level) {
-
+		if (!connect()) {
+			return "";
+		}
 		std:string query = "";
 		sql::PreparedStatement* p_stmt;
 	
@@ -1443,10 +1622,7 @@ namespace GT {
 			
 
 		} catch (sql::SQLException& e) {
-			cout << endl << endl << "# ERR: SQLException in " << __FILE__;
-			cout << endl << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-			cout << endl << "# ERR: " << e.what();
-			cout << endl << " (MySQL error code: " << e.getErrorCode();
+			SQLException(e, __LINE__);
 		}
 
 		query = "INSERT INTO pending (`unit_id`, `command_id`, `command`, `tag`, `index`, `user`, `type`) VALUES (?,?,?,?,?,?,?)";
@@ -1471,12 +1647,7 @@ namespace GT {
 
 		} catch (sql::SQLException& e) {
 
-			
-				cout << endl << endl << "# ERR: SQLException in " << __FILE__;
-				cout << endl << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-				cout << endl << "# ERR: " << e.what();
-				cout << endl << " (MySQL error code: " << e.getErrorCode();
-			//	cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+			SQLException(e, __LINE__);
 			
 
 		}
@@ -1484,108 +1655,91 @@ namespace GT {
 	}
 	
 	std::string  DB::addPending(RCommand * request) {
-
+		if (!connect()) {
+			return "";
+		}
 		std:string query = "";
-		sql::PreparedStatement* p_stmt;
+		//sql::PreparedStatement* p_stmt;
 
 
 		try {
-			query = "DELETE FROM pending WHERE unit_id = ? AND command_id = ? ";
-			
-			//cout << "delete " << query << endl;
-			p_stmt = cn->prepareStatement(query.c_str());
 
-			p_stmt->setInt(1, request->unitId);
-			p_stmt->setInt(2, request->commandId);
+			
+
+			stmtDeletePending->setInt(1, request->unitId);
+			stmtDeletePending->setInt(2, request->commandId);
 			//p_stmt->setInt(3, request->type);
-			p_stmt->execute();
+			stmtDeletePending->execute();
 
 
 		} catch (sql::SQLException& e) {
-			cout << endl << endl << "# ERR: SQLException in " << __FILE__;
-			cout << endl << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-			cout << endl << "# ERR: " << e.what();
-			cout << endl << " (MySQL error code: " << e.getErrorCode();
+			SQLException(e, __LINE__);
 		}
 
-		query = "INSERT INTO pending (`unit_id`, `command_id`, `command`, `tag`, `index`, `user`, `type`, `mode`,`server_time`) VALUES (?,?,?,?,?,?,?,?,?)";
+
+		
+		
 
 		//cout << "creando pending " << query << endl;
 		try {
 
-			p_stmt = cn->prepareStatement(query.c_str());
+			
 
-			p_stmt->setInt(1, request->unitId);
-			p_stmt->setInt(2, request->commandId);
-			p_stmt->setString(3, request->message);
-			p_stmt->setString(4, to_string(request->index).c_str());
-			p_stmt->setInt(5, request->index);
-			p_stmt->setString(6, request->user);
-			p_stmt->setInt(7, request->type);
-			p_stmt->setInt(8, request->mode);
+			stmtInsertPending->setInt(1, request->unitId);
+			stmtInsertPending->setInt(2, request->commandId);
+			stmtInsertPending->setString(3, request->message);
+			stmtInsertPending->setString(4, to_string(request->index).c_str());
+			stmtInsertPending->setInt(5, request->index);
+			stmtInsertPending->setString(6, request->user);
+			stmtInsertPending->setInt(7, request->type);
+			stmtInsertPending->setInt(8, request->mode);
 
 			time_t now;
 			time(&now);  /* get current time; same as: now = time(NULL)  */
 
-			p_stmt->setInt(9, now);
-
-			if (p_stmt->execute()) {
-			}
-			//delete res;
-			delete p_stmt;
+			stmtInsertPending->setInt(9, now);
+			stmtInsertPending->execute();
 
 		} catch (sql::SQLException& e) {
-
-			
-			cout << endl << endl << "# ERR: SQLException in " << __FILE__;
-			cout << endl << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-			cout << endl << "# ERR: " << e.what();
-			cout << endl << " (MySQL error code: " << e.getErrorCode();
-				//cout << ", SQLState: " << e.getSQLState().c_str() << " )" << endl;
-			
-
+			SQLException(e, __LINE__);
 		}
+
 		return std::to_string(0);
 	}
 
 	
 	
 	unsigned int DB::getTag(unsigned int unitId, unsigned short commandId, unsigned int type) {
-	
 		
-		sql::PreparedStatement* p_stmt;
-		sql::ResultSet* result = nullptr;
+		if (!connect()) {
+			return 0;
+		}
+		
 		unsigned short index = 1;
-		std:string query = R"(
-			SELECT (COALESCE(MAX(`index`) , 0) % 65535 + 1) as n
-			FROM pending
-			WHERE unit_id = ? AND command_id = ? 
-		)";
 
 		try {
-			p_stmt = cn->prepareStatement(query.c_str());
+			sql::ResultSet* result = nullptr;
 
-			p_stmt->setInt(1, unitId);
-			p_stmt->setInt(2, commandId);
+			
+			
+			stmtGetTag->setInt(1, unitId);
+			stmtGetTag->setInt(2, commandId);
 			//p_stmt->setInt(3, type);
 
-			if (p_stmt->execute()) {
+			if (stmtGetTag->execute()) {
 
-				result = p_stmt->getResultSet();
+				result = stmtGetTag->getResultSet();
 
 				if (result->next()) {
-
 					index = result->getInt("n");
-
 				}
 				delete result;
 			}
 			
-			delete p_stmt;
-
 		} catch (sql::SQLException& e) {
-
+			SQLException(e, __LINE__);
 		}
+
 		return index;
 	}
 

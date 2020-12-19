@@ -66,6 +66,10 @@ namespace GT {
 		~DB();
 		void init();
 		bool connect();
+		bool isValid();
+		void reset();
+		void SQLException(sql::SQLException& e);
+		void SQLException(sql::SQLException& e, long line);
 
 		void loadProtocols();
 		void printProtocols();
@@ -107,6 +111,11 @@ namespace GT {
 		unsigned int getTag(unsigned int unitId, unsigned short commandId, unsigned int type);
 		void evalPending(const char* unit_id, CommandResult* result, unsigned int type);
 		bool isReadCommand(const char* unit_id, CommandResult* result);
+
+		void setClientStatus(unsigned int unitId, unsigned short status, char* date);
+		bool getPendingCommand(std::vector<GT::PendingCommand> * pending, std::vector<string> units);
+		void initStatus();
+		void test(int id);
 	private:
 		bool debug;
 		InfoDB info;
@@ -123,6 +132,31 @@ namespace GT {
 		std::map<int, std::list<std::string>> mFormats;
 		std::list<int> mVersions;
 
+		sql::PreparedStatement* stmtLoadProtocols = nullptr;
+		sql::PreparedStatement* stmtLoadVersions = nullptr;
+
+		sql::PreparedStatement* stmtCreateCommand = nullptr;
+		sql::PreparedStatement* stmtDelDeviceConfig = nullptr;
+		sql::PreparedStatement* stmtDeviceConfig = nullptr;
+		sql::PreparedStatement* stmtGetPending = nullptr;
+		sql::PreparedStatement* stmtEvalPending = nullptr;
+		sql::PreparedStatement* stmtReadCommand = nullptr;
+
+		sql::PreparedStatement* stmtInfoCommand = nullptr;
+		sql::PreparedStatement* stmtSaveResponse = nullptr;
+		sql::PreparedStatement* stmtDeletePending = nullptr;
+		sql::PreparedStatement* stmtInsertPending = nullptr;
+
+		sql::PreparedStatement* stmtGetTag = nullptr;
+
+		
+
+		
+		
 		sql::PreparedStatement* stmtInfoClient;
+		sql::PreparedStatement* stmtUpdateClientStatus;
+		sql::PreparedStatement* stmtPendingCommand;
+
+		bool initialized = false;
 	};
 }

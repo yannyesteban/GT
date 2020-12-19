@@ -5,6 +5,51 @@ using namespace rapidjson;
 using namespace std;
 namespace GT {
 
+
+	void runPending(std::map<string, GTClient > * mDevices, DB* db) {
+		while (true) {
+			std::this_thread::sleep_for(std::chrono::seconds(10));
+			
+			std::vector<PendingCommand> v1;
+			std::vector<std::string> v2;
+
+			for (std::map<std::string, GTClient>::iterator it = mDevices->begin(); it != mDevices->end(); ++it) {
+				//printf("%12s", it->first.c_str());
+				//printf("%10s", it->second.device_id);
+				//printf("%10d\n", it->second.id);
+
+				v2.push_back(std::to_string(it->second.id));
+			}
+
+			if (!db->getPendingCommand(&v1, v2)) {
+				return;
+			}
+				
+			for (std::vector<PendingCommand>::iterator it = v1.begin(); it != v1.end(); ++it) {
+
+				//std::cout << Color::_yellow() << "NAME " << it->name << "\n\n" << Color::_reset();
+				auto x = mDevices->find(it->name);
+				if (x == mDevices->end()) {
+					//std::cout << "*NOT Found " << it->name << "\n\n";
+				} else {
+					//std::cout << "Found " << x->first << "\n\n";
+					send(x->second.socket, it->command.c_str(), strlen(it->command.c_str()), 0);
+					std::this_thread::sleep_for(std::chrono::seconds(2));
+					std::cout << Color::_green() << "Sending Pending Command: " << it->command.c_str()
+						<< Color::_reset() << " to: "
+						<< x->second.device_id << " (" << "r->unit" << ")\n";
+					// found
+				}
+				//std::cout << it->name << "   ----       (" << it->command << ")\n";
+				//printf("%20s", *it2);
+
+			}
+
+
+			//std::cout << "pause of " << 4888 << " seconds ended\n";
+		}
+		
+	}
 	Server::Server(SocketInfo pInfo):Socket(pInfo),debug(false), db(nullptr) {
 	}
 
@@ -35,13 +80,12 @@ namespace GT {
 
 		*/
 		//config = pConfig;
+		
+
 		pConfig.db.debug = pConfig.debug;
 		db = new DB(pConfig.db);
 		db->connect();
-		db->loadProtocols();
-		db->loadVersions();
-		db->loadClients();
-		db->loadFormats();
+		
 		//db->saveTrack("", 1, 21, "");
 
 
@@ -50,6 +94,13 @@ namespace GT {
 		//WC::TrackParam P({ 1, 2087, "200210001","2020-10-13 06:51:00", 10.2121, 60.121,80,15 });
 		//webcar->evalTrack(&P);
 		//system("pause");
+
+		std::thread* first = new std::thread(runPending, &mDevices, std::ref(db));
+
+
+		//first->join();
+
+
 		return true;
 	}
 
@@ -111,6 +162,11 @@ namespace GT {
 			//return;
 		}
 		evalMessage(Info, Info.buffer);
+	}
+
+	Server::~Server() {
+
+		db->initStatus();
 	}
 	
 	unsigned short Server::getHeader(ConnInfo Info) {
@@ -188,6 +244,57 @@ namespace GT {
 
 		}
 
+		if (header->header == 10100) {
+			RCommand* r = (RCommand*)Info.buffer;
+
+
+			RCommand response;
+			response.header = 10021;
+			response.mode = r->mode;
+			response.type = r->type;
+			response.id = r->id;
+			response.unitId = r->unitId;
+			response.level = r->level;
+			std::string str = r->message;
+			char buffer[1024];
+			strcpy_s(response.message, sizeof(response.message), str.c_str());
+			//strcpy(response.message, str.c_str());
+
+			str = r->unit;
+
+
+			strcpy_s(response.unit, sizeof(response.unit), r->unit);
+			//strcpy_s(response.unit, str.c_str());
+
+			str = r->user;
+			strcpy_s(response.user, sizeof(response.user), str.c_str());
+			//strcpy_s(response.user, str.c_str());
+
+
+			memcpy(buffer, &response, sizeof(response));
+			send(Info.client, buffer, (int)sizeof(buffer), 0);
+
+
+			//send(mDevices[getUnitName(r->unitId)].socket, r->message, strlen(r->message), 0);
+
+			std::cout << Color::_green() << "Sending: " << response.message
+				<< Color::_reset() << " to: "
+				<< mDevices[getUnitName(r->unitId)].device_id << " (" << r->unit << ")\n";
+			/*
+			std::cout << "Header: " << response.header << std::endl;
+			std::cout << "Message: " << response.message << std::endl;
+			std::cout << "UnitId: " << response.unitId << std::endl;
+			std::cout << "Mode: " << response.mode << std::endl;
+			std::cout << "User: " << response.user << std::endl;
+			std::cout << "Unit: " << response.unit << std::endl;
+			*/
+
+			disconect(mDevices[getUnitName(r->unitId)].socket);
+			return 0;
+
+		}
+
+
 		if (header->header == 10010) {
 			CMDMsg* msg = (CMDMsg*)Info.buffer;
 			cout << "type msg: " << msg->type << endl;
@@ -242,8 +349,9 @@ namespace GT {
 
 		//strcpy(info.date, "0000-00-00 00:00:00");
 		//strcpy(info.date, "");
-		
+		db->setClientStatus(resp.unitId, 1, resp.date);
 		db->saveResponse(&resp, "DISCONNECTED");
+		
 		broadcast(&resp);
 
 
@@ -323,6 +431,8 @@ namespace GT {
 				//strcpy(info.date, "0000-00-00 00:00:00");
 				//strcpy(info.date, "");
 				info.unitId = cInfo.unit_id;
+
+				db->setClientStatus(info.unitId, 1, info.date);
 				db->saveResponse(&info, "CONNECTED");
 				broadcast(&info);
 				time(&info.time);
