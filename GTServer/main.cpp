@@ -25,7 +25,7 @@ int main()
     Color::set(0);
 
     auto appInfo = GT::Config::load("config.json");
-    std::cout << Color::_yellow() << "APP NAME -: " << appInfo.appname << Color::_reset() << std::endl;
+    std::cout << Color::_yellow() << "APP NAME: " << appInfo.appname << Color::_reset() << std::endl;
     printf("Version: %s \n", appInfo.version);
     printf("DB Name: %s\n", appInfo.db.name);
     printf("Socket Port: %d\n\n", appInfo.port);
