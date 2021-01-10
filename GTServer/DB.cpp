@@ -108,32 +108,32 @@ namespace GT {
 		initialized = true;
 
 		string query = "";
-		query = R"(SELECT u.id as unit_id, d.id as device_id, device_name, version_id, n.name
-				FROM units as u
-				INNER JOIN devices as d on d.id = u.device_id
-				INNER JOIN units_names as n ON n.id = u.name_id
-				WHERE device_name = ?)";
+		query = R"(SELECT u.id as unit_id, d.id as device_id, d.name as device_name, version_id, n.name
+				FROM unit as u
+				INNER JOIN device as d on d.id = u.device_id
+				INNER JOIN unit_name as n ON n.id = u.name_id
+				WHERE d.name = ?)";
 
 		stmtInfoClient = cn->prepareStatement(query.c_str());
 
-		query = R"(UPDATE units SET conn_status=?, conn_date=? WHERE id=?)";
+		query = R"(UPDATE unit SET conn_status=?, conn_date=? WHERE id=?)";
 		stmtUpdateClientStatus = cn->prepareStatement(query.c_str());
 
-		query = R"(SELECT n.name, p.command, d.device_name
+		query = R"(SELECT n.name, p.command, d.name as device_name
 			FROM pending as p
-			INNER JOIN units as u ON u.id = p.unit_id
-			INNER JOIN units_names as n ON n.id = u.name_id
-			INNER JOIN devices as d ON d.id = u.device_id WHERE FIND_IN_SET(p.unit_id, ?); )";
+			INNER JOIN unit as u ON u.id = p.unit_id
+			INNER JOIN unit_name as n ON n.id = u.name_id
+			INNER JOIN device as d ON d.id = u.device_id WHERE FIND_IN_SET(p.unit_id, ?); )";
 		stmtPendingCommand = cn->prepareStatement(query.c_str());
 		
 
 		stmtLoadProtocols = cn->prepareStatement(
 			R"(SELECT id, tag_length, pass_default, protocol_pre,sync_header, format_id, token_ok, token_error,token_resp
-				FROM devices_versions as d )"
+				FROM device_version as d )"
 		);
 
 		stmtLoadVersions = cn->prepareStatement(
-			"SELECT sync_dec FROM devices_versions d GROUP BY sync_dec; "
+			"SELECT sync_dec FROM device_version d GROUP BY sync_dec; "
 		);
 
 
@@ -145,12 +145,12 @@ namespace GT {
 					sum(case when p.type='A' then 1 else 0 end) as ap,
 					sum(case when p.type='W' then 1 else 0 end) as wp,
 					sum(case when p.type='R' then 1 else 0 end) as rp 
-				FROM devices_commands as c 
-				LEFT JOIN devices_comm_params as p ON p.command_id = c.id 
-				INNER JOIN devices_versions as v ON v.id = c.version_id 
-				INNER JOIN devices as d ON d.version_id = v.id 
-				INNER JOIN units as u ON u.device_id = d.id 
-				INNER JOIN units_names as n ON n.id = u.name_id
+				FROM device_command as c 
+				LEFT JOIN device_comm_param as p ON p.command_id = c.id 
+				INNER JOIN device_version as v ON v.id = c.version_id 
+				INNER JOIN device as d ON d.version_id = v.id 
+				INNER JOIN unit as u ON u.device_id = d.id 
+				INNER JOIN unit_name as n ON n.id = u.name_id
 
 				WHERE 
 				c.id = ? 
@@ -161,13 +161,13 @@ namespace GT {
 
 		stmtDelDeviceConfig = cn->prepareStatement(
 			R"(DELETE dc
-			FROM devices_config as dc
-			INNER JOIN units as u ON u.id = dc.unit_id
-			INNER JOIN devices as d ON d.id = u.device_id
-			INNER JOIN devices_versions as v ON v.id = d.version_id
-			INNER JOIN devices_comm_params as p ON p.id = dc.param_id
+			FROM device_config as dc
+			INNER JOIN unit as u ON u.id = dc.unit_id
+			INNER JOIN device as d ON d.id = u.device_id
+			INNER JOIN device_version as v ON v.id = d.version_id
+			INNER JOIN device_comm_param as p ON p.id = dc.param_id
 
-			INNER JOIN devices_commands as c ON c.id = p.command_id
+			INNER JOIN device_command as c ON c.id = p.command_id
 
 			WHERE c.command = ? and u.id = ?)");
 
@@ -177,11 +177,11 @@ namespace GT {
 			p.id as param_id, param, u.id as unit_id, c.command
 
 
-			FROM devices_commands as c
-			INNER JOIN devices_comm_params as p ON p.command_id = c.id
-			INNER JOIN devices_versions as v ON v.id = c.version_id
-			INNER JOIN devices as d ON d.version_id = v.id
-			INNER JOIN units as u ON u.device_id = d.id
+			FROM device_command as c
+			INNER JOIN device_comm_param as p ON p.command_id = c.id
+			INNER JOIN device_version as v ON v.id = c.version_id
+			INNER JOIN device as d ON d.version_id = v.id
+			INNER JOIN unit as u ON u.device_id = d.id
 
 			WHERE c.command = ? and u.id = ?
 			ORDER BY p.order)");
@@ -190,12 +190,12 @@ namespace GT {
 		stmtGetPending = cn->prepareStatement(
 			R"(SELECT p.*
 			FROM pending as p
-			INNER JOIN units as u ON u.id = p.unit_id
-			INNER JOIN devices as d ON d.id = u.device_id
-			INNER JOIN devices_versions as v ON v.id = d.version_id
+			INNER JOIN unit as u ON u.id = p.unit_id
+			INNER JOIN device as d ON d.id = u.device_id
+			INNER JOIN device_version as v ON v.id = d.version_id
 
 
-			INNER JOIN devices_commands as c ON c.id = p.command_id
+			INNER JOIN device_command as c ON c.id = p.command_id
 
 			WHERE u.id = ? AND c.command = ? AND p.index = ?)");
 
@@ -203,12 +203,12 @@ namespace GT {
 		stmtEvalPending = cn->prepareStatement(
 			R"(DELETE p
 			FROM pending as p
-			INNER JOIN units as u ON u.id = p.unit_id
-			INNER JOIN devices as d ON d.id = u.device_id
-			INNER JOIN devices_versions as v ON v.id = d.version_id
+			INNER JOIN unit as u ON u.id = p.unit_id
+			INNER JOIN device as d ON d.id = u.device_id
+			INNER JOIN device_version as v ON v.id = d.version_id
 
 
-			INNER JOIN devices_commands as c ON c.id = p.command_id
+			INNER JOIN device_command as c ON c.id = p.command_id
 
 			WHERE u.id = ? AND c.command = ? AND p.index = ? )");
 
@@ -217,12 +217,12 @@ namespace GT {
 		stmtReadCommand = cn->prepareStatement(
 			R"(SELECT IF(p.type = 2, true, false) as result
 			FROM pending as p
-			INNER JOIN units as u ON u.id = p.unit_id
-			INNER JOIN devices as d ON d.id = u.device_id
-			INNER JOIN devices_versions as v ON v.id = d.version_id
+			INNER JOIN unit as u ON u.id = p.unit_id
+			INNER JOIN device as d ON d.id = u.device_id
+			INNER JOIN device_version as v ON v.id = d.version_id
 
 
-			INNER JOIN devices_commands as c ON c.id = p.command_id
+			INNER JOIN device_command as c ON c.id = p.command_id
 
 			WHERE u.id = ? AND c.command = ? AND p.index = ?)");
 
@@ -241,12 +241,12 @@ namespace GT {
 		stmtInfoCommand = cn->prepareStatement(
 			R"(SELECT p.*
 			FROM pending as p
-			INNER JOIN units as u ON u.id = p.unit_id
-			INNER JOIN devices as d ON d.id = u.device_id
-			INNER JOIN devices_versions as v ON v.id = d.version_id
+			INNER JOIN unit as u ON u.id = p.unit_id
+			INNER JOIN device as d ON d.id = u.device_id
+			INNER JOIN device_version as v ON v.id = d.version_id
 
 
-			INNER JOIN devices_commands as c ON c.id = p.command_id
+			INNER JOIN device_command as c ON c.id = p.command_id
 
 			WHERE u.id = ? AND c.command = ? AND p.index = ?
 		)");
@@ -265,6 +265,7 @@ namespace GT {
 		stmtDeletePending = cn->prepareStatement("DELETE FROM pending WHERE unit_id = ? AND command_id = ? ");
 		stmtInsertPending = cn->prepareStatement("INSERT INTO pending (`unit_id`, `command_id`, `command`, `tag`, `index`, `user`, `type`, `mode`,`server_time`) VALUES (?,?,?,?,?,?,?,?,?)");
 		
+		stmtTracking = cn->createStatement();
 
 		initStatus();
 		loadProtocols();
@@ -305,6 +306,8 @@ namespace GT {
 		delete stmtUpdateClientStatus;
 		delete stmtPendingCommand;
 
+		delete stmtTracking;
+
 
 		
 		//delete stmtMain;
@@ -340,7 +343,7 @@ namespace GT {
 			
 			stmt = cn->createStatement();
 
-			stmt->execute("UPDATE units SET conn_status = 0");
+			stmt->execute("UPDATE unit SET conn_status = 0");
 
 			
 			delete stmt;
@@ -484,10 +487,10 @@ namespace GT {
 
 			p_stmt = cn->prepareStatement(
 				R"(
-				SELECT u.id as unit_id, d.id as device_id, device_name, version_id 
-				FROM units as u 
-				INNER JOIN devices as d on d.id = u.device_id 
-				WHERE device_name IS NOT NULL )"
+				SELECT u.id as unit_id, d.id as device_id, d.name as device_name, version_id 
+				FROM unit as u 
+				INNER JOIN device as d on d.id = u.device_id 
+				WHERE d.name IS NOT NULL )"
 			);
 
 			if (p_stmt->execute()) {
@@ -547,7 +550,7 @@ namespace GT {
 			stmt = cn->createStatement();
 
 			p_stmt = cn->prepareStatement(
-				"SELECT format_id, parameter FROM devices_format as d ORDER BY format_id, `order`;"
+				"SELECT format_id, parameter FROM device_format as d ORDER BY format_id, `order`;"
 			);
 
 			if (p_stmt->execute()) {
@@ -655,13 +658,13 @@ namespace GT {
 			//printf("" ANSI_COLOR_MAGENTA);
 			//std::cout << query << endl;
 			//printf("" ANSI_COLOR_RESET);
-			sql::Statement* stmt;
+			//sql::Statement* stmt;
 			//sql::ResultSet* res;
-			stmt = cn->createStatement();
-			stmt->execute(query.c_str());
+			
+			stmtTracking->execute(query.c_str());
 			//delete res;
 			//cout << ANSI_COLOR_CYAN "Saving Track: " << mClients[unit_id].device_id << endl;
-			delete stmt;
+			
 			return true;
 
 		} catch (sql::SQLException & e) {
@@ -731,7 +734,7 @@ namespace GT {
 
 		printf("unit_id: %s, type: %d\n", unit_id, type_id);
 
-		std::string query = "INSERT INTO units_events ( unit_id, type_id, date_time) "
+		std::string query = "INSERT INTO unit_event ( unit_id, type_id, date_time) "
 		 "VALUES ('"+ (std::string)unit_id +"',2,'2020-10-01 11:11:22')";
 
 		printf("query :%s\n", query.c_str());
@@ -803,11 +806,11 @@ namespace GT {
 
 			stmt = cn->createStatement();
 			string query = "SELECT count(p.id) as n_commands, c.*, CONCAT(protocol_pre, command, '=', d.password) as command1 "
-				"FROM devices_commands as c "
-				"LEFT JOIN devices_comm_params as p ON p.command_id = c.id "
-				"INNER JOIN devices_versions as v ON v.id = c.version_id "
-				"INNER JOIN devices as d ON d.version_id = v.id "
-				"INNER JOIN units as u ON u.device_id = d.id "
+				"FROM device_command as c "
+				"LEFT JOIN device_comm_param as p ON p.command_id = c.id "
+				"INNER JOIN device_version as v ON v.id = c.version_id "
+				"INNER JOIN device as d ON d.version_id = v.id "
+				"INNER JOIN unit as u ON u.device_id = d.id "
 
 				"WHERE "
 				"c.id = '" + to_string(commandId) + "' "
@@ -889,11 +892,11 @@ namespace GT {
 					sum(case when p.type='A' then 1 else 0 end) as ap,
 					sum(case when p.type='W' then 1 else 0 end) as wp,
 					sum(case when p.type='R' then 1 else 0 end) as rp 
-				FROM devices_commands as c 
-				LEFT JOIN devices_comm_params as p ON p.command_id = c.id 
-				INNER JOIN devices_versions as v ON v.id = c.version_id 
-				INNER JOIN devices as d ON d.version_id = v.id 
-				INNER JOIN units as u ON u.device_id = d.id 
+				FROM device_command as c 
+				LEFT JOIN device_comm_param as p ON p.command_id = c.id 
+				INNER JOIN device_version as v ON v.id = c.version_id 
+				INNER JOIN device as d ON d.version_id = v.id 
+				INNER JOIN unit as u ON u.device_id = d.id 
 
 				WHERE 
 				c.id = ? 
@@ -1002,12 +1005,12 @@ namespace GT {
 					sum(case when p.type='A' then 1 else 0 end) as ap,
 					sum(case when p.type='W' then 1 else 0 end) as wp,
 					sum(case when p.type='R' then 1 else 0 end) as rp 
-				FROM devices_commands as c 
-				LEFT JOIN devices_comm_params as p ON p.command_id = c.id 
-				INNER JOIN devices_versions as v ON v.id = c.version_id 
-				INNER JOIN devices as d ON d.version_id = v.id 
-				INNER JOIN units as u ON u.device_id = d.id 
-				INNER JOIN units_names as n ON n.id = u.name_id
+				FROM device_command as c 
+				LEFT JOIN device_comm_param as p ON p.command_id = c.id 
+				INNER JOIN device_version as v ON v.id = c.version_id 
+				INNER JOIN device as d ON d.version_id = v.id 
+				INNER JOIN unit as u ON u.device_id = d.id 
+				INNER JOIN unit_name as n ON n.id = u.name_id
 
 				WHERE 
 				c.id = ? 
@@ -1093,13 +1096,13 @@ namespace GT {
 		std::string query = 
 			R"(SELECT protocol_pre, c.command, d.password, coalesce(h2.value, '') as value, h.description
 
-			FROM devices_commands as c 
-			INNER JOIN devices_comm_params as p ON p.command_id = c.id
-			INNER JOIN devices_versions as v ON v.id = c.version_id
-			INNER JOIN devices as d ON d.version_id = v.id
-			INNER JOIN units as u ON u.device_id = d.id
-			INNER JOIN h_commands as h ON h.command_id = c.id and h.unit_id = u.id
-			LEFT JOIN h_commands_values as h2 ON h2.h_command_id = h.id AND h2.param_id = p.id
+			FROM device_command as c 
+			INNER JOIN device_comm_param as p ON p.command_id = c.id
+			INNER JOIN device_version as v ON v.id = c.version_id
+			INNER JOIN device as d ON d.version_id = v.id
+			INNER JOIN unit as u ON u.device_id = d.id
+			INNER JOIN h_command as h ON h.command_id = c.id and h.unit_id = u.id
+			LEFT JOIN h_command_value as h2 ON h2.h_command_id = h.id AND h2.param_id = p.id
 			WHERE h.id = ')"+to_string(historyId)+"' ORDER BY `order`";
 
 		//std::cout << query << endl << endl;
@@ -1256,7 +1259,7 @@ namespace GT {
 					}
 					str += ")";
 
-					str = "INSERT INTO `devices_config` " + strFields + " VALUES " + str;
+					str = "INSERT INTO `device_config` " + strFields + " VALUES " + str;
 					//cout << str << endl;
 
 					save(str);

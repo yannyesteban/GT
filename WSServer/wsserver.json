@@ -3,7 +3,7 @@
 
   "db": {
     "host": "localhost",
-    "name": "sevian_2020",
+    "name": "gt",
     "pass": "123456",
     "port": "3306",
     "user": "root"

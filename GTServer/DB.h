@@ -146,16 +146,14 @@ namespace GT {
 		sql::PreparedStatement* stmtSaveResponse = nullptr;
 		sql::PreparedStatement* stmtDeletePending = nullptr;
 		sql::PreparedStatement* stmtInsertPending = nullptr;
-
 		sql::PreparedStatement* stmtGetTag = nullptr;
-
-		
-
-		
-		
 		sql::PreparedStatement* stmtInfoClient;
 		sql::PreparedStatement* stmtUpdateClientStatus;
 		sql::PreparedStatement* stmtPendingCommand;
+
+		sql::Statement* stmtTracking;
+
+
 
 		bool initialized = false;
 	};
