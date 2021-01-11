@@ -75,7 +75,7 @@ namespace GT {
         
             RCommand* response = (RCommand*)buffer;
             std::cout << ANSI_COLOR_YELLOW "10050 Message: " << response->message << std::endl;
-
+            cout << " TEST " << clients.size() << "........" << endl;
             for (std::map<SOCKET, WebClient>::iterator it = clients.begin(); it != clients.end(); ++it) {
                 cout << " --- Name: " << it->second.name << endl;
                 cout << " --- socket: " << it->first << endl;
@@ -238,7 +238,7 @@ namespace GT {
 
         string msgType = document["type"].GetString();
         //string msgName = document["name"].GetString();
-        //std::cout << "name " << document["name"].GetString() << endl;
+        std::cout << "msgType " << msgType << endl;
         unsigned short type = 0;
 
         if (msgType == "connect") {

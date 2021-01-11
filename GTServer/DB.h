@@ -138,6 +138,8 @@ namespace GT {
 		sql::PreparedStatement* stmtCreateCommand = nullptr;
 		sql::PreparedStatement* stmtDelDeviceConfig = nullptr;
 		sql::PreparedStatement* stmtDeviceConfig = nullptr;
+		sql::PreparedStatement* stmtInsertDeviceConfig = nullptr;
+
 		sql::PreparedStatement* stmtGetPending = nullptr;
 		sql::PreparedStatement* stmtEvalPending = nullptr;
 		sql::PreparedStatement* stmtReadCommand = nullptr;

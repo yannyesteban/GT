@@ -95,7 +95,7 @@ namespace GT {
 		//webcar->evalTrack(&P);
 		//system("pause");
 
-		std::thread* first = new std::thread(runPending, &mDevices, std::ref(db));
+		//std::thread* first = new std::thread(runPending, &mDevices, std::ref(db));
 
 
 		//first->join();

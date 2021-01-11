@@ -186,6 +186,10 @@ namespace GT {
 			WHERE c.command = ? and u.id = ?
 			ORDER BY p.order)");
 
+		stmtInsertDeviceConfig = cn->prepareStatement(
+			R"(INSERT INTO `device_config` 
+				(`unit_id`,`param_id`, `value`, `update`) 
+				VALUES (?,?,?,now()))");
 
 		stmtGetPending = cn->prepareStatement(
 			R"(SELECT p.*
@@ -294,6 +298,7 @@ namespace GT {
 		delete stmtCreateCommand;
 		delete stmtDelDeviceConfig;
 		delete stmtDeviceConfig;
+		delete stmtInsertDeviceConfig;
 		delete stmtGetPending;
 		delete stmtEvalPending;
 		delete stmtReadCommand;
@@ -1230,10 +1235,6 @@ namespace GT {
 		try {
 			
 			sql::ResultSet* result;
-			
-			std::string param_id = "";
-			std::string str = "(";
-			std::string strFields = " (`unit_id`,`device_id`,`param_id`, `value`, `update`) ";
 
 			stmtDeviceConfig->setString(1, commandResult->command.c_str());
 			stmtDeviceConfig->setInt(2, unitId);
@@ -1248,21 +1249,12 @@ namespace GT {
 					if (x >= v.size()) {
 						continue;
 					}
-					param_id = result->getString("param_id").c_str();
 
-					str = "(";
-					if (str != "") {
-
-						str = str + to_string(unitId) + ",2," + param_id + ",'" + v[x]+"', now()";
-					} else {
-						str = str + param_id;
-					}
-					str += ")";
-
-					str = "INSERT INTO `device_config` " + strFields + " VALUES " + str;
-					//cout << str << endl;
-
-					save(str);
+					stmtInsertDeviceConfig->setInt(1, unitId);
+					stmtInsertDeviceConfig->setInt(2, result->getInt("param_id"));
+					stmtInsertDeviceConfig->setString(3, v[x].c_str());
+					stmtInsertDeviceConfig->execute();
+					
 					x++;
 				}
 				
@@ -1572,6 +1564,20 @@ namespace GT {
 			stmtSaveResponse->setString(10, info->user);
 			stmtSaveResponse->setString(11, info->date);
 			stmtSaveResponse->setString(12, info->date);
+
+			cout << ANSI_COLOR_MAGENTA "info->unitId " << info->unitId << endl;
+			cout << ANSI_COLOR_MAGENTA "info->unit " << info->unit << endl;
+			cout << ANSI_COLOR_MAGENTA "info->type " << info->type << endl;
+			cout << ANSI_COLOR_MAGENTA "info->level " << info->level << endl;
+			cout << ANSI_COLOR_MAGENTA "info->mode " << info->mode << endl;
+			cout << ANSI_COLOR_MAGENTA "info->commandId " << info->commandId << endl;
+			cout << ANSI_COLOR_MAGENTA "info->index " << info->index << endl;
+
+			cout << ANSI_COLOR_MAGENTA "info->message " << info->message << endl;
+			cout << ANSI_COLOR_MAGENTA "response " << response << endl;
+			cout << ANSI_COLOR_MAGENTA "info->user " << info->user << endl;
+			cout << ANSI_COLOR_MAGENTA "info->date " << info->date << endl;
+			
 			
 			stmtSaveResponse->execute();
 
