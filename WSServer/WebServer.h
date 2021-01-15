@@ -10,10 +10,13 @@
 #include "Config.h"
 #include "JsonConfig.h"
 #include "DB.h"
+#include <thread>         // std::thread
+#include <chrono>         // std::chrono::seconds
+#include <iomanip> // para la fecha
 BOOL WINAPI mainhub(LPVOID param);
 
 namespace GT {
-
+	void runTimer();
 	struct WebClient {
 		int id = -2;
 		int version_id = -2;

@@ -48,7 +48,10 @@ namespace GT {
 		char s[30][20];
 		int n = 0;
 	};
-
+	struct TrackingField {
+		int pos = 0;
+		int type = 0;
+	};
 	struct InfoProto3 {
 
 		int id_device;
@@ -86,6 +89,7 @@ namespace GT {
 
 		bool saveTrack(const char* unit_id, int id, int version, const char* buffer);
 		bool saveTrack(const char* unit_id, const char* buffer);
+		bool saveTrack2(const char* unit_id, const char* buffer);
 
 		bool saveEvent(const char* unit_id, int type_id);
 
@@ -130,6 +134,8 @@ namespace GT {
 		std::map<int, InfoProto> mProtocols;
 		std::map<std::string, InfoClient> mClients;
 		std::map<int, std::list<std::string>> mFormats;
+
+		std::map<std::string, TrackingField> mTrackingField;
 		std::list<int> mVersions;
 
 		sql::PreparedStatement* stmtLoadProtocols = nullptr;
@@ -152,6 +158,8 @@ namespace GT {
 		sql::PreparedStatement* stmtInfoClient;
 		sql::PreparedStatement* stmtUpdateClientStatus;
 		sql::PreparedStatement* stmtPendingCommand;
+
+		sql::PreparedStatement* stmtInsertTracking;
 
 		sql::Statement* stmtTracking;
 

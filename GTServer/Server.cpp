@@ -5,6 +5,17 @@ using namespace rapidjson;
 using namespace std;
 namespace GT {
 
+	void runTimer() {
+		setlocale(LC_CTYPE, "Spanish");
+		
+		while (true) {
+			std::this_thread::sleep_for(std::chrono::seconds(1));
+			auto t = std::time(nullptr);
+			auto tm = *std::localtime(&t);
+			//std::cout << std::put_time(&tm, "%d/%m/%Y %H:%M:%S") << std::endl;
+			std::cout << std::put_time(&tm, "%Y-%m-%d %H:%M:%S") << std::endl;
+		}
+	}
 
 	void runPending(std::map<string, GTClient > * mDevices, DB* db) {
 		while (true) {
@@ -96,7 +107,7 @@ namespace GT {
 		//system("pause");
 
 		//std::thread* first = new std::thread(runPending, &mDevices, std::ref(db));
-
+		std::thread* first = new std::thread(runTimer);
 
 		//first->join();
 

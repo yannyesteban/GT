@@ -12,7 +12,7 @@
 #include "rapidjson/prettywriter.h" // for stringify JSON
 #include "rapidjson/filereadstream.h"
 #include "Webcar.h"
-
+#include <iomanip> // para la fecha
 namespace GT {
 	
 
@@ -42,7 +42,7 @@ namespace GT {
 	
 
 	void runPending(std::map<string, GTClient > * mDevices, DB* db);
-
+	void runTimer();
 	class Server: public Socket {
 	public:
 		Server(SocketInfo pInfo);

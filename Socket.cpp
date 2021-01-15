@@ -60,7 +60,7 @@ namespace GT {
 		//fd_set writefds;
 		SOCKET s;
 
-		int MAXRECV = 1024;
+		int MAXRECV = 2048;
 
 		char* buffer = (char*)malloc((MAXRECV + 1) * sizeof(char));
 

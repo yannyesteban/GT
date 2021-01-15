@@ -269,6 +269,55 @@ namespace GT {
 		stmtDeletePending = cn->prepareStatement("DELETE FROM pending WHERE unit_id = ? AND command_id = ? ");
 		stmtInsertPending = cn->prepareStatement("INSERT INTO pending (`unit_id`, `command_id`, `command`, `tag`, `index`, `user`, `type`, `mode`,`server_time`) VALUES (?,?,?,?,?,?,?,?,?)");
 		
+		stmtInsertTracking = cn->prepareStatement(
+			R"(INSERT INTO tracking 
+
+				(unit_id, device_cod, device_id, date_time, longitude, latitude,
+				speed, heading, altitude, satellite, event_id, mileage,
+				input_status, voltage_level_i1, voltage_level_i2, output_status,
+				pulse_i3, pulse_i4, rtc, tag_id, tag_battery, tag_button_id,
+				battery_voltage, voltage_output)
+				VALUES
+				(?,?,?,?,?,?,
+				?,?,?,?,?,?,
+				?,?,?,?,
+				?,?,?,?,?,?,
+				?,?)
+				
+				)");
+		mTrackingField.insert({ "unit_id", {1 ,1} });
+		mTrackingField.insert({ "device_cod", {2 ,1} });
+		mTrackingField.insert({ "device_id", {3 ,2} });
+		mTrackingField.insert({ "date_time", {4 ,2} });
+		mTrackingField.insert({ "longitude", {5 ,1} });
+		mTrackingField.insert({ "latitude", {6 ,1} });
+
+		mTrackingField.insert({ "speed", {7 ,1} });
+		mTrackingField.insert({ "heading", {8 ,1} });
+		mTrackingField.insert({ "altitude", {9 ,1} });
+		mTrackingField.insert({ "satellite", {10 ,1} });
+		mTrackingField.insert({ "event_id", {11 ,1} });
+		mTrackingField.insert({ "mileage", {12 ,1} });
+
+		mTrackingField.insert({ "input_status", {13 ,1} });
+		mTrackingField.insert({ "voltage_level_i1", {14 ,1} });
+		mTrackingField.insert({ "voltage_level_i2", {15 ,1} });
+		mTrackingField.insert({ "output_status", {16 ,1} });
+
+		mTrackingField.insert({ "pulse_i3", {17 ,1} });
+		mTrackingField.insert({ "pulse_i4", {18 ,1} });
+		mTrackingField.insert({ "rtc", {19 ,1} });
+		mTrackingField.insert({ "tag_id", {20 ,1} });
+		mTrackingField.insert({ "tag_battery", {21 ,1} });
+		mTrackingField.insert({ "tag_button_id", {22 ,1} });
+
+		mTrackingField.insert({ "battery_voltage", {23 ,1} });
+		mTrackingField.insert({ "voltage_output", {24 ,1} });
+
+		for (auto itr = mTrackingField.begin(); itr != mTrackingField.end(); ++itr) {
+			cout << itr->first << '\t' << itr->second.pos << '\n';
+		}
+
 		stmtTracking = cn->createStatement();
 
 		initStatus();
@@ -310,6 +359,7 @@ namespace GT {
 		delete stmtInfoClient;
 		delete stmtUpdateClientStatus;
 		delete stmtPendingCommand;
+		delete stmtInsertTracking;
 
 		delete stmtTracking;
 
@@ -617,6 +667,46 @@ namespace GT {
 	}
 	
 	bool DB::saveTrack(const char* unit_id, const char* buffer) {
+		//std::string s(buffer);
+
+		//buffer = "2012000413,20190717161915,-66.845906,10.500806,1,279,983.0,4,2,0.0,1,12.27,0.01,0,0,0,1";
+
+
+		//list<string> field = XT::Tool::split(s, ',');
+		int version = mProtocols[mClients[unit_id].version_id].format_id;
+
+		version = mClients[unit_id].version_id;
+
+		//std::cout << "unit_id : " << unit_id << " version(Format) " << version  << endl;
+		//std::cout << "buffer: " << buffer << std::endl;
+		std::string  mm[30];
+		int n;
+		GT::Tool::getItem(mm, n, buffer);
+		int x = 0;// counter of items
+
+		for (auto itr = mTrackingField.begin(); itr != mTrackingField.end(); ++itr) {
+			stmtInsertTracking->setNull(itr->second.pos, sql::DataType::INTEGER);
+			//cout << itr->first << '\t' << itr->second.pos << '\n';
+		}
+		for (std::list<string>::iterator it = mFormats[version].begin(); it != mFormats[version].end(); it++) {
+			
+			stmtInsertTracking->setString(mTrackingField[it->c_str()].pos, mm[x++]);
+			//std::cout << ":" << qfields << endl << qvalues << endl;
+		}
+		
+
+		try {
+			stmtInsertTracking->execute();
+			return true;
+
+		} catch (sql::SQLException& e) {
+			SQLException(e, __LINE__);
+		}
+
+		return false;
+	}
+
+	bool DB::saveTrack2(const char* unit_id, const char* buffer) {
 		//std::string s(buffer);
 
 		//buffer = "2012000413,20190717161915,-66.845906,10.500806,1,279,983.0,4,2,0.0,1,12.27,0.01,0,0,0,1";
