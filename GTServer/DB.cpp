@@ -673,29 +673,38 @@ namespace GT {
 
 
 		//list<string> field = XT::Tool::split(s, ',');
-		int version = mProtocols[mClients[unit_id].version_id].format_id;
-
-		version = mClients[unit_id].version_id;
-
-		//std::cout << "unit_id : " << unit_id << " version(Format) " << version  << endl;
-		//std::cout << "buffer: " << buffer << std::endl;
-		std::string  mm[30];
-		int n;
-		GT::Tool::getItem(mm, n, buffer);
-		int x = 0;// counter of items
-
-		for (auto itr = mTrackingField.begin(); itr != mTrackingField.end(); ++itr) {
-			stmtInsertTracking->setNull(itr->second.pos, sql::DataType::INTEGER);
-			//cout << itr->first << '\t' << itr->second.pos << '\n';
-		}
-		for (std::list<string>::iterator it = mFormats[version].begin(); it != mFormats[version].end(); it++) {
-			
-			stmtInsertTracking->setString(mTrackingField[it->c_str()].pos, mm[x++]);
-			//std::cout << ":" << qfields << endl << qvalues << endl;
-		}
+		
+		
 		
 
 		try {
+			int version = mProtocols[mClients[unit_id].version_id].format_id;
+
+			version = mClients[unit_id].version_id;
+
+			//std::cout << "unit_id : " << unit_id << " version(Format) " << version  << endl;
+			//std::cout << "buffer: " << buffer << std::endl;
+			std::string  mm[30];
+			int n;
+			GT::Tool::getItem(mm, n, buffer);
+
+			int x = 0;// counter of items
+			for (auto itr = mTrackingField.begin(); itr != mTrackingField.end(); ++itr) {
+				stmtInsertTracking->setNull(itr->second.pos, sql::DataType::INTEGER);
+				//cout << itr->first << '\t' << itr->second.pos << '\n';
+			}
+			
+			for (std::list<string>::iterator it = mFormats[version].begin(); it != mFormats[version].end(); it++) {
+				if (x > n) {
+					continue;
+				}
+				std::string value = mm[x];
+				int pos = mTrackingField[it->c_str()].pos;
+				stmtInsertTracking->setString(pos, value.c_str());
+
+				x++;
+				//std::cout << ":" << qfields << endl << qvalues << endl;
+			}
 			stmtInsertTracking->execute();
 			return true;
 

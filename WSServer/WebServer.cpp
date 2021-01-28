@@ -13,7 +13,7 @@ namespace GT {
             auto t = std::time(nullptr);
             auto tm = *std::localtime(&t);
             //std::cout << std::put_time(&tm, "%d/%m/%Y %H:%M:%S") << std::endl;
-            std::cout << std::put_time(&tm, "%Y-%m-%d %H:%M:%S") << std::endl;
+            //std::cout << std::put_time(&tm, "%Y-%m-%d %H:%M:%S") << std::endl;
         }
     }
 
