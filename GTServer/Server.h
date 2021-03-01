@@ -35,6 +35,7 @@ namespace GT {
 		short int status = 0;
 		SOCKET socket;
 		short int type = 0;
+		clock_t clock;
 		
 
 	};
@@ -63,10 +64,12 @@ namespace GT {
 		bool deviceMessage(ConnInfo Info);
 
 		void broadcast(RCommand * response);
+
+		int keepAliveTime = 90;
 	private:
 		bool debug;
 		DB * db;
-		
+		clock_t mClock;
 		std::map<SOCKET, RClient> rClients;
 		std::map<SOCKET, GTClient> clients;
 		std::map<string, GTClient > mDevices;
@@ -85,6 +88,7 @@ namespace GT {
 		void setClientName(int unitId, std::string name);
 
 		WC::Webcar * webcar;
+		
 		//RCommand unitResponse;
 	};
 

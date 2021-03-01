@@ -11,7 +11,7 @@ namespace GT {
 	class DeviceAdmin {
 	public:
 		DeviceAdmin();
-		int nTask = 34;
+		int nTask = 3;
 		void run();
 	private:
 		std::vector<std::thread *> Tasks;

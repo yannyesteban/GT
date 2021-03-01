@@ -7,6 +7,11 @@
 #include <stdint.h>
 #include <windows.h>
 #include <winsock2.h>
+#include <ctime>
+
+#include <iostream>
+#include <stdio.h>
+
 //#include "sha1.h"
 #pragma comment(lib, "ws2_32.lib") //Winsock Library
 namespace GT {
@@ -24,6 +29,7 @@ namespace GT {
 		char* address;
 		u_short port;
 		char* tag;
+		clock_t clock;
 	} ConnInfo;
 
 	typedef struct SocketInfob {
@@ -54,7 +60,7 @@ namespace GT {
 		WSADATA wsa = {};
 		SOCKET master = 0;
 		SOCKET tSocket = 0;
-		SOCKET clients[200];
+		SOCKET clients[300];
 		
 
 		sockaddr_in server;

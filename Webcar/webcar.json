@@ -11,5 +11,6 @@
   "max_clients": 35,
   "port": 3322,
   "show_cache": false,
-  "version": "1.0.0.1"
+  "version": "1.0.0.1",
+  "keep_alive": 60
 }

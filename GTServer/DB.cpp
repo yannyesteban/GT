@@ -320,6 +320,28 @@ namespace GT {
 
 		stmtTracking = cn->createStatement();
 
+
+		//if (!stmtSaveResponse) {
+		stmtEvent = cn->prepareStatement(
+			R"(
+
+			INSERT INTO event (`unit_id`, `date_time`, `event_id`, `mode`, `info`, `status`)
+	
+			SELECT ?, ?, ue.event_id, ue.mode, ?, 0
+			FROM unit_event as ue
+			WHERE (unit_id = ? OR unit_id IS NULL) AND ue.event_id = ? AND ue.mode > 0
+    
+			ORDER BY ue.unit_id DESC
+			LIMIT 1;
+
+
+				#INSERT INTO event
+				#(`unit_id`, `date_time`, `event_id`, `mode`, `info`, `status`) 
+				#VALUES
+				#(?,?,?,?,?,?)
+			)");
+		//}
+
 		initStatus();
 		loadProtocols();
 		loadVersions();
@@ -360,10 +382,9 @@ namespace GT {
 		delete stmtUpdateClientStatus;
 		delete stmtPendingCommand;
 		delete stmtInsertTracking;
-
+		delete stmtEvent;
 		delete stmtTracking;
-
-
+		
 		
 		//delete stmtMain;
 		initialized = false;
@@ -392,6 +413,7 @@ namespace GT {
 		if (!connect()) {
 			return;
 		}
+		std::cout << "bye" << std::endl;
 
 		try {
 			sql::Statement* stmt;
@@ -694,6 +716,7 @@ namespace GT {
 				//cout << itr->first << '\t' << itr->second.pos << '\n';
 			}
 			
+			stmtInsertTracking->setInt(1, mClients[unit_id].unit_id);
 			for (std::list<string>::iterator it = mFormats[version].begin(); it != mFormats[version].end(); it++) {
 				if (x > n) {
 					continue;
@@ -703,7 +726,7 @@ namespace GT {
 				stmtInsertTracking->setString(pos, value.c_str());
 
 				x++;
-				//std::cout << ":" << qfields << endl << qvalues << endl;
+				//std::cout << x << ":" << pos << "   v:" << value << endl;
 			}
 			stmtInsertTracking->execute();
 			return true;
@@ -1543,6 +1566,32 @@ namespace GT {
 		return true;
 
 	}
+
+	void DB::insertEvent(DBEvent* infoEvent) {
+
+
+		if (!connect()) {
+			return;
+		}
+
+		try {
+
+			stmtEvent->setInt(1, infoEvent->unitId);
+			stmtEvent->setString(2, infoEvent->dateTime);
+			stmtEvent->setString(3, infoEvent->info);
+			stmtEvent->setInt(4, infoEvent->unitId);
+			stmtEvent->setInt(5, infoEvent->eventId);
+
+			stmtEvent->execute();
+
+
+		} catch (sql::SQLException& e) {
+			SQLException(e, __LINE__);
+		}
+
+	}
+
+	
 
 	void DB::test(int id) {
 		if (!connect()) {

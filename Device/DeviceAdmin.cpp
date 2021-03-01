@@ -1,8 +1,8 @@
 #include "DeviceAdmin.h"
 
 GT::DeviceAdmin::DeviceAdmin() {
-	Devices.push_back("3024000100");
-	Devices.push_back("3034000101");
+	//Devices.push_back("3024000100");
+	//Devices.push_back("3034000101");
 	Devices.push_back("2012000398");
 	Devices.push_back("2012000742");
 	Devices.push_back("2012000733");
@@ -48,7 +48,7 @@ void GT::DeviceAdmin::run() {
 		//std::thread Tasks(runDevice);
 		std::thread * first = new std::thread(runDevice, Devices[i]);
 		Tasks.push_back(first);
-		Sleep(1000);
+		Sleep(10000);
 	}
 	for (int i = 0; i < nTask; i++) {
 		Tasks[i]->join();

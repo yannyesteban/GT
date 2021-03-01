@@ -33,6 +33,7 @@ namespace GT {
 		const char* version;
 		bool debug;
 		bool show_cache;
+		int keep_alive;
 		InfoDB db;
 	};
 

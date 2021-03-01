@@ -112,6 +112,7 @@ namespace GT {
 						Info.address = inet_ntoa(address.sin_addr);
 						Info.port = ntohs(address.sin_port);
 						Info.tag = (char*)"yanny";
+						Info.clock = clock();
 						clients[i] = tSocket;
 						//CallConection(Info);
 						
@@ -200,6 +201,9 @@ namespace GT {
 						Info.tag = (char*)"yanny";
 						Info.buffer = buffer;
 						Info.valread = valread;
+						Info.clock = clock();
+
+						std::cout << "\n\n**** reloj: " << Info.clock << std::endl;
 						//CallMessage(Info);
 						onMessage(Info);
 						

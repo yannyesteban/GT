@@ -4,7 +4,8 @@
 using namespace rapidjson;
 using namespace std;
 namespace GT {
-
+	
+	
 	void runTimer() {
 		setlocale(LC_CTYPE, "Spanish");
 		
@@ -14,7 +15,43 @@ namespace GT {
 			auto tm = *std::localtime(&t);
 			//std::cout << std::put_time(&tm, "%d/%m/%Y %H:%M:%S") << std::endl;
 			//std::cout << std::put_time(&tm, "%Y-%m-%d %H:%M:%S") << std::endl;
+	
+	
+	
+
+			//double time = (double(t1 - t0) / CLOCKS_PER_SEC);
+			//std::cout << "Execution Time: " << t1 << std::endl;
 		}
+	}
+
+	void runTimeOut(std::map < SOCKET, GTClient> * clients, Server* s, int keepAliveTime) {
+		clock_t mClock;
+		
+		std::cout << s->keepAliveTime << std::endl;
+		while (true) {
+			
+
+			std::this_thread::sleep_for(std::chrono::seconds(1));
+			mClock = clock();
+			
+			for (std::map<SOCKET, GTClient>::iterator it = clients->begin(); it != clients->end(); ++it) {
+				
+				double diffClock = (double(mClock) - double(it->second.clock)) / CLOCKS_PER_SEC;
+				//cout << "CLOCK -> " << diffClock << " type :" << it->second.type << endl;
+				if (diffClock > 160 && it->second.type ==2) {
+					//cout << "cerrando el socket del cliente " << it->second.socket << endl;
+					s->disconect(it->second.socket);
+				}
+				//printf("%12s", it->first.c_str());
+				//printf("%10s", it->second.device_id);
+				//printf("%10d\n", it->second.id);
+
+				//std::cout << "---- one clock " << it->second.clock;
+			}
+
+
+		}
+
 	}
 
 	void runPending(std::map<string, GTClient > * mDevices, DB* db) {
@@ -61,7 +98,9 @@ namespace GT {
 		}
 		
 	}
+	
 	Server::Server(SocketInfo pInfo):Socket(pInfo),debug(false), db(nullptr) {
+		mClock = clock();
 	}
 
 	bool Server::init(AppConfig pConfig) {
@@ -92,7 +131,7 @@ namespace GT {
 		*/
 		//config = pConfig;
 		
-
+		keepAliveTime = pConfig.keep_alive;
 		pConfig.db.debug = pConfig.debug;
 		db = new DB(pConfig.db);
 		db->connect();
@@ -107,7 +146,11 @@ namespace GT {
 		//system("pause");
 
 		//std::thread* first = new std::thread(runPending, &mDevices, std::ref(db));
-		std::thread* first = new std::thread(runTimer);
+		std::thread* threadTimeOut = new std::thread(runTimeOut, &clients, this, keepAliveTime);
+		
+		
+		/* nothing for now*/
+		//std::thread* first = new std::thread(runTimer);
 
 		//first->join();
 
@@ -342,7 +385,7 @@ namespace GT {
 		resp.level = 0;
 		
 		resp.mode = 0;
-		resp.type = 5;
+		resp.type = 6;
 		resp.typeMessage = ClientMsg::Disconnecting;
 		strcpy(resp.message, "DISCONNECTED");
 		strcpy(resp.unit, clients[Info.client].device_id);
@@ -360,9 +403,16 @@ namespace GT {
 
 		//strcpy(info.date, "0000-00-00 00:00:00");
 		//strcpy(info.date, "");
-		db->setClientStatus(resp.unitId, 1, resp.date);
+		db->setClientStatus(resp.unitId, 0, resp.date);
 		db->saveResponse(&resp, "DISCONNECTED");
 		
+
+		DBEvent event;
+		event.unitId = clients[Info.client].id;
+		strftime(event.dateTime, sizeof(event.dateTime), "%F %T", timeinfo);
+		event.eventId = 202;
+		strcpy(event.info, "DISCONNECTED");
+		db->insertEvent(&event);
 		broadcast(&resp);
 
 
@@ -385,10 +435,17 @@ namespace GT {
 	bool Server::isSyncMsg(ConnInfo Info) {
 
 
+		//double diffClock = (double(Info.clock) - double(mClock)) / CLOCKS_PER_SEC;
+		//cout << "clock " << diffClock << endl;
+
 		SyncMsg* sync_msg = (SyncMsg*)Info.buffer;
 
 		char name[12];
-
+		//cout << " Syncro: "<< sync_msg->Keep_Alive_Header << endl << Info.buffer << endl;
+		//std::cout << "clock: "<< Info.clock  << " chrono " << (double(Info.clock-mClock) / CLOCKS_PER_SEC) << endl;
+		
+		clients[Info.client].clock = Info.clock;
+		
 		if (db->isVersion(sync_msg->Keep_Alive_Header)) {
 			//printf(ANSI_COLOR_CYAN "---> verification of sync (%lu)..(%d).\n" ANSI_COLOR_RESET, sync_msg->Keep_Alive_Device_ID, sync_msg->Keep_Alive_Header);
 			//puts(sync_msg->Keep_Alive_Device_ID));
@@ -399,10 +456,21 @@ namespace GT {
 			
 			mDevices[name] = clients[Info.client];
 
+
+			time_t rawtime;
+			struct tm* timeinfo;
+
+
+			time(&rawtime);
+			timeinfo = localtime(&rawtime);
+
 			if (mDevices[name].type != 2) {
 
 				
 				clients[Info.client].type = 2;
+				clients[Info.client].status = 1;
+				
+
 				mDevices[name].type = 2;
 				strcpy(mDevices[name].device_id, (const char*)name);
 				InfoClient cInfo = db->getInfoClient(name);
@@ -430,12 +498,7 @@ namespace GT {
 				strcpy(info.user, name);
 				strcpy(info.name, cInfo.name);
 				
-				time_t rawtime;
-				struct tm* timeinfo;
 				
-
-				time(&rawtime);
-				timeinfo = localtime(&rawtime);
 
 				strftime(info.date, sizeof(info.date), "%F %T", timeinfo);
 
@@ -445,11 +508,27 @@ namespace GT {
 
 				db->setClientStatus(info.unitId, 1, info.date);
 				db->saveResponse(&info, "CONNECTED");
+
+				DBEvent event;
+				event.unitId = info.unitId;
+				strftime(event.dateTime, sizeof(event.dateTime), "%F %T", timeinfo);
+				event.eventId = 201;
+				strcpy(event.info, "CONNECTED");
+				db->insertEvent(&event);
+
 				broadcast(&info);
 				time(&info.time);
 
 				cout << "Unit " << cInfo.unit_id << ", name: "<< name << " is connected " << endl;
 			} else {
+
+				DBEvent event;
+				event.unitId = mDevices[name].id;
+				strftime(event.dateTime, sizeof(event.dateTime), "%F %T", timeinfo);
+				event.eventId = 203;
+				strcpy(event.info, "SYNCH");
+				db->insertEvent(&event);
+				//mDevices[name].clock = clock();
 				//cout << "Algo Raro aqui!!!" << endl;
 			}
 
@@ -467,7 +546,7 @@ namespace GT {
 		}
 		
 
-
+		//cout << " rechazando un synch" << endl;
 		return false;
 	}
 

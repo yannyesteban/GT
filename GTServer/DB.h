@@ -62,6 +62,15 @@ namespace GT {
 
 	};
 
+	struct DBEvent {
+		int unitId;
+		char dateTime[20] = "";
+		int eventId;
+		int mode;
+		char info[1024];
+		unsigned short status;
+	};
+
 
 	class DB {
 	public:
@@ -120,6 +129,8 @@ namespace GT {
 		bool getPendingCommand(std::vector<GT::PendingCommand> * pending, std::vector<string> units);
 		void initStatus();
 		void test(int id);
+
+		void insertEvent(DBEvent * infoEvent);
 	private:
 		bool debug;
 		InfoDB info;
@@ -160,6 +171,8 @@ namespace GT {
 		sql::PreparedStatement* stmtPendingCommand;
 
 		sql::PreparedStatement* stmtInsertTracking;
+
+		sql::PreparedStatement* stmtEvent;
 
 		sql::Statement* stmtTracking;
 
