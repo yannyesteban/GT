@@ -325,9 +325,9 @@ namespace GT {
 		stmtEvent = cn->prepareStatement(
 			R"(
 
-			INSERT INTO event (`unit_id`, `date_time`, `event_id`, `mode`, `info`, `status`)
+			INSERT INTO event (`unit_id`, `date_time`, `event_id`, `mode`, `info`, `status`,`title`)
 	
-			SELECT ?, ?, ue.event_id, ue.mode, ?, 0
+			SELECT ?, ?, ue.event_id, ue.mode, ?, 0, ?
 			FROM unit_event as ue
 			WHERE (unit_id = ? OR unit_id IS NULL) AND ue.event_id = ? AND ue.mode > 0
     
@@ -1579,8 +1579,9 @@ namespace GT {
 			stmtEvent->setInt(1, infoEvent->unitId);
 			stmtEvent->setString(2, infoEvent->dateTime);
 			stmtEvent->setString(3, infoEvent->info);
-			stmtEvent->setInt(4, infoEvent->unitId);
-			stmtEvent->setInt(5, infoEvent->eventId);
+			stmtEvent->setString(4, infoEvent->title);
+			stmtEvent->setInt(5, infoEvent->unitId);
+			stmtEvent->setInt(6, infoEvent->eventId);
 
 			stmtEvent->execute();
 

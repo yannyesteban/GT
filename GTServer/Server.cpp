@@ -227,7 +227,7 @@ namespace GT {
 		IdHeader* header = (IdHeader*)Info.buffer;
 		std::string command = "";
 		
-
+		std::cout << "Header " << header->header << std::endl;
 		/* message from Websocket Server == 10001 */
 		if (header->header == 10001) {
 			std::string str;
@@ -411,7 +411,8 @@ namespace GT {
 		event.unitId = clients[Info.client].id;
 		strftime(event.dateTime, sizeof(event.dateTime), "%F %T", timeinfo);
 		event.eventId = 202;
-		strcpy(event.info, "DISCONNECTED");
+		strcpy(event.title, "disconnected");
+		strcpy(event.info, "");
 		db->insertEvent(&event);
 		broadcast(&resp);
 
@@ -513,7 +514,8 @@ namespace GT {
 				event.unitId = info.unitId;
 				strftime(event.dateTime, sizeof(event.dateTime), "%F %T", timeinfo);
 				event.eventId = 201;
-				strcpy(event.info, "CONNECTED");
+				strcpy(event.title, "connected");
+				strcpy(event.info, "");
 				db->insertEvent(&event);
 
 				broadcast(&info);
@@ -526,7 +528,8 @@ namespace GT {
 				event.unitId = mDevices[name].id;
 				strftime(event.dateTime, sizeof(event.dateTime), "%F %T", timeinfo);
 				event.eventId = 203;
-				strcpy(event.info, "SYNCH");
+				strcpy(event.title, "synch");
+				strcpy(event.info, "");
 				db->insertEvent(&event);
 				//mDevices[name].clock = clock();
 				//cout << "Algo Raro aqui!!!" << endl;

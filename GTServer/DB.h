@@ -67,7 +67,8 @@ namespace GT {
 		char dateTime[20] = "";
 		int eventId;
 		int mode;
-		char info[1024];
+		char title[1024] = "";
+		char info[1024] = "";
 		unsigned short status;
 	};
 
