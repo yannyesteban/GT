@@ -153,8 +153,8 @@ namespace GT {
 		//std::thread* first = new std::thread(runTimer);
 
 		//first->join();
-
-
+		InfoPending infoPending;
+		db->getInfoPending(274,&infoPending);
 		return true;
 	}
 
@@ -297,7 +297,15 @@ namespace GT {
 			return 0;
 
 		}
+		if (header->header == 10300) {
+			RCommand* r = (RCommand*)Info.buffer;
 
+			InfoPending infoPending;
+			db->getInfoPending(r->id, &infoPending);
+
+			std::cout << "Pending Id " << infoPending.command << std::endl;
+			send(mDevices[getUnitName(infoPending.unitId)].socket, infoPending.command.c_str(), strlen(infoPending.command.c_str()), 0);
+		}
 		if (header->header == 10100) {
 			RCommand* r = (RCommand*)Info.buffer;
 

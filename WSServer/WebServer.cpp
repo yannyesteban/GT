@@ -329,6 +329,20 @@ namespace GT {
             cout << "history" << endl;
         }
 
+        if (msgType == "rr") {
+            type = 4;
+            cout << "send pending" << endl;
+            
+            GT::RCommand rc;
+            rc.header = 10300;
+            rc.id = document["id"].GetInt();
+
+            char buffer2[1024];
+            memcpy(buffer2, &rc, sizeof(rc));
+            send(s, buffer2, (int)sizeof(buffer2), 0);
+            return;
+        }
+
         std::cout << "Type: " << type << std::endl;
        
        

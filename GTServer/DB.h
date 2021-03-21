@@ -37,6 +37,18 @@ namespace GT {
 
 	};
 
+	struct InfoPending {
+		unsigned int id;
+		unsigned int unitId;
+		unsigned int commandId;
+		std::string command;
+		std::string name;
+		unsigned short level;
+		unsigned short type;
+		unsigned short mode;
+		std::string user;
+
+	};
 	struct InfoClientX {
 		
 		int unit_id;
@@ -128,6 +140,8 @@ namespace GT {
 
 		void setClientStatus(unsigned int unitId, unsigned short status, char* date);
 		bool getPendingCommand(std::vector<GT::PendingCommand> * pending, std::vector<string> units);
+		bool getInfoPending(unsigned int id, InfoPending * info);
+		bool sendPendingCommand(unsigned int id);
 		void initStatus();
 		void test(int id);
 
@@ -174,6 +188,7 @@ namespace GT {
 		sql::PreparedStatement* stmtInsertTracking;
 
 		sql::PreparedStatement* stmtEvent;
+		sql::PreparedStatement* stmtGetInfoPending = nullptr;
 
 		sql::Statement* stmtTracking;
 

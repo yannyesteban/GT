@@ -54,11 +54,46 @@ namespace GT {
 		}
 
 	}
+	void Tool::getItem(std::list<std::string> w, int& len, const char* buffer) {
+		std::smatch m;
+		std::string ss(buffer);
+
+		//std::regex Pala("[0-9.a-zA-ZñÑáéíóúÁÉÍÓÚäëïöüÄËÏÖÜ]+");
+		std::regex Pala("[^,]+");
+		len = 0;
+		while (std::regex_search(ss, m, Pala)) {
+
+			for (int i = 0; i < m.size(); i++) {
+				w.push_back(m[i].str());
+
+			}
+
+			ss = m.suffix().str();
+		}
+	
+	}
 	void Tool::getCommand(std::string w[], int& len, const char* buffer) {
 
 		std:string subject(buffer);
 		std::smatch match;
 		std::regex re("(\\$(\\w+):(\\w+)(\\+\\w+)?(?:=(.+)?)?)");
+		len = 0;
+		if (std::regex_search(subject, match, re)) {
+
+			for (int i = 0; i < match.size(); i++) {
+				w[i] = match[i].str();
+				//cout << "W es : " << i << ", " << w[i] << endl;
+				len++;
+			}
+
+			subject = match.suffix().str();
+		}
+	}
+	void Tool::getSendCommand(std::string w[], int& len, const char* buffer) {
+
+	std:string subject(buffer);
+		std::smatch match;
+		std::regex re("(\\$(\\w+)\\+(\\w+)(\\+\\w+)?(?:=(.+)?)?)");
 		len = 0;
 		if (std::regex_search(subject, match, re)) {
 

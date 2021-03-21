@@ -255,7 +255,17 @@ namespace GT {
 			WHERE u.id = ? AND c.command = ? AND p.index = ?
 		)");
 		//	}
+		stmtGetInfoPending = cn->prepareStatement(
+			R"(SELECT
+				p.id, unit_id, command_id, command,tag, p.index,
+				p.type,d.name,
+				p.level, p.mode, user
 
+				FROM pending p
+				INNER JOIN unit as u ON u.id = p.unit_id
+				INNER JOIN device as d ON d.id = u.device_id
+				WHERE p.id= ?
+		)");
 
 		//if (!stmtSaveResponse) {
 		stmtSaveResponse = cn->prepareStatement(
@@ -384,6 +394,7 @@ namespace GT {
 		delete stmtInsertTracking;
 		delete stmtEvent;
 		delete stmtTracking;
+		delete stmtGetInfoPending;
 		
 		
 		//delete stmtMain;
@@ -1565,6 +1576,86 @@ namespace GT {
 
 		return true;
 
+	}
+
+	
+
+	bool DB::getInfoPending(unsigned int id, InfoPending* info) {
+		if (!connect()) {
+			return false;
+		}
+
+		try {
+			sql::ResultSet* result = nullptr;
+
+			stmtGetInfoPending->setInt(1, id);
+
+			if (stmtGetInfoPending->execute()) {
+
+				result = stmtGetInfoPending->getResultSet();
+
+				if (result->next()) {
+					info->id = result->getInt("id");
+					info->unitId = result->getInt("unit_id");
+					info->commandId = result->getInt("command_id");
+					info->command = result->getString("command").c_str();
+					
+					info->name = result->getString("name").c_str();
+					
+					info->level = result->getInt("level");
+					info->type = result->getInt("type");
+					info->mode = result->getInt("mode");
+					info->user = result->getString("user").c_str();
+					std::string aa[20];
+					int len;
+					Tool::getSendCommand(aa, len, info->command.c_str());
+					std::list<std::string> list;
+					Tool::getItem(list, len, aa[5].c_str());
+					GT::RCommand r = {
+						//10020,
+						0,
+						info->type,
+						0,
+						"",
+						"",
+						"",
+						"",//name
+						info->unitId,
+						info->commandId,
+						info->mode,
+						"",// date
+						info->level,
+						0,//index
+						ClientMsg::Request,
+						0,// time
+						0// Delay
+					};
+					//int a = 0;
+					//std::string str = createCommand(&r, list);
+					//strcpy(r.message, str.c_str());
+					//addPending(&r);
+
+					
+				}
+				delete result;
+			}
+
+		} catch (sql::SQLException& e) {
+			SQLException(e, __LINE__);
+		}
+
+
+		return true;
+	}
+
+
+
+	
+
+	bool DB::sendPendingCommand(unsigned int id) {
+
+
+		return false;
 	}
 
 	void DB::insertEvent(DBEvent* infoEvent) {
