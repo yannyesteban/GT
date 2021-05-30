@@ -31,7 +31,7 @@ bool GT::Device::isSyncMsg(char* buffer) {
 
 void GT::Device::onReceive(char* buffer, size_t size) {
 	
-	std::cout << "................ HOLAAAAAAAA" << std::endl;
+	//std::cout << "................ HOLAAAAAAAA" << std::endl;
 
 	if (isSyncMsg(buffer)) {
 		std::cout << "OK conectado correctamente" << std::endl;
@@ -50,7 +50,7 @@ void GT::Device::onReceive(char* buffer, size_t size) {
 void GT::Device::syncTask() {
 	//SyncMsg s = { 63738,999,3024000100 };
 	SyncMsg s = { 63738,999,std::stoll(unitName) };
-	std::cout << "sincronizacion " << std::endl;
+	std::cout << "SYNCH " << std::endl;
 
 	char buffer[100];
 	memcpy(buffer, &s, sizeof(s));
@@ -60,17 +60,16 @@ void GT::Device::syncTask() {
 
 void GT::Device::trackingTask() {
 
-	std::string track = unitName + "," + getDateTime() + "," +
-		std::to_string(getLng()) + "," + std::to_string(getLat()) + ",99,10,0,8,5,100,10,0,0,0,0,0,0,1,1,1,1";
-	//system("cls");
+	std::string cmd = db->loadTracking(unitId, &beginId, format);
+	std::cout << "Send: " << "Clien ID: " << clientId << ", " << std::endl;
+	send(getHost(), cmd.c_str(), cmd.size(), 0);
 
-	//const char* track = "3024000100,20201119052600,66.84869800,10.50286500,99,10,0,8,5,100,10,0,0,0,0,0,0";
+}
 
-
-
-	std::cout << "Track " << track << std::endl;
-
-	send(getHost(), track.c_str(), track.size(), 0);
+void GT::Device::init(AppConfig* config) {
+	db = new GT::DB2(config->db);
+	db->connect();
+	//db->init();
 
 }
 
@@ -81,6 +80,7 @@ bool GT::Device::beginTasks() {
 	int base;
 
 	while (true) {
+		
 		Sleep(10);
 		//time(&time2);
 		base = timespec_get(&ts2, TIME_UTC);
@@ -96,7 +96,7 @@ bool GT::Device::beginTasks() {
 		}
 
 		if (syncDelay >= syncTime) {
-			std::cout << unitName << " Sync: " << elapsed << std::endl;
+			std::cout << "Clien ID: " << clientId << ", " << unitName << " Sync: " << elapsed << std::endl;
 			syncTask();
 			syncDelay = 0;
 		}
@@ -106,15 +106,23 @@ bool GT::Device::beginTasks() {
 		//now = time2;
 		ts = ts2;
 
-		break;
+		//break;
 
 	}
 
 	return false;
 }
 
-void GT::Device::setUnitName(std::string name) {
-	unitName = name;
+void GT::Device::setUnitName(int id) {
+	unitId = id;
+	UnitInfo info;
+	db->getInfoUnit(id, &info);
+	unitName = info.unitName;
+	std::cout << "Unit Id: " << unitId << " UnitName: " << info.unitName << std::endl;
+	
+	//db->loadFormat(unitId, &format);
+	
+	//
 }
 
 void GT::Device::getDateTime(std::string & datetime) {

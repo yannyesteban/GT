@@ -7,6 +7,8 @@
 #include "Color.h"
 #include "Types.h"
 #include "SocketClient.h"
+#include "DB2.h"
+
 namespace GT {
 
 	class Device :public SocketClient {
@@ -19,19 +21,25 @@ namespace GT {
 		void trackingTask();
 		void commandTask();
 		void evalCommand();
+		void init(AppConfig* config);
 
 		bool beginTasks();
 
-		void setUnitName(std::string name);
+		void setUnitName(int unitId);
+		DB2 * db;
+		AppConfig* config;
+		int clientId = 0;
 
 	private:
-		float syncTime = 5;
-		float trackingTime = 8;
-
+		float syncTime = 60;
+		float trackingTime = 5;
+		std::vector<std::string> format;
 		float trackingDelay = 0;
 		float syncDelay = 0;
+		int beginId = 2560483;
 
-		std::string unitName = "3024000100";
+		std::string unitName = "";
+		int unitId = 0;
 
 		void getDateTime(std::string &);
 		std::string getDateTime();

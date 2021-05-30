@@ -116,11 +116,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\source\cpp\GT</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\source\cpp\GT;C:\source\cpp\rapidjson-master\include;C:\source\cpp\boost_1_72_0;C:\source\cpp\mysql-connector-c++-8.0.18-winx64\include;C:\source\cpp\GT\Webcar</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\source\cpp\mysql-connector-c++-8.0.21-winx64\lib64\vs14</AdditionalLibraryDirectories>
+      <AdditionalDependencies>mysqlcppconn.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -131,24 +133,30 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\source\cpp\GT</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\source\cpp\GT;C:\source\cpp\rapidjson-master\include;C:\source\cpp\boost_1_72_0;C:\source\cpp\mysql-connector-c++-8.0.18-winx64\include;C:\source\cpp\GT\Webcar</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\source\cpp\mysql-connector-c++-8.0.21-winx64\lib64\vs14</AdditionalLibraryDirectories>
+      <AdditionalDependencies>mysqlcppconn.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\Color.cpp" />
     <ClCompile Include="..\GTClient\Client.cpp" />
+    <ClCompile Include="..\GTServer\Config.cpp" />
     <ClCompile Include="..\SocketClient.cpp" />
+    <ClCompile Include="DB2.cpp" />
     <ClCompile Include="Device.cpp" />
     <ClCompile Include="DeviceAdmin.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\GTServer\Config.h" />
+    <ClInclude Include="DB2.h" />
     <ClInclude Include="Device.h" />
     <ClInclude Include="DeviceAdmin.h" />
   </ItemGroup>

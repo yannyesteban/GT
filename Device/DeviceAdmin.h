@@ -4,18 +4,23 @@
 #include <thread>         // std::thread
 #include "Device.h"
 #include <vector>
+#include "DB2.h"
+//#include "Types.h"
+#include "GTServer/Config.h"
 
-void runDevice(std::string name);
+void runDevice(int unitId, GT::AppConfig * config, int clientId, GT::DB2 * db);
 
 namespace GT {
 	class DeviceAdmin {
 	public:
 		DeviceAdmin();
-		int nTask = 3;
-		void run();
+		int nTask = 1;
+		void run(AppConfig * config);
+		DB2 * db;
 	private:
 		std::vector<std::thread *> Tasks;
-		std::vector<std::string> Devices;
+		std::vector<int> Devices;
+		
 
 	};
 }

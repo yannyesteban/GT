@@ -7,6 +7,9 @@
 #include "Device.h"
 #include "DeviceAdmin.h"
 
+#include "GTServer/Config.h"
+
+#include <iomanip> // para la fecha
 
 int main()
 {
@@ -29,6 +32,17 @@ int main()
     std::cout << "GT Device v1.0 (2020)!\n";
     Color::set(0);
     std::cout << "Hello World!\n";
+
+    auto appInfo = GT::Config::load("device.json");
+    std::cout << appInfo.appname << std::endl;
+
+    
+    //auto db = new GT::DB2(appInfo.db);
+    //db->connect();
+    //db->init();
+    
+    //return 0;
+
     GT::CSInfo Info;
     Info.host = (char*)"127.0.0.1";
     Info.port = 3322;
@@ -37,7 +51,8 @@ int main()
 
     if (option) {
         auto A = new GT::DeviceAdmin();
-        A->run();
+        //A->db = db;
+        A->run(&appInfo);
     } else {
         auto C = new GT::Device(Info);
         C->start();

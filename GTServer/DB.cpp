@@ -282,13 +282,13 @@ namespace GT {
 		stmtInsertTracking = cn->prepareStatement(
 			R"(INSERT INTO tracking 
 
-				(unit_id, device_cod, device_id, date_time, longitude, latitude,
+				(unit_id, device_id, date_time, longitude, latitude,
 				speed, heading, altitude, satellite, event_id, mileage,
 				input_status, voltage_level_i1, voltage_level_i2, output_status,
 				pulse_i3, pulse_i4, rtc, tag_id, tag_battery, tag_button_id,
 				battery_voltage, voltage_output)
 				VALUES
-				(?,?,?,?,?,?,
+				(?,?,?,?,?,
 				?,?,?,?,?,?,
 				?,?,?,?,
 				?,?,?,?,?,?,
@@ -296,37 +296,32 @@ namespace GT {
 				
 				)");
 		mTrackingField.insert({ "unit_id", {1 ,1} });
-		mTrackingField.insert({ "device_cod", {2 ,1} });
-		mTrackingField.insert({ "device_id", {3 ,2} });
-		mTrackingField.insert({ "date_time", {4 ,2} });
-		mTrackingField.insert({ "longitude", {5 ,1} });
-		mTrackingField.insert({ "latitude", {6 ,1} });
+		mTrackingField.insert({ "device_id", {2 ,2} });
+		mTrackingField.insert({ "date_time", {3 ,2} });
+		mTrackingField.insert({ "longitude", {4 ,1} });
+		mTrackingField.insert({ "latitude", {5 ,1} });
 
-		mTrackingField.insert({ "speed", {7 ,1} });
-		mTrackingField.insert({ "heading", {8 ,1} });
-		mTrackingField.insert({ "altitude", {9 ,1} });
-		mTrackingField.insert({ "satellite", {10 ,1} });
-		mTrackingField.insert({ "event_id", {11 ,1} });
-		mTrackingField.insert({ "mileage", {12 ,1} });
+		mTrackingField.insert({ "speed", {6 ,1} });
+		mTrackingField.insert({ "heading", {7 ,1} });
+		mTrackingField.insert({ "altitude", {8 ,1} });
+		mTrackingField.insert({ "satellite", {9 ,1} });
+		mTrackingField.insert({ "event_id", {10 ,1} });
+		mTrackingField.insert({ "mileage", {11 ,1} });
 
-		mTrackingField.insert({ "input_status", {13 ,1} });
-		mTrackingField.insert({ "voltage_level_i1", {14 ,1} });
-		mTrackingField.insert({ "voltage_level_i2", {15 ,1} });
-		mTrackingField.insert({ "output_status", {16 ,1} });
+		mTrackingField.insert({ "input_status", {12 ,1} });
+		mTrackingField.insert({ "voltage_level_i1", {13 ,1} });
+		mTrackingField.insert({ "voltage_level_i2", {14 ,1} });
+		mTrackingField.insert({ "output_status", {15 ,1} });
 
-		mTrackingField.insert({ "pulse_i3", {17 ,1} });
-		mTrackingField.insert({ "pulse_i4", {18 ,1} });
-		mTrackingField.insert({ "rtc", {19 ,1} });
-		mTrackingField.insert({ "tag_id", {20 ,1} });
-		mTrackingField.insert({ "tag_battery", {21 ,1} });
-		mTrackingField.insert({ "tag_button_id", {22 ,1} });
+		mTrackingField.insert({ "pulse_i3", {16 ,1} });
+		mTrackingField.insert({ "pulse_i4", {17 ,1} });
+		mTrackingField.insert({ "rtc", {18 ,1} });
+		mTrackingField.insert({ "tag_id", {19 ,1} });
+		mTrackingField.insert({ "tag_battery", {20 ,1} });
+		mTrackingField.insert({ "tag_button_id", {21 ,1} });
 
-		mTrackingField.insert({ "battery_voltage", {23 ,1} });
-		mTrackingField.insert({ "voltage_output", {24 ,1} });
-
-		for (auto itr = mTrackingField.begin(); itr != mTrackingField.end(); ++itr) {
-			cout << itr->first << '\t' << itr->second.pos << '\n';
-		}
+		mTrackingField.insert({ "battery_voltage", {22 ,1} });
+		mTrackingField.insert({ "voltage_output", {23 ,1} });
 
 		stmtTracking = cn->createStatement();
 
@@ -563,6 +558,7 @@ namespace GT {
 	}
 
 	void DB::loadClients() {
+		
 		if (!connect()) {
 			return;
 		}
@@ -723,8 +719,9 @@ namespace GT {
 
 			int x = 0;// counter of items
 			for (auto itr = mTrackingField.begin(); itr != mTrackingField.end(); ++itr) {
+				//cout << itr->first << "\t ============= " << itr->second.pos << '\n';
 				stmtInsertTracking->setNull(itr->second.pos, sql::DataType::INTEGER);
-				//cout << itr->first << '\t' << itr->second.pos << '\n';
+				
 			}
 			
 			stmtInsertTracking->setInt(1, mClients[unit_id].unit_id);
@@ -825,8 +822,8 @@ namespace GT {
 		int n;
 		GT::Tool::getItem(mm, n, buffer);
 		std::string query = "INSERT INTO tracking ";
-		std::string qfields = "device_cod";
-		std::string qvalues(std::to_string(id));
+		std::string qfields = "";
+		std::string qvalues = "";
 		
 		//char aux[10];
 		//sprintf(aux, "'%d'", id);
@@ -927,9 +924,11 @@ namespace GT {
 			return 0;
 		}
 		SizeType ii = document.Size();
+		/*
 		for (SizeType x = 0; x < ii; x++) {
 			cout << x << " ==> " << document[x].GetString() << endl;
 		}
+		*/
 		//printf("JSON deviceId %s\n", document[0].GetString());
 
 		std::string command;
