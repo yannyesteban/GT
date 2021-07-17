@@ -39,7 +39,7 @@ void GT::DeviceAdmin::run(AppConfig * config) {
 
 void runDevice(int unitId, GT::AppConfig* config, int clientId, GT::DB2* db) {
 	GT::CSInfo info;
-	int band = 1;
+	int band = 0;
 	if (band >= 1) {
 		info.host = (char*)"bests.no-ip.info";//"127.0.0.1";//
 	} else {
