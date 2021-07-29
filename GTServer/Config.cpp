@@ -5,7 +5,7 @@ namespace GT {
 	Document Config::d = NULL;
 	AppConfig Config::load(const char* path) {
 		//"C:\\source\\cpp\\XT\\XTServer\\config.json"
-		FILE* fp = fopen(path, "rb"); // non-Windows use "r"
+		FILE* fp = fopen(path, "rb"); // non-Windowsyannyesteban@ho use "r"
 
 		if (fp == NULL)
 		{
