@@ -43,7 +43,7 @@ void runDevice(int unitId, GT::AppConfig* config, int clientId, GT::DB2* db) {
 	if (band >= 1) {
 		info.host = (char*)"bests.no-ip.info";//"127.0.0.1";//
 	} else {
-		info.host = (char*)"192.168.250.50";//
+		info.host = (char*)"localhost";//
 	}
 	
 	info.port = 3341;

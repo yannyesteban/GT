@@ -45,7 +45,7 @@ int main()
 
     GT::CSInfo Info;
     Info.host = (char*)"127.0.0.1";
-    Info.port = 3322;
+    Info.port = 3341;
 
     bool option = true;
 

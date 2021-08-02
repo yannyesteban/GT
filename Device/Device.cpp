@@ -8,7 +8,7 @@ void GT::Device::onConect() {
 	
 	syncTask();
 
-	Sleep(100);
+	Sleep(500);
 	
 
 	
@@ -81,7 +81,7 @@ bool GT::Device::beginTasks() {
 
 	while (true) {
 		
-		Sleep(10);
+		Sleep(200);
 		//time(&time2);
 		base = timespec_get(&ts2, TIME_UTC);
 
