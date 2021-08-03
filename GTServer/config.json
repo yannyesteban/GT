@@ -8,8 +8,8 @@
     "user": "root"
   },
   "debug": false,
-  "max_clients": 30,
-  "port": 3322,
+  "max_clients": 300,
+  "port": 3341,
   "show_cache": false,
   "version": "1.0.0.1",
   "keep_alive":  45

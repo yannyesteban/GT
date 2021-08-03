@@ -284,6 +284,27 @@ namespace GT {
 			std::cout << Color::_green() << "Sending: " << response.message 
 				<<  Color::_reset() << " to: "
 				<< mDevices[getUnitName(r->unitId)].device_id << " (" << r->unit << ")\n";
+
+
+
+			time_t rawtime;
+			struct tm* timeinfo;
+
+
+			time(&rawtime);
+			timeinfo = localtime(&rawtime);
+
+			
+
+			DBEvent event;
+			event.unitId = r->unitId;
+			event.eventId = 209;
+			strftime(event.dateTime, sizeof(event.dateTime), "%F %T", timeinfo);
+			strcpy(event.title, "SENDING");
+			strcpy_s(event.info, sizeof(r->message), r->message);
+			//strcpy(event.info, "");
+			db->insertEvent(&event);
+
 			/*
 			std::cout << "Header: " << response.header << std::endl;
 			std::cout << "Message: " << response.message << std::endl;
