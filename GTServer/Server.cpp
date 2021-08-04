@@ -760,6 +760,7 @@ namespace GT {
 					//cout << ANSI_COLOR_CYAN "Saving Track: " << mClients[unit_id].device_id << endl;
 					if (db->saveTrack(clients[Info.client].device_id, to.c_str())) {
 						cout << Color::_cyan() << "Saving Track from: " << Color::_reset() << getUnitName(clients[Info.client].id)   << endl;
+						cout << Color::_cyan() << "--- Track: " << Color::_reset() << to.c_str() << endl;
 					}
 					
 					webcar->insertTrack(clients[Info.client].device_id, to.c_str());
