@@ -81,6 +81,7 @@ namespace GT {
 		int mode;
 		char title[1024] = "";
 		char info[1024] = "";
+		char user[45] = "";
 		unsigned short status;
 	};
 

@@ -301,6 +301,7 @@ namespace GT {
 			event.eventId = 209;
 			strftime(event.dateTime, sizeof(event.dateTime), "%F %T", timeinfo);
 			strcpy(event.title, "SENDING");
+			strcpy(event.user, r->user);
 			strcpy_s(event.info, sizeof(r->message), r->message);
 			//strcpy(event.info, "");
 			db->insertEvent(&event);
@@ -715,7 +716,6 @@ namespace GT {
 					
 					time_t now;
 					time(&now);
-					
 
 					
 					unitResponse.delay = difftime(now, unitResponse.time);
@@ -724,6 +724,22 @@ namespace GT {
 
 					db->saveResponse(&unitResponse, to.c_str());
 					
+					//time_t rawtime;
+					struct tm* timeinfo;
+					time(&now);
+					timeinfo = localtime(&now);
+
+					DBEvent event;
+					event.unitId = unitResponse.unitId;
+					event.eventId = 210;
+					strftime(event.dateTime, sizeof(event.dateTime), "%F %T", timeinfo);
+					strcpy(event.title, "RECEIVING");
+					strcpy(event.user, unitResponse.user);
+					strcpy_s(event.info, sizeof(event.info), to.c_str());
+
+					db->insertEvent(&event);
+
+
 					db->getPending(clients[Info.client].device_id, &rCommand, &unitResponse);
 
 

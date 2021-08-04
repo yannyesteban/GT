@@ -146,7 +146,7 @@ namespace WC {
 			//stmtMain->setInt(1, velocidad);
 			stmtMain->setInt(1, P->codequipo);
 
-			cout << "stage zero " << P->codequipo << endl;
+			//cout << "stage zero " << P->codequipo << endl;
 
 			std::map<int, InfoAlarm> info;
 
@@ -229,7 +229,7 @@ namespace WC {
 						info[codalarma].i[codtipo] = result->getInt("codinput");
 					}
 					info[codalarma].st = result->getInt("st");
-					cout << "vel max " << info[codalarma].velMax << endl;
+					//cout << "vel max " << info[codalarma].velMax << endl;
 
 				}
 				delete result;
