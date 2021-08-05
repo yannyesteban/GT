@@ -60,7 +60,7 @@ namespace GT {
 		WSADATA wsa = {};
 		SOCKET master = 0;
 		SOCKET tSocket = 0;
-		SOCKET clients[300];
+		SOCKET clients[3000];
 		
 
 		sockaddr_in server;

@@ -29,6 +29,7 @@ int main()
     printf("Version: %s \n", appInfo.version);
     printf("DB Name: %s\n", appInfo.db.name);
     printf("Socket Port: %d\n\n", appInfo.port);
+    printf("Max Clients: %d\n\n", appInfo.max_clients);
     //printf("Time: %s\n\n", XT::Time::now());
 
     SocketInfo Info;

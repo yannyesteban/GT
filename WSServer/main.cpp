@@ -23,6 +23,10 @@ int main()
 
     auto appInfo = GT::JsonConfig::load("wsserver.json");
     printf("APP NAME: %s\n", appInfo.appname);
+    printf("Version: %s \n", appInfo.version);
+    printf("DB Name: %s\n", appInfo.db.name);
+    printf("Socket Port: %d\n\n", appInfo.port);
+    printf("Max Clients: %d\n\n", appInfo.max_clients);
 
     Color::set(4);
     std::cout << "GT WEB-Socket v1.0 (2020)!\n\n\n";
@@ -30,7 +34,7 @@ int main()
     SocketInfo Info;
     Info.host = (char*)"127.0.0.1";
     Info.port = 3310;
-    Info.maxClients = 30;
+    Info.maxClients = appInfo.max_clients;
 
     WebServer* S = new WebServer(Info);
     S->init();

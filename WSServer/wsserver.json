@@ -14,7 +14,7 @@
   },
 
   "debug": false,
-  "max_clients": 35,
+  "max_clients": 17,
   "port": 3321,
   "show_cache": false,
   "version": "1.0.0.1"
