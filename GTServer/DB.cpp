@@ -711,8 +711,8 @@ namespace GT {
 
 			version = mClients[unit_id].version_id;
 
-			//std::cout << "unit_id : " << unit_id << " version(Format) " << version  << endl;
-			//std::cout << "buffer: " << buffer << std::endl;
+			std::cout << "unit_id : " << unit_id << " version(Format) " << version  << endl;
+			std::cout << "buffer: " << buffer << std::endl;
 			std::string  mm[30];
 			int n;
 			GT::Tool::getItem(mm, n, buffer);
