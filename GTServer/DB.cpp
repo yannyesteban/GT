@@ -108,10 +108,11 @@ namespace GT {
 		initialized = true;
 
 		string query = "";
-		query = R"(SELECT u.id as unit_id, d.id as device_id, d.name as device_name, version_id, n.name
+		query = R"(SELECT u.id as unit_id, d.id as device_id, d.name as device_name, version_id, n.name, format_id
 				FROM unit as u
 				INNER JOIN device as d on d.id = u.device_id
 				INNER JOIN unit_name as n ON n.id = u.name_id
+INNER JOIN device_version as v on v.id = d.version_id
 				WHERE d.name = ?)";
 
 		stmtInfoClient = cn->prepareStatement(query.c_str());
