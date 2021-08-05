@@ -571,9 +571,11 @@ namespace GT {
 
 			p_stmt = cn->prepareStatement(
 				R"(
-				SELECT u.id as unit_id, d.id as device_id, d.name as device_name, version_id 
-				FROM unit as u 
-				INNER JOIN device as d on d.id = u.device_id 
+				SELECT u.id as unit_id, d.id as device_id, d.name as device_name, version_id, format_id
+				FROM unit as u
+				INNER JOIN device as d on d.id = u.device_id
+				INNER JOIN device_version as v on v.id = d.version_id
+
 				WHERE d.name IS NOT NULL )"
 			);
 
@@ -585,7 +587,8 @@ namespace GT {
 					mClients.insert(std::pair<string, InfoClient >(result->getString("device_name").c_str(), {
 						result->getInt("unit_id"),
 						result->getInt("device_id"),
-						result->getInt("version_id")
+						result->getInt("version_id"),
+						result->getInt("format_id")
 						}));
 
 				}
@@ -616,7 +619,7 @@ namespace GT {
 		for (std::map<std::string, InfoClient>::iterator it = mClients.begin(); it != mClients.end(); ++it) {
 			printf("%12s", it->first.c_str());
 			printf("%10d", it->second.unit_id);
-			printf("%10d\n", it->second.version_id);
+			printf("%10d\n", it->second.format_id);
 		}
 	}
 
@@ -709,7 +712,7 @@ namespace GT {
 		try {
 			int version = mProtocols[mClients[unit_id].version_id].format_id;
 
-			version = mClients[unit_id].version_id;
+			version = mClients[unit_id].format_id;
 
 			std::cout << "unit_id : " << unit_id << " version(Format) " << version  << endl;
 			std::cout << "buffer: " << buffer << std::endl;
@@ -726,6 +729,7 @@ namespace GT {
 			
 			stmtInsertTracking->setInt(1, mClients[unit_id].unit_id);
 			for (std::list<string>::iterator it = mFormats[version].begin(); it != mFormats[version].end(); it++) {
+				std::cout << "\n" << *it << "\n";
 				if (x > n) {
 					continue;
 				}
@@ -1310,7 +1314,7 @@ namespace GT {
 		}
 		
 		int unit_id = 0, version_id = 0, device_id = 0;
-		InfoClient info = {0,0,0,""};
+		InfoClient info = {0,0,0,0,""};
 		try {
 			sql::ResultSet* result;
 			
@@ -1323,6 +1327,7 @@ namespace GT {
 					info.unit_id = result->getInt("unit_id");
 					info.device_id = result->getInt("device_id");
 					info.version_id = result->getInt("version_id");
+					info.format_id = result->getInt("format_id");
 					strcpy_s(info.name, sizeof(info.name), result->getString("name").c_str());
 				}
 
