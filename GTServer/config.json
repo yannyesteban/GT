@@ -7,10 +7,10 @@
     "port": "3306",
     "user": "root"
   },
-  "debug": true,
+  "debug": false,
   "max_clients": 1000,
   "port": 3317,
   "show_cache": false,
   "version": "1.0.0.1",
-  "keep_alive":  45
+  "keep_alive":  100
 }
