@@ -670,7 +670,7 @@ namespace GT {
 		if (Info.buffer != NULL) {
 			while (std::getline(ss, to)) {//, '\n'
 				//std::cout << "My Command " << to.c_str() << std::endl;
-				
+				std::cout << to.c_str() << "\n\n";
 				Tool::getTracking(result, len, to.c_str());
 				if (len >= 5) {
 					//cout << ANSI_COLOR_CYAN "Saving Track: mode 5" << endl;
