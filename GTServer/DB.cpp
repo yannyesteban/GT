@@ -715,8 +715,8 @@ INNER JOIN device_version as v on v.id = d.version_id
 
 			version = mClients[unit_id].format_id;
 
-			std::cout << "unit_id : " << unit_id << " version(Format) " << version  << endl;
-			std::cout << "buffer: " << buffer << std::endl;
+			//std::cout << "unit_id : " << unit_id << " version(Format) " << version  << endl;
+			//std::cout << "buffer: " << buffer << std::endl;
 			std::string  mm[30];
 			int n;
 			GT::Tool::getItem(mm, n, buffer);
@@ -730,7 +730,7 @@ INNER JOIN device_version as v on v.id = d.version_id
 			
 			stmtInsertTracking->setInt(1, mClients[unit_id].unit_id);
 			for (std::list<string>::iterator it = mFormats[version].begin(); it != mFormats[version].end(); it++) {
-				std::cout << "\n" << *it << "\n";
+				//std::cout << "\n" << *it << "\n";
 				if (x > n) {
 					continue;
 				}

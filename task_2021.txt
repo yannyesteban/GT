@@ -1,1 +1,27 @@
 1. si se selecciona un vehículo del menú **sincronizar con la aplicación de comandos
+2. orden de las unidades desconectadas en rojo
+3. anydesk 983045
+4. colocar el vehiculo seleccionado
+5. colocar un menu directo de getposition, reboot, para escuchar,
+6. colocar el estado de conectado y desconectado en la ventana de info.
+7. ventana info siempre visible
+8. no colocar nada en la ventana de comunicacion ni cuenta ni cliente ni unidades
+9. cambiar Communication 3.0 a Configuracion de parámetros + Unit Name
+10. VMON ver en el protocolo
+11. eliminar botones extras salir y configuracion
+12, revisar el tiempo en el gtcomm,
+13 calculo en el tiempo de la ventana de unidades conectada,
+14 colocar opciones de traza y follow me en la ventana info,
+15 colocar busqueda y ordenar la vantana traza y follow me
+16 historial
+17 leer comandos
+18 Output Duration
+19 Unit of duration is 100 milliseconds. Ex: if want to setup duration for 2 seconds, you have to give a 20 value. (Min. 1=0.1 second; Max. 255 = 25.5 seconds)
+Toggle Times
+The times from its current state to its alternate state and back again. Min. 1 times; Max. 255 times
+20. reporte de eventos
+21. sonido de alarma y evento,
+
+fase 2
+
+1. geocercas circular y poligonal por medio del hardware.
