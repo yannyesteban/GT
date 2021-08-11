@@ -135,7 +135,7 @@ namespace GT {
 		void infoCommand(const char* unit_id, CommandResult* commandResult, RCommand* info);
 		void saveResponse(RCommand* info, const char* command);
 
-		unsigned int getTag(unsigned int unitId, unsigned short commandId, unsigned int type);
+		unsigned int getTag(unsigned int unitId, unsigned short commandId, unsigned int type, unsigned int commandIndex);
 		void evalPending(const char* unit_id, CommandResult* result, unsigned int type);
 		bool isReadCommand(const char* unit_id, CommandResult* result);
 

@@ -112,7 +112,7 @@ namespace GT {
 				FROM unit as u
 				INNER JOIN device as d on d.id = u.device_id
 				INNER JOIN unit_name as n ON n.id = u.name_id
-INNER JOIN device_version as v on v.id = d.version_id
+				INNER JOIN device_version as v on v.id = d.version_id
 				WHERE d.name = ?)";
 
 		stmtInfoClient = cn->prepareStatement(query.c_str());
@@ -236,7 +236,7 @@ INNER JOIN device_version as v on v.id = d.version_id
 			stmtGetTag = cn->prepareStatement(R"(
 				SELECT (COALESCE(MAX(`index`) , 0) % 65535 + 1) as n
 				FROM pending
-				WHERE unit_id = ? AND command_id = ? 
+				WHERE unit_id = ? AND command_id = ? AND command_index = ?
 			)");
 		//}
 
@@ -277,8 +277,8 @@ INNER JOIN device_version as v on v.id = d.version_id
 		//}
 
 		
-		stmtDeletePending = cn->prepareStatement("DELETE FROM pending WHERE unit_id = ? AND command_id = ? ");
-		stmtInsertPending = cn->prepareStatement("INSERT INTO pending (`unit_id`, `command_id`, `command`, `tag`, `index`, `user`, `type`, `mode`,`server_time`) VALUES (?,?,?,?,?,?,?,?,?)");
+		stmtDeletePending = cn->prepareStatement("DELETE FROM pending WHERE unit_id = ? AND command_id = ? AND command_index = ? ");
+		stmtInsertPending = cn->prepareStatement("INSERT INTO pending (`unit_id`, `command_id`, `command`, `tag`, `index`, `user`, `type`, `mode`,`server_time`, `command_index`) VALUES (?,?,?,?,?,?,?,?,?,?)");
 		
 		stmtInsertTracking = cn->prepareStatement(
 			R"(INSERT INTO tracking 
@@ -1924,6 +1924,7 @@ INNER JOIN device_version as v on v.id = d.version_id
 
 			stmtDeletePending->setInt(1, request->unitId);
 			stmtDeletePending->setInt(2, request->commandId);
+			stmtDeletePending->setInt(2, request->commandIndex);
 			//p_stmt->setInt(3, request->type);
 			stmtDeletePending->execute();
 
@@ -1954,6 +1955,7 @@ INNER JOIN device_version as v on v.id = d.version_id
 			time(&now);  /* get current time; same as: now = time(NULL)  */
 
 			stmtInsertPending->setInt(9, now);
+			stmtInsertPending->setInt(10, request->commandIndex);
 			stmtInsertPending->execute();
 
 		} catch (sql::SQLException& e) {
@@ -1965,7 +1967,7 @@ INNER JOIN device_version as v on v.id = d.version_id
 
 	
 	
-	unsigned int DB::getTag(unsigned int unitId, unsigned short commandId, unsigned int type) {
+	unsigned int DB::getTag(unsigned int unitId, unsigned short commandId, unsigned int type, unsigned int commandIndex) {
 		
 		if (!connect()) {
 			return 0;
@@ -1975,11 +1977,10 @@ INNER JOIN device_version as v on v.id = d.version_id
 
 		try {
 			sql::ResultSet* result = nullptr;
-
-			
 			
 			stmtGetTag->setInt(1, unitId);
 			stmtGetTag->setInt(2, commandId);
+			stmtGetTag->setInt(3, commandIndex);
 			//p_stmt->setInt(3, type);
 
 			if (stmtGetTag->execute()) {

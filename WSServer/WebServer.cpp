@@ -22,6 +22,7 @@ namespace GT {
         
         hub(nullptr) {
     }
+    
     void WebServer::init() {
         std::thread* first = new std::thread(runTimer);
 
@@ -201,6 +202,8 @@ namespace GT {
         send(client, buffer2, size2, 0);
     
     }
+    
+    
     /* Message from web app */
     void WebServer::onMessage(ConnInfo Info) {
 
@@ -235,7 +238,7 @@ namespace GT {
         Document document;
         document.Parse(x);
         if (!document.IsObject()) {
-            printf(" ** ** **     **  ERROR JSON...!!!\n");
+            printf(" Connecting !\n");
             return;
         }
 
@@ -250,8 +253,10 @@ namespace GT {
         //std::cout <<"Type 1: "<< document["type"].GetString() << std::endl;
 
         string msgType = document["type"].GetString();
+        int cmdIndex = document["cmdIndex"].GetInt();
         //string msgName = document["name"].GetString();
         std::cout << "msgType " << msgType << endl;
+        std::cout << "cmdIndex " << cmdIndex << endl;
         unsigned short type = 0;
 
         if (msgType == "connect") {
@@ -360,7 +365,7 @@ namespace GT {
         PrettyWriter<StringBuffer> writer(bf);
         document.Accept(writer);
 
-        std::cout << "A: "<< bf.GetString() << std::endl;
+        std::cout << "-----------A: "<< bf.GetString() << std::endl;
 
 
         //printf("%s\n", document["comdValues"].GetString());
@@ -379,7 +384,7 @@ namespace GT {
 
         const char* json = bf2.GetString();
 
-        std::cout << "B: " << bf2.GetString() << std::endl;
+        std::cout << " ********** B: " << bf2.GetString() << std::endl;
 
 
        
@@ -402,7 +407,8 @@ namespace GT {
             0,//index
             ClientMsg::Request,
             0,// time
-            0// Delay
+            0,// Delay
+            cmdIndex
         };
 
 

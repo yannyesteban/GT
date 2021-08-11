@@ -151,6 +151,7 @@ namespace GT {
 		ClientMsg typeMessage = ClientMsg::Nothing;
 		time_t time;
 		double delay = 0;
+		unsigned short commandIndex = 0;
 	};
 
 	struct PendingCommand {
