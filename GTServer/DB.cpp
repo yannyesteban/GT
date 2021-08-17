@@ -348,6 +348,47 @@ namespace GT {
 			)");
 		//}
 
+		stmtUnitCommand = cn->prepareStatement(
+			R"(SELECT uc.params, uc.mode,
+				CONCAT(protocol_pre, command) as str_command, d.password
+
+				FROM unit_command as uc
+				INNER JOIN device_command as c ON c.id = uc.command_id
+				INNER JOIN device_version as v ON v.id = c.version_id
+				INNER JOIN device as d ON d.version_id = v.id
+				INNER JOIN unit as u ON u.id = uc.unit_id AND u.device_id = d.id
+
+			WHERE uc.unit_id = ? AND uc.command_id = ? AND uc.index = ? AND uc.mode = ?)");
+		stmtCommandParam = cn->prepareStatement(
+			R"(SELECT uc.params, uc.mode,
+				CONCAT(protocol_pre, command) as str_command, d.password
+
+				FROM unit_command as uc
+				INNER JOIN device_command as c ON c.id = uc.command_id
+				INNER JOIN device_version as v ON v.id = c.version_id
+				INNER JOIN device as d ON d.version_id = v.id
+				INNER JOIN unit as u ON u.id = uc.unit_id AND u.device_id = d.id
+
+			WHERE uc.id = ?)");
+
+		stmtIndexCommand = cn->prepareStatement(R"(SELECT
+			c.id as command_id, u.id as unit_id, IFNULL(w_index, 0) as indexed
+
+
+			FROM unit as u
+			INNER JOIN device as d ON d.id = u.device_id
+			INNER JOIN device_version as v ON v.id = d.version_id
+
+
+			INNER JOIN device_command as c ON c.version_id = v.id
+
+			WHERE u.id = ? AND c.command = ?)");
+
+		stmtUpdateCommand = cn->prepareStatement(
+			R"(UPDATE unit_command as uc
+				SET user = 'none', status = 2
+				WHERE unit_id = ? AND command_id = ? AND uc.index = ? AND mode = ? )");
+
 		initStatus();
 		loadProtocols();
 		loadVersions();
@@ -392,6 +433,10 @@ namespace GT {
 		delete stmtTracking;
 		delete stmtGetInfoPending;
 		
+		delete stmtUnitCommand;
+		delete stmtCommandParam;
+		delete stmtIndexCommand;
+		delete stmtUpdateCommand;
 		
 		//delete stmtMain;
 		initialized = false;
@@ -1123,7 +1168,7 @@ namespace GT {
 		if (!connect()) {
 			return "";
 		}
-		unsigned int index = getTag(request->unitId, request->commandId, request->type);
+		unsigned int index = getTag(request->unitId, request->commandId, request->type, request->commandIndex);
 
 		request->index = index;
 
@@ -1307,6 +1352,76 @@ namespace GT {
 
 
 		
+	}
+
+	std::string DB::loadCommand(int unitId, int commandId, int index, int mode) {
+
+
+		if (!connect()) {
+			return "";
+		}
+
+		std::string params = "";
+		std::string command = "";
+		std::string password = "";
+		std::string value = "";
+		int modeCommand = 0;
+
+		try {
+			sql::ResultSet* result = nullptr;
+
+			stmtUnitCommand->setInt(1, unitId);
+			stmtUnitCommand->setInt(2, commandId);
+			stmtUnitCommand->setInt(3, index);
+			stmtUnitCommand->setInt(4, mode);
+			
+			
+
+			if (stmtUnitCommand->execute()) {
+				result = stmtUnitCommand->getResultSet();
+
+				if (result->next()) {
+					params = result->getString("params").c_str();
+					command = result->getString("str_command").c_str();
+					password = result->getString("password").c_str();
+					modeCommand = result->getInt("mode");
+					if (modeCommand == 1) {
+						command += "+1";
+					}
+					command += "="+password;
+					Document document;
+					document.Parse(params.c_str());
+
+					std::cout << "Comando Puro \n\n\n" << params << "\n\n\n\n";
+
+					if (!document.IsObject()) {
+
+						printf(" error en comando !\n");
+						return "error";
+					}
+					for (auto i = document.MemberBegin(); i != document.MemberEnd(); ++i)
+					{
+						std::cout << "key: " << i->name.GetString() << " : " << i->value.GetString() << std::endl;
+						//WalkNodes(i->value);
+						value = i->value.GetString();
+						command += "," + value;
+					}
+					if (modeCommand == 2) {
+						command += ",?";
+					}
+
+					
+				}
+
+				delete result;
+
+			}
+		} catch (sql::SQLException& e) {
+
+			SQLException(e, __LINE__);
+		}
+
+		return command;
 	}
 
 	InfoClient DB::getInfoClient(string id) {
@@ -1790,6 +1905,66 @@ namespace GT {
 		
 	}
 	
+
+	void DB::getIndexCommand(const char* unit_id, CommandResult* commandResult, RCommand* info) {
+		if (!connect()) {
+			return;
+		}
+
+		int unitId = mClients[unit_id].unit_id;
+		bool isRead = false;
+
+		info->header = 0;
+		info->unitId = unitId;
+		int len = strlen(info->unit);
+
+		strcpy(info->unit, unit_id);
+
+		sql::ResultSet* result = nullptr;
+
+		try {
+
+
+			stmtIndexCommand->setInt(1, unitId);
+			stmtIndexCommand->setString(2, commandResult->command.c_str());
+			
+
+			if (stmtIndexCommand->execute()) {
+
+				result = stmtIndexCommand->getResultSet();
+
+				if (result->next()) {
+
+					std::cout << " ---- 888 " << result->getInt("command_id") << std::endl;
+					info->header = (unsigned short)1;
+					info->index = 0;
+					info->mode = 1;
+					//info->type = (unsigned short)result->getInt("type");
+					//info->level = (unsigned short)result->getInt("level");
+					//info->mode = (unsigned short)result->getInt("mode");
+					info->unitId = (int)result->getInt("unit_id");
+					info->commandId = (int)result->getInt("command_id");
+					//strcpy(info->message, result->getString("command").c_str());
+					//strcpy(info->date, result->getString("date").c_str());
+					//strcpy(info->user, result->getString("user").c_str());
+
+					//strcpy_s(info->message, sizeof(info->message), result->getString("command").c_str());
+					//strcpy_s(info->date, sizeof(info->date), result->getString("datetime").c_str());
+					//strcpy_s(info->user, sizeof(info->user), result->getString("user").c_str());
+
+					//info->time = result->getInt64("server_time");
+				}
+				delete result;
+			}
+
+		} catch (sql::SQLException& e) {
+			SQLException(e, __LINE__);
+		}
+
+
+	}
+
+
 	void DB::saveResponse(RCommand* info, const char* response) {
 		if (!connect()) {
 			return;
@@ -1834,6 +2009,31 @@ namespace GT {
 
 	}
 	
+
+	void DB::updateCommand(int unitId, int commandId, int index, int mode) {
+		if (!connect()) {
+			return;
+		}
+
+		try {
+
+			cout << ANSI_COLOR_YELLOW "Update: unitId " << unitId << endl;
+			cout << ANSI_COLOR_MAGENTA "Update: commandId " << commandId << endl;
+			stmtUpdateCommand->setInt(1, unitId);
+			stmtUpdateCommand->setInt(2, commandId);
+			stmtUpdateCommand->setInt(3, index);
+			stmtUpdateCommand->setInt(4, mode);
+			
+
+
+
+			stmtUpdateCommand->execute();
+
+		} catch (sql::SQLException& e) {
+			SQLException(e, __LINE__);
+		}
+
+	}
 	void DB::save(std::string query) {
 		if (!connect()) {
 			return;

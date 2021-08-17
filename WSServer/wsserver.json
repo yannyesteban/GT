@@ -10,7 +10,7 @@
   },
   "hub": {
     "host": "localhost",
-    "port": 3322
+    "port": 3317
   },
 
   "debug": false,

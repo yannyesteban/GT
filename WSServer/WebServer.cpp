@@ -202,6 +202,105 @@ namespace GT {
         send(client, buffer2, size2, 0);
     
     }
+
+    void WebServer::sendCommand(int unitId, int commandId, int index, int mode) {
+        std::cout << " unit Id " << unitId << std::endl;
+        std::cout << " commandId  " << commandId << std::endl;
+        std::cout << " index " << index << std::endl;
+        std::cout << " mode " << mode << std::endl;
+        std::cout << "......" << db->loadCommand(unitId, commandId, index, mode) << std::endl;
+    }
+
+    void WebServer::sendToDevice(ConnInfo Info, int unitId, int commandId, int index, int mode) {
+        SOCKET s = hub->getHost();
+
+        GT::RCommand r = {
+            //10020,
+            10020,
+            mode,
+            Info.client,
+            "",
+            "",
+            "",
+            "",//name
+            unitId,
+            commandId,
+            mode,
+            "",// date
+            1,
+            index,//index
+            ClientMsg::Request,
+            0,// time
+            0,// Delay
+            index
+        };
+
+
+        //strcpy(r.user, document["user"].GetString());
+
+        //unsigned int tag = db->getTag(document["unitId"].GetInt(), document["commandId"].GetInt(), type);
+        //r.index = tag;
+        /*std::string str = db->createCommand(
+            (unsigned int)document["unitId"].GetInt(),
+            (unsigned short)document["commandId"].GetInt(),
+            to_string(tag), params, type);
+            */
+
+        std::string strCommand = db->loadCommand(unitId, commandId, index, mode);
+
+        strcpy(r.message, strCommand.c_str());
+        cout << endl << "Unidad" << r.unit << endl << "COMANDO " << strCommand << endl << endl;
+
+        //db->addPending(document["unitId"].GetInt(), document["commandId"].GetInt(), tag, str, "pepe", type, (unsigned short)document["level"].GetInt());
+        
+        /* pause*/
+        //db->addPending(&r);
+
+        strcpy(r.message, strCommand.c_str());
+        char buffer2[1024];
+        memcpy(buffer2, &r, sizeof(r));
+        send(s, buffer2, (int)sizeof(buffer2), 0);
+        //send(Info.client, "yanny", strlen("yanny"), 0);
+
+        char buffer[DEFAULT_BUFLEN];
+        size_t size = 0;
+
+        RCommand response;
+        response.unitId = r.unitId;
+        response.commandId = r.commandId;
+
+        //char message[100] = "Receiving ";
+        //strcat_s(message, sizeof(message), r.message);
+        strcpy_s(response.message, sizeof(response.message), r.message);
+        strcpy_s(response.user, sizeof(response.user), r.user);
+        strcpy_s(response.name, sizeof(response.name), r.unit);
+        strcpy_s(response.unit, sizeof(response.unit), "Sending...");
+        //strcpy_s(response., sizeof(response.name), r.unit);
+
+        time_t rawtime;
+        struct tm* timeinfo;
+
+
+        time(&rawtime);
+        timeinfo = localtime(&rawtime);
+
+        strftime(response.date, sizeof(response.date), "%F %T", timeinfo);
+
+
+
+        response.unitId = r.unitId;
+        jsonResponse(Info.client, &response);
+        /*
+
+        encodeMessage((char*)"websocket 2021", buffer, size);
+
+        printf("%s(%d)\n", Info.buffer, size);
+
+        send(Info.client, buffer, (int)size, 0);
+    */
+    }
+
+    
     
     
     /* Message from web app */
@@ -222,7 +321,7 @@ namespace GT {
         PrettyWriter<StringBuffer> writer4(bf4);
         f.Accept(writer4);
 
-        std::cout << "A: " << bf4.GetString() << std::endl;
+        std::cout << "--> A: " << bf4.GetString() << " \n<--" << std::endl;
 
        
 
@@ -234,10 +333,14 @@ namespace GT {
         const char* x = decodeMessage(Info);
         
         SOCKET s = hub->getHost();
-
+        
         Document document;
         document.Parse(x);
+
+        std::cout <<"Comando Puro \n\n\n" << x << "\n\n\n\n";
+
         if (!document.IsObject()) {
+            
             printf(" Connecting !\n");
             return;
         }
@@ -253,6 +356,33 @@ namespace GT {
         //std::cout <<"Type 1: "<< document["type"].GetString() << std::endl;
 
         string msgType = document["type"].GetString();
+
+        if (msgType == "CS") {
+            for (auto i = document.MemberBegin(); i != document.MemberEnd(); ++i)
+            {
+                std::cout << "key: " << i->name.GetString() << " : " << i->value.IsInt() << std::endl;
+                //WalkNodes(i->value);
+            }
+            if (document["unitId"].IsInt() &&
+                document["commandId"].IsInt() &&
+                document["index"].IsInt() &&
+                document["mode"].IsInt()) {
+                int unitId = document["unitId"].GetInt();
+                int commandId = document["commandId"].GetInt();
+                int index = document["index"].GetInt();
+                int mode = document["mode"].GetInt();
+                sendToDevice(Info, unitId, commandId, index, mode);
+            }
+                //sendCommand(unitId, commandId, index, mode);
+                
+           
+
+
+
+            
+            return;
+        }
+
         int cmdIndex = document["cmdIndex"].GetInt();
         //string msgName = document["name"].GetString();
         std::cout << "msgType " << msgType << endl;

@@ -14,7 +14,7 @@
 #include <chrono>         // std::chrono::seconds
 #include <iomanip> // para la fecha
 BOOL WINAPI mainhub(LPVOID param);
-
+using namespace rapidjson;
 namespace GT {
 	void runTimer();
 	struct WebClient {
@@ -44,6 +44,9 @@ namespace GT {
 		WSAppConfig configInit;
 		int Token = 4737;
 		bool reconnect = true;
+
+		void sendCommand(int unitId, int commandId, int index, int mode);
+		void sendToDevice(ConnInfo Info, int unitId, int commandId, int index, int mode);
 	private:
 		DB* db;
 		

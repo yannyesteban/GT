@@ -663,7 +663,7 @@ namespace GT {
 		std::string to;
 		int i = 0;
 
-		std::string result[20];
+		std::string result[50];
 		int len;
 		int nLine = 0;
 		//std::cout << "My Buffer " << Info.buffer << std::endl;
@@ -712,6 +712,14 @@ namespace GT {
 					RCommand unitResponse;
 
 					unitResponse.header = 0;
+
+					db->getIndexCommand(clients[Info.client].device_id, &rCommand, &unitResponse);
+					db->updateCommand(unitResponse.unitId, unitResponse.commandId, unitResponse.index, unitResponse.mode);
+
+
+					std::cout << " ---- Command Id " << unitResponse.commandId << std::endl;
+					std::cout << " ---- Index " << unitResponse.index << std::endl;
+
 					db->infoCommand(clients[Info.client].device_id, &rCommand, &unitResponse);
 					
 					time_t now;
@@ -722,7 +730,7 @@ namespace GT {
 					std::cout << Color::_magenta() << " delay Time: " << unitResponse.delay << Color::_reset() << std::endl;
 
 
-					db->saveResponse(&unitResponse, to.c_str());
+					//db->saveResponse(&unitResponse, to.c_str());
 					
 					//time_t rawtime;
 					struct tm* timeinfo;

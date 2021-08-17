@@ -124,6 +124,7 @@ namespace GT {
 		std::string createCommand(RCommand* request, std::list<string> params);
 
 		std::string loadCommand(CMDMsg* msg, unsigned int historyId);
+		std::string loadCommand(int unitId, int commandId, int index, int mode);
 		InfoClient getInfoClient(string id);
 
 		void deviceConfig(const char* unit_id, CommandResult*  result);
@@ -133,6 +134,7 @@ namespace GT {
 		std::string addPending(unsigned int unitId, unsigned short commandId, unsigned int tag, std::string command, std::string user, unsigned short type, unsigned short level);
 		std::string addPending(RCommand * request);
 		void infoCommand(const char* unit_id, CommandResult* commandResult, RCommand* info);
+		void getIndexCommand(const char* unit_id, CommandResult* commandResult, RCommand* info);
 		void saveResponse(RCommand* info, const char* command);
 
 		unsigned int getTag(unsigned int unitId, unsigned short commandId, unsigned int type, unsigned int commandIndex);
@@ -147,6 +149,9 @@ namespace GT {
 		void test(int id);
 
 		void insertEvent(DBEvent * infoEvent);
+
+		void updateCommand(int unitId, int commandId, int index, int mode);
+
 	private:
 		bool debug;
 		InfoDB info;
@@ -193,7 +198,10 @@ namespace GT {
 
 		sql::Statement* stmtTracking;
 
-
+		sql::PreparedStatement* stmtUnitCommand = nullptr;
+		sql::PreparedStatement* stmtCommandParam = nullptr;
+		sql::PreparedStatement* stmtIndexCommand = nullptr;
+		sql::PreparedStatement* stmtUpdateCommand = nullptr;
 
 		bool initialized = false;
 	};
