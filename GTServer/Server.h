@@ -48,6 +48,8 @@ namespace GT {
 	public:
 		Server(SocketInfo pInfo);
 		~Server();
+		DB* db;
+
 		bool init(AppConfig pConfig);
 		void onConnect(ConnInfo Info);
 		void onMessage(ConnInfo Info);
@@ -66,9 +68,10 @@ namespace GT {
 		void broadcast(RCommand * response);
 
 		int keepAliveTime = 90;
+		
 	private:
 		bool debug;
-		DB * db;
+		
 		clock_t mClock;
 		std::map<SOCKET, RClient> rClients;
 		std::map<SOCKET, GTClient> clients;

@@ -31,7 +31,7 @@ namespace GT {
 		int clientId = 0;
 
 	private:
-		float syncTime = 60;
+		float syncTime = 20;
 		float trackingTime = 5;
 		std::vector<std::string> format;
 		float trackingDelay = 0;

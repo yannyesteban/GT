@@ -150,7 +150,8 @@ namespace GT {
 
 		void insertEvent(DBEvent * infoEvent);
 
-		void updateCommand(int unitId, int commandId, int index, int mode);
+		void updateCommand(int unitId, int commandId, int index, int mode, std::string params);
+		void updateUnitConnected();
 
 	private:
 		bool debug;
@@ -202,6 +203,7 @@ namespace GT {
 		sql::PreparedStatement* stmtCommandParam = nullptr;
 		sql::PreparedStatement* stmtIndexCommand = nullptr;
 		sql::PreparedStatement* stmtUpdateCommand = nullptr;
+		sql::PreparedStatement* stmtUnitConnected = nullptr;
 
 		bool initialized = false;
 	};

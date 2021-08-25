@@ -12,7 +12,7 @@ namespace GT {
 			exit(EXIT_FAILURE);
 		}
 		//puts("createSocket");
-		if ((master = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET) {
+		if ((master = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == INVALID_SOCKET) {
 			printf("Could not create socket : %d", WSAGetLastError());
 			exit(EXIT_FAILURE);
 		}
@@ -145,7 +145,8 @@ namespace GT {
 							closesocket(s);
 							clients[i] = 0;
 						} else {
-							printf("recv failed with error code: %d", error_code);
+							printf("buffer %s", buffer);
+							printf("recv failed with error code: [ %d ]", error_code);
 						}
 						//CallClientError(master, s, buffer, valread, i, WSAGetLastError());
 						ConnInfo Info;

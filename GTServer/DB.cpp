@@ -117,8 +117,8 @@ namespace GT {
 
 		stmtInfoClient = cn->prepareStatement(query.c_str());
 
-		query = R"(UPDATE unit SET conn_status=?, conn_date=? WHERE id=?)";
-		stmtUpdateClientStatus = cn->prepareStatement(query.c_str());
+		
+		
 
 		query = R"(SELECT n.name, p.command, d.name as device_name
 			FROM pending as p
@@ -384,10 +384,7 @@ namespace GT {
 
 			WHERE u.id = ? AND c.command = ?)");
 
-		stmtUpdateCommand = cn->prepareStatement(
-			R"(UPDATE unit_command as uc
-				SET user = 'none', status = 2
-				WHERE unit_id = ? AND command_id = ? AND uc.index = ? AND mode = ? )");
+		
 
 		initStatus();
 		loadProtocols();
@@ -437,6 +434,7 @@ namespace GT {
 		delete stmtCommandParam;
 		delete stmtIndexCommand;
 		delete stmtUpdateCommand;
+		delete stmtUnitConnected;
 		
 		//delete stmtMain;
 		initialized = false;
@@ -760,8 +758,8 @@ namespace GT {
 
 			version = mClients[unit_id].format_id;
 
-			//std::cout << "unit_id : " << unit_id << " version(Format) " << version  << endl;
-			//std::cout << "buffer: " << buffer << std::endl;
+			std::cout << "unit_id : " << unit_id << " version(Format) " << version  << endl;
+			std::cout << "buffer: " << buffer << std::endl;
 			std::string  mm[30];
 			int n;
 			GT::Tool::getItem(mm, n, buffer);
@@ -903,7 +901,7 @@ namespace GT {
 
 		} catch (sql::SQLException & e) {
 
-			//SQLException(e, __LINE__);
+			SQLException(e, __LINE__);
 
 		}
 
@@ -1393,19 +1391,27 @@ namespace GT {
 					document.Parse(params.c_str());
 
 					std::cout << "Comando Puro \n\n\n" << params << "\n\n\n\n";
+					if (params != "") {
+						if (!document.IsObject()) {
 
-					if (!document.IsObject()) {
-
-						printf(" error en comando !\n");
-						return "error";
+							printf(" error en comando !\n");
+							return "error";
+						}
+						for (auto i = document.MemberBegin(); i != document.MemberEnd(); ++i)
+						{
+							std::cout << "key: " << i->name.GetString() << " : " << i->value.IsInt() << std::endl;
+							//WalkNodes(i->value);
+							if (i->value.IsInt()) {
+								value = std::to_string(i->value.GetInt());
+							}
+							else {
+								value = i->value.GetString();
+							}
+							
+							command += "," + value;
+						}
 					}
-					for (auto i = document.MemberBegin(); i != document.MemberEnd(); ++i)
-					{
-						std::cout << "key: " << i->name.GetString() << " : " << i->value.GetString() << std::endl;
-						//WalkNodes(i->value);
-						value = i->value.GetString();
-						command += "," + value;
-					}
+					
 					if (modeCommand == 2) {
 						command += ",?";
 					}
@@ -1630,10 +1636,16 @@ namespace GT {
 		}
 
 		try {
+			if (stmtUpdateClientStatus == nullptr) {
+				stmtUpdateClientStatus = cn->prepareStatement(
+					R"(UPDATE unit SET conn_status=?, conn_date = CASE ? WHEN 1 THEN now() ELSE conn_date END WHERE id=?)");
+			}
 
+			std::cout << "CAMBIANDO el status de " << unitId << " a " << status << "\n\n";
 			
 			stmtUpdateClientStatus->setInt(1, status);
-			stmtUpdateClientStatus->setString(2, date);
+			stmtUpdateClientStatus->setInt(2, status);
+			//stmtUpdateClientStatus->setString(2, date);
 			stmtUpdateClientStatus->setInt(3, unitId);
 			stmtUpdateClientStatus->execute();
 
@@ -2010,21 +2022,30 @@ namespace GT {
 	}
 	
 
-	void DB::updateCommand(int unitId, int commandId, int index, int mode) {
+	void DB::updateCommand(int unitId, int commandId, int index, int mode, std::string params) {
 		if (!connect()) {
 			return;
 		}
 
 		try {
+			if (stmtUpdateCommand == nullptr) {
+				stmtUpdateCommand = cn->prepareStatement(
+					R"(UPDATE unit_command as uc
+				SET user = 'none', status = 3, uc.values = CASE ? WHEN '' THEN uc.values ELSE ? END
+				WHERE unit_id = ? AND command_id = ? AND uc.index = ? AND mode = ? )");
+			}
 
 			cout << ANSI_COLOR_YELLOW "Update: unitId " << unitId << endl;
 			cout << ANSI_COLOR_MAGENTA "Update: commandId " << commandId << endl;
-			stmtUpdateCommand->setInt(1, unitId);
-			stmtUpdateCommand->setInt(2, commandId);
-			stmtUpdateCommand->setInt(3, index);
-			stmtUpdateCommand->setInt(4, mode);
+
 			
 
+			stmtUpdateCommand->setString(1, params.c_str());
+			stmtUpdateCommand->setString(2, params.c_str());
+			stmtUpdateCommand->setInt(3, unitId);
+			stmtUpdateCommand->setInt(4, commandId);
+			stmtUpdateCommand->setInt(5, index);
+			stmtUpdateCommand->setInt(6, mode);
 
 
 			stmtUpdateCommand->execute();
@@ -2033,6 +2054,33 @@ namespace GT {
 			SQLException(e, __LINE__);
 		}
 
+	}
+	void DB::updateUnitConnected() {
+		if (!connect()) {
+			return;
+		}
+
+		try {
+			if (stmtUnitConnected == nullptr) {
+				stmtUnitConnected = cn->prepareStatement(
+					R"(	UPDATE unit as u
+						LEFT JOIN app_config as a ON a.id=1
+						SET conn_status = CASE WHEN ( TIMESTAMPDIFF(SECOND, conn_date, now()))<=IFNULL(a.max_delay, 180) THEN 1 ELSE 0 END
+						WHERE u.id > 0;)"
+				);
+			}
+
+			
+
+			stmtUnitConnected->execute();
+
+
+			std::cout << " ACTUALIZANDO los Conectados !!!! \n\n\n";
+
+		}
+		catch (sql::SQLException& e) {
+			SQLException(e, __LINE__);
+		}
 	}
 	void DB::save(std::string query) {
 		if (!connect()) {
@@ -2054,7 +2102,7 @@ namespace GT {
 
 		} catch (sql::SQLException& e) {
 
-			//SQLException(e, __LINE__);
+			SQLException(e, __LINE__);
 
 		}
 	}

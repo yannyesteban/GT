@@ -18,6 +18,7 @@ void GT::DeviceAdmin::run(AppConfig * config) {
 	//return;
 	
 	for (int i = 0; i < Devices.size(); i++) {
+		std::cout <<"Device Id: " << Devices[i] << std::endl;
 		//std::thread Tasks(runDevice);
 		std::thread * first = new std::thread(runDevice, Devices[i], config, i, db);
 		Tasks.push_back(first);
@@ -46,7 +47,7 @@ void runDevice(int unitId, GT::AppConfig* config, int clientId, GT::DB2* db) {
 		info.host = (char*)"localhost";//
 	}
 	
-	info.port = 3341;
+	info.port = 3317;
 	
 	auto C = new GT::Device(info);
 	//C->db = db;

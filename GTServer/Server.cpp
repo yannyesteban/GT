@@ -27,11 +27,17 @@ namespace GT {
 	void runTimeOut(std::map < SOCKET, GTClient> * clients, Server* s, int keepAliveTime) {
 		clock_t mClock;
 		
+		
+
 		std::cout << s->keepAliveTime << std::endl;
 		while (true) {
 			
-
-			std::this_thread::sleep_for(std::chrono::seconds(1));
+			//s->db->updateUnitConnected();
+			
+			
+			std::this_thread::sleep_for(std::chrono::seconds(10));
+			
+			
 			mClock = clock();
 			
 			for (std::map<SOCKET, GTClient>::iterator it = clients->begin(); it != clients->end(); ++it) {
@@ -434,7 +440,7 @@ namespace GT {
 		//strcpy(info.date, "0000-00-00 00:00:00");
 		//strcpy(info.date, "");
 		db->setClientStatus(resp.unitId, 0, resp.date);
-		db->saveResponse(&resp, "DISCONNECTED");
+		//db->saveResponse(&resp, "DISCONNECTED");
 		
 
 		DBEvent event;
@@ -479,6 +485,11 @@ namespace GT {
 		clients[Info.client].clock = Info.clock;
 		
 		if (db->isVersion(sync_msg->Keep_Alive_Header)) {
+
+
+
+
+			std::cout << "synchronization " << std::endl;
 			//printf(ANSI_COLOR_CYAN "---> verification of sync (%lu)..(%d).\n" ANSI_COLOR_RESET, sync_msg->Keep_Alive_Device_ID, sync_msg->Keep_Alive_Header);
 			//puts(sync_msg->Keep_Alive_Device_ID));
 
@@ -496,6 +507,8 @@ namespace GT {
 			time(&rawtime);
 			timeinfo = localtime(&rawtime);
 
+			
+
 			if (mDevices[name].type != 2) {
 
 				
@@ -509,10 +522,14 @@ namespace GT {
 				mDevices[name].id = cInfo.unit_id;
 				mDevices[name].version_id = cInfo.version_id;
 
+				db->setClientStatus(mDevices[name].id, 1, nullptr);
+
 				clients[Info.client].id = cInfo.unit_id;
 				clients[Info.client].version_id = cInfo.version_id;
 				strcpy(clients[Info.client].device_id, (const char*)name);
 				
+
+
 				setUnitName(cInfo.unit_id, name);
 				setClientName(cInfo.unit_id, cInfo.name);
 
@@ -538,8 +555,8 @@ namespace GT {
 				//strcpy(info.date, "");
 				info.unitId = cInfo.unit_id;
 
-				db->setClientStatus(info.unitId, 1, info.date);
-				db->saveResponse(&info, "CONNECTED");
+				//db->setClientStatus(info.unitId, 1, info.date);
+				//db->saveResponse(&info, "CONNECTED");
 
 				DBEvent event;
 				event.unitId = info.unitId;
@@ -554,6 +571,8 @@ namespace GT {
 
 				cout << "Unit " << cInfo.unit_id << ", name: "<< name << " is connected " << endl;
 			} else {
+
+				db->setClientStatus(mDevices[name].id, 1, nullptr);
 
 				DBEvent event;
 				event.unitId = mDevices[name].id;
@@ -714,7 +733,17 @@ namespace GT {
 					unitResponse.header = 0;
 
 					db->getIndexCommand(clients[Info.client].device_id, &rCommand, &unitResponse);
-					db->updateCommand(unitResponse.unitId, unitResponse.commandId, unitResponse.index, unitResponse.mode);
+
+					std::cout << " el TAG es " << rCommand.tag << "\n\n";
+					if (rCommand.tag != "+1") {
+						std::cout << " el TAG es (x1)" << rCommand.tag << "\n\n";
+						db->updateCommand(unitResponse.unitId, unitResponse.commandId, unitResponse.index, 2, rCommand.params);
+					}
+					else {
+						std::cout << " el TAG es (x2)" << rCommand.tag << "\n\n";
+						db->updateCommand(unitResponse.unitId, unitResponse.commandId, unitResponse.index, 1, "");
+					}
+					
 
 
 					std::cout << " ---- Command Id " << unitResponse.commandId << std::endl;

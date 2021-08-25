@@ -34,7 +34,7 @@ namespace GT {
 				a.*
 				FROM unit_active as a
 				INNER JOIN user_unit as u ON u.unit_id = a.unit_id
-				WHERE u.user='panda'
+				WHERE u.user='panda2'
 				)"
 		);
 

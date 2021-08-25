@@ -35,6 +35,7 @@ int main()
 
     auto appInfo = GT::Config::load("device.json");
     std::cout << appInfo.appname << std::endl;
+    std::cout << appInfo.port << std::endl;
 
     
     //auto db = new GT::DB2(appInfo.db);
@@ -45,7 +46,7 @@ int main()
 
     GT::CSInfo Info;
     Info.host = (char*)"127.0.0.1";
-    Info.port = 3341;
+    Info.port = appInfo.port;
 
     bool option = true;
 

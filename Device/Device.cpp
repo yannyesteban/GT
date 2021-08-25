@@ -49,6 +49,9 @@ void GT::Device::onReceive(char* buffer, size_t size) {
 
 void GT::Device::syncTask() {
 	//SyncMsg s = { 63738,999,3024000100 };
+
+	std::cout << "UNIT NAME " << unitName << "\n\n";
+
 	SyncMsg s = { 63738,999,std::stoll(unitName) };
 	std::cout << "SYNCH " << std::endl;
 
