@@ -32,8 +32,8 @@ namespace GT {
 		std::cout << s->keepAliveTime << std::endl;
 		while (true) {
 			
-			s->db->updateUnitConnected();
-			
+			//s->db->updateUnitConnected();
+			std::cout << "My Thread is " << std::this_thread::get_id() << "\n\n";
 			
 			std::this_thread::sleep_for(std::chrono::seconds(10));
 			
@@ -184,7 +184,7 @@ namespace GT {
 	}
 	
 	void Server::onMessage(ConnInfo Info) {
-
+		std::cout << "Main ? My Thread is " << std::this_thread::get_id() << "\n\n";
 		
 		if (clients.count(Info.client) <= 0) {
 			std::cout << Color::_red() << Color::bwhite() << "\nClient Dead: Id = " << Info.client << Color::_reset() << std::endl;
