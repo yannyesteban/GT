@@ -152,7 +152,7 @@ namespace GT {
 		//system("pause");
 
 		//std::thread* first = new std::thread(runPending, &mDevices, std::ref(db));
-		std::thread* threadTimeOut = new std::thread(runTimeOut, &clients, this, keepAliveTime);
+		
 		
 		
 		/* nothing for now*/
@@ -161,6 +161,7 @@ namespace GT {
 		//first->join();
 		InfoPending infoPending;
 		db->getInfoPending(274,&infoPending);
+		std::thread* threadTimeOut = new std::thread(runTimeOut, &clients, this, keepAliveTime);
 		return true;
 	}
 
