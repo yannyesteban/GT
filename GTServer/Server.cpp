@@ -32,7 +32,7 @@ namespace GT {
 		std::cout << s->keepAliveTime << std::endl;
 		while (true) {
 			
-			//s->db->updateUnitConnected();
+			s->db->updateUnitConnected();
 			
 			
 			std::this_thread::sleep_for(std::chrono::seconds(10));
