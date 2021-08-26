@@ -440,7 +440,7 @@ namespace GT {
 
 		//strcpy(info.date, "0000-00-00 00:00:00");
 		//strcpy(info.date, "");
-		db->setClientStatus(resp.unitId, 0, resp.date);
+		db->setClientStatus(resp.unitId, 0);
 		//db->saveResponse(&resp, "DISCONNECTED");
 		
 
@@ -457,18 +457,7 @@ namespace GT {
 
 
 
-		printf("ERROR ESTOY DESCONECTANDO (%i): %s client: %d\n", Info.error, Info.tag, Info.client);
 		
-		for (std::map<SOCKET, GTClient >::iterator it = clients.begin(); it != clients.end(); it++) {
-			printf("there are client..(%i, %i) \n", it->first, it->second.socket);
-		}
-
-		
-		
-
-		for (std::map<SOCKET, GTClient >::iterator it = clients.begin(); it != clients.end(); it++) {
-			printf("there are at now client..(%i, %i) \n", it->first, it->second.socket);
-		}
 	}
 	
 	bool Server::isSyncMsg(ConnInfo Info) {
@@ -523,7 +512,7 @@ namespace GT {
 				mDevices[name].id = cInfo.unit_id;
 				mDevices[name].version_id = cInfo.version_id;
 
-				db->setClientStatus(mDevices[name].id, 1, nullptr);
+				db->setClientStatus(mDevices[name].id, 1);
 
 				clients[Info.client].id = cInfo.unit_id;
 				clients[Info.client].version_id = cInfo.version_id;
@@ -573,7 +562,7 @@ namespace GT {
 				cout << "Unit " << cInfo.unit_id << ", name: "<< name << " is connected " << endl;
 			} else {
 
-				db->setClientStatus(mDevices[name].id, 1, nullptr);
+				db->setClientStatus(mDevices[name].id, 1);
 
 				DBEvent event;
 				event.unitId = mDevices[name].id;

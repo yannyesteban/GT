@@ -21,7 +21,7 @@ int init_com() {
     hSerial = CreateFile(p,GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING,  FILE_ATTRIBUTE_NORMAL, 0);
     if(hSerial==INVALID_HANDLE_VALUE) {
         if(GetLastError()==ERROR_FILE_NOT_FOUND){
-            printf("PUERTO %s NO EXISTE !! \n", p);
+            printf("PUERTO %p NO EXISTE !! \n", p);
             status=-1;
         }
     } else {
@@ -111,7 +111,7 @@ int main(void) {
 
              continue;
             if(_kbhit()){
-                printf(".. \n", pbuff);
+                //printf(".. \n", pbuff);
                 c=_getch();
                 putchar(c);
                 env_com(buff);

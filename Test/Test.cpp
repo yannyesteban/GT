@@ -55,7 +55,7 @@ bool isNumber(std::string ss) {
 	//std::string ss(buffer);
 
 	//std::regex Pala("[0-9.a-zA-ZñÑáéíóúÁÉÍÓÚäëïöüÄËÏÖÜ]+");
-	std::regex re("^-?[0-9][0-9,\.]+$");
+	std::regex re("^-?[0-9][0-9,\\.]+$");
 	
 	if (std::regex_search(ss, m, re)) {
 		return true;

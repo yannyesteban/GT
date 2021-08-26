@@ -59,7 +59,11 @@ BOOL __stdcall keyboard(LPVOID param) {
 			"pepe",
 			"$WP+VER=0000,?",
 			"2012000750",
-			4737
+			"name",
+			0,
+			0,
+			0,
+			""
 		};
 
 

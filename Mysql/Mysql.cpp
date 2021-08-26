@@ -132,7 +132,7 @@ bool S::Mysql::init() {
 void S::Mysql::reset() {
 
 
-	OutputDebugString(_T("\Reset()"));
+	OutputDebugString(_T("\nReset()"));
 
 
 
@@ -195,9 +195,7 @@ void S::Mysql::test(TCHAR* message) {
 			result = stmtMain->getResultSet();
 
 			int codalarma;
-			int codsitio;
-			int codgeocerca;
-			int codtipo;
+			
 			while (result->next()) {
 
 				codalarma = result->getInt("codvehiculo");

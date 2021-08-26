@@ -1630,7 +1630,7 @@ namespace GT {
 		return isRead;
 	}
 
-	void DB::setClientStatus(unsigned int unitId, unsigned short status, char* date) {
+	void DB::setClientStatus(unsigned int unitId, unsigned int status) {
 		if (!connect()) {
 			return;
 		}
@@ -2075,7 +2075,7 @@ namespace GT {
 			stmtUnitConnected->execute();
 
 
-			std::cout << " ACTUALIZANDO los Conectados !!!! \n\n\n";
+			std::cout << "ACTUALIZANDO los Conectados !!!!\n";
 
 		}
 		catch (sql::SQLException& e) {

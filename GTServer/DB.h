@@ -141,7 +141,7 @@ namespace GT {
 		void evalPending(const char* unit_id, CommandResult* result, unsigned int type);
 		bool isReadCommand(const char* unit_id, CommandResult* result);
 
-		void setClientStatus(unsigned int unitId, unsigned short status, char* date);
+		void setClientStatus(unsigned int unitId, unsigned int status);
 		bool getPendingCommand(std::vector<GT::PendingCommand> * pending, std::vector<string> units);
 		bool getInfoPending(unsigned int id, InfoPending * info);
 		bool sendPendingCommand(unsigned int id);

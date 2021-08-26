@@ -74,7 +74,7 @@ namespace GT {
 	}
 	void Tool::getCommand(std::string w[], int& len, const char* buffer) {
 
-		std:string subject(buffer);
+		std::string subject(buffer);
 		std::smatch match;
 		std::regex re("(\\$(\\w+):(\\w+)(\\+\\w+)?(?:=(.+)?)?)");
 		len = 0;
@@ -91,7 +91,7 @@ namespace GT {
 	}
 	void Tool::getSendCommand(std::string w[], int& len, const char* buffer) {
 
-	std:string subject(buffer);
+	std::string subject(buffer);
 		std::smatch match;
 		std::regex re("(\\$(\\w+)\\+(\\w+)(\\+\\w+)?(?:=(.+)?)?)");
 		len = 0;
@@ -107,7 +107,7 @@ namespace GT {
 		}
 	}
 	void Tool::getTracking(std::string w[], int& len, const char* buffer) {
-		std:string subject(buffer);
+		std::string subject(buffer);
 		std::smatch match;
 		std::regex re("(\\$(RP):(\\w+),(.+))");
 		len = 0;
