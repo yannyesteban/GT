@@ -46,7 +46,7 @@ namespace GT {
 				//cout << "CLOCK -> " << diffClock << " type :" << it->second.type << endl;
 				if (diffClock > 160 && it->second.type ==2) {
 					cout << "cerrando el socket del cliente " << it->second.socket << endl;
-					s->disconect(it->second.socket);
+					//s->disconect(it->second.socket);
 				}
 				//printf("%12s", it->first.c_str());
 				//printf("%10s", it->second.device_id);
