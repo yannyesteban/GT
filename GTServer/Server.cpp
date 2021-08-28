@@ -45,7 +45,7 @@ namespace GT {
 				double diffClock = (double(mClock) - double(it->second.clock)) / CLOCKS_PER_SEC;
 				//cout << "CLOCK -> " << diffClock << " type :" << it->second.type << endl;
 				if (diffClock > 160 && it->second.type ==2) {
-					//cout << "cerrando el socket del cliente " << it->second.socket << endl;
+					cout << "cerrando el socket del cliente " << it->second.socket << endl;
 					s->disconect(it->second.socket);
 				}
 				//printf("%12s", it->first.c_str());
