@@ -10,12 +10,12 @@
   },
   "hub": {
     "host": "localhost",
-    "port": 3317
+    "port": 3341
   },
 
   "debug": false,
   "max_clients": 17,
-  "port": 3321,
+  "port": 3342,
   "show_cache": false,
   "version": "1.0.0.1"
 }

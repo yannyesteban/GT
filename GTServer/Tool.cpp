@@ -54,24 +54,28 @@ namespace GT {
 		}
 
 	}
-	void Tool::getItem(std::list<std::string> w, int& len, const char* buffer) {
+	void Tool::getItem(std::list<std::string> * list, int& len, const char* buffer) {
 		std::smatch m;
 		std::string ss(buffer);
 
 		//std::regex Pala("[0-9.a-zA-ZñÑáéíóúÁÉÍÓÚäëïöüÄËÏÖÜ]+");
 		std::regex Pala("[^,]+");
-		len = 0;
+		
 		while (std::regex_search(ss, m, Pala)) {
-
+			
 			for (int i = 0; i < m.size(); i++) {
-				w.push_back(m[i].str());
+			
+				list->push_back(m[i].str());
 
 			}
 
 			ss = m.suffix().str();
 		}
+
+		
 	
 	}
+	
 	void Tool::getCommand(std::string w[], int& len, const char* buffer) {
 
 		std::string subject(buffer);

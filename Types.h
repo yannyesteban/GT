@@ -152,6 +152,7 @@ namespace GT {
 		time_t time;
 		double delay = 0;
 		unsigned short commandIndex = 0;
+		char command[20] = "";
 	};
 
 	struct PendingCommand {

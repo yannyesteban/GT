@@ -110,6 +110,7 @@ namespace GT {
 	}
 
 	bool Server::init(AppConfig pConfig) {
+
 		/*
 		time_t now;
 		struct tm newyear;
@@ -680,6 +681,8 @@ namespace GT {
 			while (std::getline(ss, to)) {//, '\n'
 				//std::cout << "My Command " << to.c_str() << std::endl;
 				//std::cout << to.c_str() << "\n\n";
+				
+				/*
 				Tool::getTracking(result, len, to.c_str());
 				if (len >= 5) {
 					//cout << ANSI_COLOR_CYAN "Saving Track: mode 5" << endl;
@@ -690,7 +693,7 @@ namespace GT {
 					}
 					continue;
 				}
-				
+				*/
 				
 
 				Tool::getCommand(result, len, to.c_str());
@@ -725,7 +728,7 @@ namespace GT {
 					db->getIndexCommand(clients[Info.client].device_id, &rCommand, &unitResponse);
 
 					std::cout << " el TAG es " << rCommand.tag << "\n\n";
-					if (rCommand.tag != "+1") {
+					if (rCommand.tag == "+2") {
 						std::cout << " el TAG es (x1)" << rCommand.tag << "\n\n";
 						db->updateCommand(unitResponse.unitId, unitResponse.commandId, unitResponse.index, 2, rCommand.params);
 					}
@@ -734,7 +737,6 @@ namespace GT {
 						db->updateCommand(unitResponse.unitId, unitResponse.commandId, unitResponse.index, 1, "");
 					}
 					
-
 
 					std::cout << " ---- Command Id " << unitResponse.commandId << std::endl;
 					std::cout << " ---- Index " << unitResponse.index << std::endl;
@@ -760,7 +762,7 @@ namespace GT {
 					event.unitId = unitResponse.unitId;
 					event.eventId = 210;
 					strftime(event.dateTime, sizeof(event.dateTime), "%F %T", timeinfo);
-					strcpy(event.title, "RECEIVING");
+					strcpy(event.title, unitResponse.command);
 					strcpy(event.user, unitResponse.user);
 					strcpy_s(event.info, sizeof(event.info), to.c_str());
 

@@ -1,0 +1,7 @@
+1. ROL en la ventana de inmediato
+2. Doble click zoom out
+3. seguir
+4. hora que llego al servido despues nombre del vehiculo inmediato,
+5. eventos 100, no recibe
+6. importar exportar
+7. revisar la sincronizacion

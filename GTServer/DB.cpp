@@ -243,18 +243,7 @@ namespace GT {
 
 
 		//	if (!stmtInfoCommand) {
-		stmtInfoCommand = cn->prepareStatement(
-			R"(SELECT p.*
-			FROM pending as p
-			INNER JOIN unit as u ON u.id = p.unit_id
-			INNER JOIN device as d ON d.id = u.device_id
-			INNER JOIN device_version as v ON v.id = d.version_id
-
-
-			INNER JOIN device_command as c ON c.id = p.command_id
-
-			WHERE u.id = ? AND c.command = ? AND p.index = ?
-		)");
+		
 		//	}
 		stmtGetInfoPending = cn->prepareStatement(
 			R"(SELECT
@@ -328,37 +317,10 @@ namespace GT {
 
 
 		//if (!stmtSaveResponse) {
-		stmtEvent = cn->prepareStatement(
-			R"(
-
-			INSERT INTO event (`unit_id`, `date_time`, `event_id`, `mode`, `info`, `status`,`title`,`user`)
-	
-			SELECT ?, ?, ue.event_id, ue.mode, ?, 0, ?, ?
-			FROM unit_event as ue
-			WHERE (unit_id = ? OR unit_id IS NULL) AND ue.event_id = ? AND ue.mode > 0
-    
-			ORDER BY ue.unit_id DESC
-			LIMIT 1;
-
-
-				#INSERT INTO event
-				#(`unit_id`, `date_time`, `event_id`, `mode`, `info`, `status`) 
-				#VALUES
-				#(?,?,?,?,?,?)
-			)");
+		
 		//}
 
-		stmtUnitCommand = cn->prepareStatement(
-			R"(SELECT uc.params, uc.mode,
-				CONCAT(protocol_pre, command) as str_command, d.password
-
-				FROM unit_command as uc
-				INNER JOIN device_command as c ON c.id = uc.command_id
-				INNER JOIN device_version as v ON v.id = c.version_id
-				INNER JOIN device as d ON d.version_id = v.id
-				INNER JOIN unit as u ON u.id = uc.unit_id AND u.device_id = d.id
-
-			WHERE uc.unit_id = ? AND uc.command_id = ? AND uc.index = ? AND uc.mode = ?)");
+		
 		stmtCommandParam = cn->prepareStatement(
 			R"(SELECT uc.params, uc.mode,
 				CONCAT(protocol_pre, command) as str_command, d.password
@@ -371,18 +333,7 @@ namespace GT {
 
 			WHERE uc.id = ?)");
 
-		stmtIndexCommand = cn->prepareStatement(R"(SELECT
-			c.id as command_id, u.id as unit_id, IFNULL(w_index, 0) as indexed
-
-
-			FROM unit as u
-			INNER JOIN device as d ON d.id = u.device_id
-			INNER JOIN device_version as v ON v.id = d.version_id
-
-
-			INNER JOIN device_command as c ON c.version_id = v.id
-
-			WHERE u.id = ? AND c.command = ?)");
+		
 
 		
 
@@ -1366,12 +1317,30 @@ namespace GT {
 		int modeCommand = 0;
 
 		try {
+			if (stmtUnitCommand == nullptr) {
+			
+				stmtUnitCommand = cn->prepareStatement(
+					R"(SELECT 
+
+					CASE uc.mode WHEN 1 THEN uc.params WHEN 2 THEN uc.query END as params,
+					uc.mode, 
+					CONCAT(protocol_pre, command) as str_command, d.password
+
+					FROM unit_command as uc
+					INNER JOIN device_command as c ON c.id = uc.command_id
+					INNER JOIN device_version as v ON v.id = c.version_id
+					INNER JOIN device as d ON d.version_id = v.id
+					INNER JOIN unit as u ON u.id = uc.unit_id AND u.device_id = d.id
+
+				WHERE uc.unit_id = ? AND uc.command_id = ? AND uc.index = ?)");
+			}
+
 			sql::ResultSet* result = nullptr;
 
 			stmtUnitCommand->setInt(1, unitId);
 			stmtUnitCommand->setInt(2, commandId);
 			stmtUnitCommand->setInt(3, index);
-			stmtUnitCommand->setInt(4, mode);
+			//stmtUnitCommand->setInt(4, mode);
 			
 			
 
@@ -1383,8 +1352,8 @@ namespace GT {
 					command = result->getString("str_command").c_str();
 					password = result->getString("password").c_str();
 					modeCommand = result->getInt("mode");
-					if (modeCommand == 1) {
-						command += "+1";
+					if (modeCommand == 2) {
+						command += "+2";
 					}
 					command += "="+password;
 					Document document;
@@ -1741,8 +1710,8 @@ namespace GT {
 					std::string aa[20];
 					int len;
 					Tool::getSendCommand(aa, len, info->command.c_str());
-					std::list<std::string> list;
-					Tool::getItem(list, len, aa[5].c_str());
+					//std::list<std::string> list;
+					//Tool::getItem(list, len, aa[5].c_str());
 					GT::RCommand r = {
 						//10020,
 						0,
@@ -1799,14 +1768,30 @@ namespace GT {
 
 		try {
 
-			stmtEvent->setInt(1, infoEvent->unitId);
-			stmtEvent->setString(2, infoEvent->dateTime);
-			stmtEvent->setString(3, infoEvent->info);
-			stmtEvent->setString(4, infoEvent->title);
+			if (stmtEvent == nullptr) {
+				stmtEvent = cn->prepareStatement(
+					R"(
 
-			stmtEvent->setString(5, infoEvent->user);
-			stmtEvent->setInt(6, infoEvent->unitId);
-			stmtEvent->setInt(7, infoEvent->eventId);
+					INSERT INTO event (`unit_id`, `date_time`, `event_id`, `mode`, `info`, `status`,`title`,`user`)
+	
+					SELECT ?, null, ue.event_id, ue.mode, ?, 0, ?, ?
+					FROM unit_event as ue
+					WHERE (unit_id = ? OR unit_id IS NULL) AND ue.event_id = ? AND ue.mode > 0
+    
+					ORDER BY ue.unit_id DESC
+					LIMIT 1;
+				
+			)");
+			}
+
+			stmtEvent->setInt(1, infoEvent->unitId);
+			//stmtEvent->setString(2, infoEvent->dateTime);
+			stmtEvent->setString(2, infoEvent->info);
+			stmtEvent->setString(3, infoEvent->title);
+
+			stmtEvent->setString(4, infoEvent->user);
+			stmtEvent->setInt(5, infoEvent->unitId);
+			stmtEvent->setInt(6, infoEvent->eventId);
 
 			stmtEvent->execute();
 
@@ -1878,6 +1863,20 @@ namespace GT {
 
 		try {
 
+			if (stmtInfoCommand == nullptr) {
+				stmtInfoCommand = cn->prepareStatement(
+						R"(SELECT p.*
+				FROM pending as p
+				INNER JOIN unit as u ON u.id = p.unit_id
+				INNER JOIN device as d ON d.id = u.device_id
+				INNER JOIN device_version as v ON v.id = d.version_id
+
+
+				INNER JOIN device_command as c ON c.id = p.command_id
+
+				WHERE u.id = ? AND c.command = ? AND p.index = ?
+			)");
+			}
 			
 			
 
@@ -1936,6 +1935,21 @@ namespace GT {
 
 		try {
 
+			if (stmtIndexCommand == nullptr) {
+				stmtIndexCommand = cn->prepareStatement(R"(SELECT r.*,
+				c.id as command_id,CASE WHEN r.id IS NOT NULL THEN r.role ELSE c.command END as command, u.id as unit_id, IFNULL(w_index, 0) as indexed
+
+
+				FROM unit as u
+				INNER JOIN device as d ON d.id = u.device_id
+				INNER JOIN device_version as v ON v.id = d.version_id
+
+
+				INNER JOIN device_command as c ON c.version_id = v.id
+				LEFT JOIN command_role as r ON r.id = c.role_id
+
+				WHERE u.id = ? AND c.command = ?)");
+			}
 
 			stmtIndexCommand->setInt(1, unitId);
 			stmtIndexCommand->setString(2, commandResult->command.c_str());
@@ -1956,6 +1970,8 @@ namespace GT {
 					//info->mode = (unsigned short)result->getInt("mode");
 					info->unitId = (int)result->getInt("unit_id");
 					info->commandId = (int)result->getInt("command_id");
+					strcpy_s(info->command, sizeof(info->command), result->getString("command").c_str());
+					
 					//strcpy(info->message, result->getString("command").c_str());
 					//strcpy(info->date, result->getString("date").c_str());
 					//strcpy(info->user, result->getString("user").c_str());
@@ -2031,21 +2047,32 @@ namespace GT {
 			if (stmtUpdateCommand == nullptr) {
 				stmtUpdateCommand = cn->prepareStatement(
 					R"(UPDATE unit_command as uc
-				SET user = 'none', status = 3, uc.values = CASE ? WHEN '' THEN uc.values ELSE ? END
-				WHERE unit_id = ? AND command_id = ? AND uc.index = ? AND mode = ? )");
+				SET user = 'none', status = 3, uc.values = ?
+				WHERE unit_id = ? AND command_id = ? AND uc.index = ? )");
 			}
+
+			
+			std::string values = "";
+
+
+			commandValue(params, values);
+
+			std::list<std::string> list;
+			int len;
+			Tool::getItem(&list, len, params.c_str());
 
 			cout << ANSI_COLOR_YELLOW "Update: unitId " << unitId << endl;
 			cout << ANSI_COLOR_MAGENTA "Update: commandId " << commandId << endl;
+			cout << ANSI_COLOR_MAGENTA "Update: values " << values << endl;
 
 			
 
-			stmtUpdateCommand->setString(1, params.c_str());
-			stmtUpdateCommand->setString(2, params.c_str());
-			stmtUpdateCommand->setInt(3, unitId);
-			stmtUpdateCommand->setInt(4, commandId);
-			stmtUpdateCommand->setInt(5, index);
-			stmtUpdateCommand->setInt(6, mode);
+			stmtUpdateCommand->setString(1, values.c_str());
+			
+			stmtUpdateCommand->setInt(2, unitId);
+			stmtUpdateCommand->setInt(3, commandId);
+			stmtUpdateCommand->setInt(4, index);
+			
 
 
 			stmtUpdateCommand->execute();
@@ -2082,6 +2109,35 @@ namespace GT {
 			SQLException(e, __LINE__);
 		}
 	}
+	void DB::commandValue(std::string & params, std::string & value) {
+
+		std::list<std::string> list;
+		int len;
+		Tool::getItem(&list, len, params.c_str());
+		std::cout << list.size() << "\n\n";
+
+		Document json;
+		json.SetObject();
+		Value msg;
+
+		int i = 0;
+		std::string name = "";
+		for (std::list<std::string>::iterator it = list.begin(); it != list.end(); ++it) {
+			name = "param_" + std::to_string(i++);
+			Value paramName(name.c_str(), json.GetAllocator());
+			msg.SetString(it->c_str(), strlen(it->c_str()), json.GetAllocator());
+			json.AddMember(paramName, msg, json.GetAllocator());
+		}
+
+		StringBuffer stringBuffer;
+		Writer<StringBuffer> w(stringBuffer);
+
+		json.Parse(stringBuffer.GetString());
+		json.Accept(w);
+
+		value = stringBuffer.GetString();
+	}
+
 	void DB::save(std::string query) {
 		if (!connect()) {
 			return;

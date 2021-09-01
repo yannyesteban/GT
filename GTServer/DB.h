@@ -152,6 +152,7 @@ namespace GT {
 
 		void updateCommand(int unitId, int commandId, int index, int mode, std::string params);
 		void updateUnitConnected();
+		void commandValue(std::string & params, std::string & value);
 
 	private:
 		bool debug;
