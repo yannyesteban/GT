@@ -308,7 +308,7 @@ namespace GT {
 			event.unitId = r->unitId;
 			event.eventId = 209;
 			strftime(event.dateTime, sizeof(event.dateTime), "%F %T", timeinfo);
-			strcpy(event.title, "SENDING");
+			strcpy(event.title, r->command);
 			strcpy(event.user, r->user);
 			strcpy_s(event.info, sizeof(r->message), r->message);
 			//strcpy(event.info, "");

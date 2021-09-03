@@ -1,0 +1,21 @@
+1. sendi + info, color
+2. follow inestable se mueve solo
+3 ventanas individual por vehiculo
+4 desconexion gprs
+5 comando rmks falto el protocolo
+6. quitra los botones extras de send y recibir
+7 commando output en info,
+8 pmgr
+9 vmon eliminar
+10 comando no fue salvado
+11 dos ventanas inmediato
+12 ultimo recibir
+13 pendiente TODOS
+14 pedientes INDEPENDIENTE en info,
+15 comandos pendiente en la ventana conectados.
+16 getlogsel mover a equipo fecha hora + 4hora, porque esta en gsm,
+17 el get event id no funciona
+18 ver un vehiculo a la vez cuando selecciono de la ventana del sistem
+19 desconectar el equipo del socket 
+20 no se actualiza la ventana de desconectado
+21 dibujar geocerca en setevent

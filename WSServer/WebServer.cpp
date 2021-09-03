@@ -210,7 +210,7 @@ namespace GT {
         std::cout << " commandId  " << commandId << std::endl;
         std::cout << " index " << index << std::endl;
         std::cout << " mode " << mode << std::endl;
-        std::cout << "......" << db->loadCommand(unitId, commandId, index, mode) << std::endl;
+        //std::cout << "......" << db->loadCommand(unitId, commandId, index, mode) << std::endl;
     }
 
     void WebServer::sendToDevice(ConnInfo Info, int unitId, int commandId, int index, int mode) {
@@ -247,10 +247,12 @@ namespace GT {
             (unsigned short)document["commandId"].GetInt(),
             to_string(tag), params, type);
             */
-
-        std::string strCommand = db->loadCommand(unitId, commandId, index, mode);
+        string role = "";
+        std::string strCommand = db->loadCommand(unitId, commandId, index, mode, role);
 
         strcpy(r.message, strCommand.c_str());
+        strcpy(r.command, role.c_str());
+        
         cout << endl << "Unidad" << r.unit << endl << "COMANDO " << strCommand << endl << endl;
 
         //db->addPending(document["unitId"].GetInt(), document["commandId"].GetInt(), tag, str, "pepe", type, (unsigned short)document["level"].GetInt());

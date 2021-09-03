@@ -1303,7 +1303,7 @@ namespace GT {
 		
 	}
 
-	std::string DB::loadCommand(int unitId, int commandId, int index, int mode) {
+	std::string DB::loadCommand(int unitId, int commandId, int index, int mode, std::string & role) {
 
 
 		if (!connect()) {
@@ -1324,13 +1324,15 @@ namespace GT {
 
 					CASE uc.mode WHEN 1 THEN uc.params WHEN 2 THEN uc.query END as params,
 					uc.mode, 
-					CONCAT(protocol_pre, command) as str_command, d.password
+					CONCAT(protocol_pre, command) as str_command, d.password,
+					COALESCE(r.role, c.command) as role
 
 					FROM unit_command as uc
 					INNER JOIN device_command as c ON c.id = uc.command_id
 					INNER JOIN device_version as v ON v.id = c.version_id
 					INNER JOIN device as d ON d.version_id = v.id
 					INNER JOIN unit as u ON u.id = uc.unit_id AND u.device_id = d.id
+					LEFT JOIN command_role as r ON r.id = c.role_id
 
 				WHERE uc.unit_id = ? AND uc.command_id = ? AND uc.index = ?)");
 			}
@@ -1351,6 +1353,7 @@ namespace GT {
 					params = result->getString("params").c_str();
 					command = result->getString("str_command").c_str();
 					password = result->getString("password").c_str();
+					role = result->getString("role").c_str();
 					modeCommand = result->getInt("mode");
 					if (modeCommand == 2) {
 						command += "+2";
