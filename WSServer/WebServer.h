@@ -47,6 +47,7 @@ namespace GT {
 
 		void sendCommand(int unitId, int commandId, int index, int mode);
 		void sendToDevice(ConnInfo Info, int unitId, int commandId, int index, int mode);
+		void sendToDevice(SOCKET server, GT::RCommand * request);
 	private:
 		DB* db;
 		

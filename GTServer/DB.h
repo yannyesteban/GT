@@ -153,6 +153,7 @@ namespace GT {
 		void updateCommand(int unitId, int commandId, int index, int mode, std::string params);
 		void updateUnitConnected();
 		void commandValue(std::string & params, std::string & value);
+		void setStatusToDisconneted(unsigned int unitId);
 
 	private:
 		bool debug;
@@ -205,6 +206,9 @@ namespace GT {
 		sql::PreparedStatement* stmtIndexCommand = nullptr;
 		sql::PreparedStatement* stmtUpdateCommand = nullptr;
 		sql::PreparedStatement* stmtUnitConnected = nullptr;
+		sql::PreparedStatement* stmtDisconnectedStatus = nullptr;
+
+		
 
 		bool initialized = false;
 	};

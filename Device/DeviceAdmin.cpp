@@ -56,4 +56,6 @@ void runDevice(int unitId, GT::AppConfig* config, int clientId, GT::DB2* db) {
 	//C->config = config;
 	C->setUnitName(unitId);
 	C->start();
+
+	std::cout << " *********** BYE ***************\n";
 }

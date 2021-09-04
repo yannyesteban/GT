@@ -39,8 +39,10 @@ namespace GT {
 		
 		for (int i = 0; i < maxClients; i++) {
 			if (clients[i] == client) {
+				std::cout << " CLOSE SOCKET " << client << "\n\n";
 				closesocket(client);
 				clients[i] = 0;
+				return 1;
 			}
 		}
 		return 0;

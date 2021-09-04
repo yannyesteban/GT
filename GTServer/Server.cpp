@@ -162,7 +162,7 @@ namespace GT {
 		//first->join();
 		InfoPending infoPending;
 		db->getInfoPending(274,&infoPending);
-		std::thread* threadTimeOut = new std::thread(runTimeOut, &clients, this, keepAliveTime);
+		//std::thread* threadTimeOut = new std::thread(runTimeOut, &clients, this, keepAliveTime);
 		return true;
 	}
 
@@ -339,6 +339,12 @@ namespace GT {
 		if (header->header == 10100) {
 			RCommand* r = (RCommand*)Info.buffer;
 
+			std::cout << " W " << mDevices[getUnitName(r->unitId)].device_id << std::endl;
+
+			if (mDevices[getUnitName(r->unitId)].socket <= 0) {
+				std::cout << " E R R O R \n";
+				return 0;
+			}
 
 			RCommand response;
 			response.header = 10021;
@@ -372,16 +378,31 @@ namespace GT {
 			std::cout << Color::_green() << "Sending: " << response.message
 				<< Color::_reset() << " to: "
 				<< mDevices[getUnitName(r->unitId)].device_id << " (" << r->unit << ")\n";
-			/*
+			
 			std::cout << "Header: " << response.header << std::endl;
 			std::cout << "Message: " << response.message << std::endl;
 			std::cout << "UnitId: " << response.unitId << std::endl;
 			std::cout << "Mode: " << response.mode << std::endl;
 			std::cout << "User: " << response.user << std::endl;
 			std::cout << "Unit: " << response.unit << std::endl;
-			*/
+			
 
-			disconect(mDevices[getUnitName(r->unitId)].socket);
+			int value = disconect(mDevices[getUnitName(r->unitId)].socket);
+
+			if (value > 0) {
+				mDevices[getUnitName(r->unitId)].socket = 0;
+				mDevices[getUnitName(r->unitId)].type = 0;
+				db->setClientStatus(r->unitId, 0);
+				DBEvent event;
+				event.unitId = r->unitId;
+				event.eventId = 211;
+				
+				strcpy(event.title, "DISCONNECT");
+				strcpy(event.user, r->user);
+				strcpy_s(event.info, sizeof(r->message), r->message);
+				//strcpy(event.info, "");
+				db->insertEvent(&event);
+			}
 			return 0;
 
 		}
@@ -411,7 +432,7 @@ namespace GT {
 	}
 
 	void Server::onClose(ConnInfo Info) {
-
+		std::cout << " ON - CLOSE \n\n";
 
 		clients[Info.client].device_id;
 		RCommand resp;
@@ -553,7 +574,7 @@ namespace GT {
 				event.unitId = info.unitId;
 				strftime(event.dateTime, sizeof(event.dateTime), "%F %T", timeinfo);
 				event.eventId = 201;
-				strcpy(event.title, "connected");
+				strcpy(event.title, "CONNECTED");
 				strcpy(event.info, "");
 				db->insertEvent(&event);
 

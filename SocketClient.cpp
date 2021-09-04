@@ -29,7 +29,7 @@ namespace GT {
 		if (iResult != 0) {
 			msgError = "getaddrinfo failed with error";
 			sockError = iResult;
-			//printf("getaddrinfo failed with error: %d\n", iResult);
+			printf("getaddrinfo failed with error: %d\n", iResult);
 			WSACleanup();
 			return false;
 		}
@@ -42,7 +42,7 @@ namespace GT {
 			if (master == INVALID_SOCKET) {
 				msgError = "socket failed with error";
 				sockError = WSAGetLastError();
-				//printf("CLIENTE socket failed with error: %ld\n", WSAGetLastError());
+				printf("CLIENTE socket failed with error: %ld\n", WSAGetLastError());
 				WSACleanup();
 				return false;
 			}

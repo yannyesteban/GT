@@ -304,6 +304,78 @@ namespace GT {
     */
     }
 
+    void WebServer::sendToDevice(SOCKET server, GT::RCommand* request)
+    {
+        SOCKET s = hub->getHost();
+
+        
+
+
+        //strcpy(r.user, document["user"].GetString());
+
+        //unsigned int tag = db->getTag(document["unitId"].GetInt(), document["commandId"].GetInt(), type);
+        //r.index = tag;
+        /*std::string str = db->createCommand(
+            (unsigned int)document["unitId"].GetInt(),
+            (unsigned short)document["commandId"].GetInt(),
+            to_string(tag), params, type);
+            */
+        
+        
+        std::string msg = "disconecting";
+        strcpy(request->message, msg.c_str());
+        strcpy(request->command, msg.c_str());
+
+        cout << endl << "Unidad" << request->unitId << endl << "COMANDO " << msg << endl << endl;
+
+        //db->addPending(document["unitId"].GetInt(), document["commandId"].GetInt(), tag, str, "pepe", type, (unsigned short)document["level"].GetInt());
+
+        /* pause*/
+        //db->addPending(&r);
+
+        
+        char buffer2[1024];
+
+        std::cout << " REQUEST " << sizeof(request) << "\n\n";
+        std::cout << " REQUEST " << sizeof(GT::RCommand) << "\n\n";
+
+        memcpy(buffer2, request, sizeof(GT::RCommand));
+        send(server, buffer2, (int)sizeof(buffer2), 0);
+
+        return;
+        //send(Info.client, "yanny", strlen("yanny"), 0);
+
+        char buffer[DEFAULT_BUFLEN];
+        size_t size = 0;
+
+        RCommand response;
+        response.unitId = request->unitId;
+        response.commandId = request->commandId;
+
+        //char message[100] = "Receiving ";
+        //strcat_s(message, sizeof(message), r.message);
+        strcpy_s(response.message, sizeof(response.message), request->message);
+        strcpy_s(response.user, sizeof(response.user), request->user);
+        strcpy_s(response.name, sizeof(response.name), request->unit);
+        strcpy_s(response.unit, sizeof(response.unit), "Sending...");
+        //strcpy_s(response., sizeof(response.name), r.unit);
+
+        time_t rawtime;
+        struct tm* timeinfo;
+
+
+        time(&rawtime);
+        timeinfo = localtime(&rawtime);
+
+        strftime(response.date, sizeof(response.date), "%F %T", timeinfo);
+
+
+
+        response.unitId = request->unitId;
+        //jsonResponse(Info.client, &response);
+
+    }
+
     
     
     
@@ -378,16 +450,48 @@ namespace GT {
                 sendToDevice(Info, unitId, commandId, index, mode);
             }
                 //sendCommand(unitId, commandId, index, mode);
-                
-           
-
-
-
-            
             return;
         }
 
-        int cmdIndex = document["cmdIndex"].GetInt();
+        if (msgType == "RC") {
+            std::cout << "RC\n\n";
+
+            for (auto i = document.MemberBegin(); i != document.MemberEnd(); ++i)
+            {
+                std::cout << "key: " << i->name.GetString() << " : " << i->value.IsInt() << std::endl;
+                //WalkNodes(i->value);
+            }
+            if (document["unitId"].IsInt() ) {
+                int unitId = document["unitId"].GetInt();
+
+                GT::RCommand r = {
+                    //10020,
+                    10100,
+                    10,
+                    Info.client,
+                    "",
+                    "",
+                    "",
+                    "",//name
+                    unitId,
+                    0,
+                    0,
+                    "",// date
+                    0,
+                    0,//index
+                    ClientMsg::Request,
+                    0,// time
+                    0,// Delay
+                    0
+                };
+                
+                sendToDevice(hub->getHost(), &r);
+            }
+            //sendCommand(unitId, commandId, index, mode);
+            return;
+        }
+
+        int cmdIndex = 0;// document["cmdIndex"].GetInt();
         //string msgName = document["name"].GetString();
         std::cout << "msgType " << msgType << endl;
         std::cout << "cmdIndex " << cmdIndex << endl;

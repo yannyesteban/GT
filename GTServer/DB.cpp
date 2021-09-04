@@ -386,6 +386,7 @@ namespace GT {
 		delete stmtIndexCommand;
 		delete stmtUpdateCommand;
 		delete stmtUnitConnected;
+		delete stmtDisconnectedStatus;
 		
 		//delete stmtMain;
 		initialized = false;
@@ -1627,6 +1628,29 @@ namespace GT {
 		}
 	}
 
+
+	void DB::setStatusToDisconneted(unsigned int unitId) {
+		if (!connect()) {
+			return;
+		}
+		std::cout << "Disconnecting " << unitId << "\n\n";
+		try {
+			if (stmtDisconnectedStatus == nullptr) {
+				stmtDisconnectedStatus = cn->prepareStatement(
+					R"(UPDATE unit SET conn_status = 0, conn_date = NULL WHERE id=?)");
+			}
+
+			std::cout << "Disconnected " << unitId  << "\n\n";
+
+			stmtDisconnectedStatus->setInt(1, unitId);
+			stmtDisconnectedStatus->execute();
+
+		}
+		catch (sql::SQLException& e) {
+			SQLException(e, __LINE__);
+		}
+	}
+
 	bool DB::getPendingCommand(std::vector<GT::PendingCommand>* pending, std::vector<std::string> units) {
 		if (!connect()) {
 			return false;
@@ -2094,9 +2118,9 @@ namespace GT {
 			if (stmtUnitConnected == nullptr) {
 				stmtUnitConnected = cn->prepareStatement(
 					R"(	UPDATE unit as u
-						LEFT JOIN app_config as a ON a.id=1
-						SET conn_status = CASE WHEN ( TIMESTAMPDIFF(SECOND, conn_date, now()))<=IFNULL(a.max_delay, 180) THEN 1 ELSE 0 END
-						WHERE u.id > 0;)"
+						LEFT JOIN app_config as a ON a.id = 1
+						SET conn_status = CASE WHEN ( TIMESTAMPDIFF(SECOND, conn_date, now())) <= IFNULL(a.max_delay, 180) THEN 1 ELSE 0 END
+						WHERE u.id > 0 AND conn_status = 1;)"
 				);
 			}
 

@@ -134,20 +134,20 @@ namespace GT {
 	};
 
 	struct RCommand {
-		unsigned short header;
-		unsigned short type;
-		unsigned int id;
+		unsigned short header = 0;
+		unsigned short type = 0;
+		unsigned int id = 0;
 		char user[41] = "";
 		char message[255] = "";
 		char unit[11] = "";
 		char name[41] = "";
-		int unitId;
-		int commandId;
-		int mode;
+		int unitId = 0;
+		int commandId = 0;
+		int mode = 0;
 		char date[20] = "";
 		
-		unsigned short level;
-		unsigned short index;
+		unsigned short level = 0;
+		unsigned short index = 0;
 		ClientMsg typeMessage = ClientMsg::Nothing;
 		time_t time;
 		double delay = 0;

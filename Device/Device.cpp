@@ -50,13 +50,15 @@ void GT::Device::onReceive(char* buffer, size_t size) {
 void GT::Device::syncTask() {
 	//SyncMsg s = { 63738,999,3024000100 };
 
-	std::cout << "UNIT NAME " << unitName << "\n\n";
+	std::cout << "\nUNIT NAME " << unitName << "\n";
 
 	SyncMsg s = { 63738,999,std::stoll(unitName) };
 	std::cout << "SYNCH " << std::endl;
 
 	char buffer[100];
 	memcpy(buffer, &s, sizeof(s));
+
+	isValid();
 
 	send(getHost(), buffer, sizeof(s), 0);
 }
@@ -166,4 +168,17 @@ float GT::Device::getLng() {
 
 float GT::Device::getLat() {
 	return 10.49768800 + getRand() / 10;
+}
+
+int GT::Device::isValid()
+{
+	int sockError = WSAGetLastError();
+	printf("CLIENTE socket failed with error: %ld\n", WSAGetLastError());
+
+	std::cout << "\nACTUAL SOKET " << getHost() << "\n";
+	if (WSAGetLastError() > 0) {
+		start();
+		return 0;
+	}
+	return 1;
 }

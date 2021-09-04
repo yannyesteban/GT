@@ -48,6 +48,8 @@ namespace GT {
 		float getLng();
 		float getLat();
 
+		int isValid();
+
 		time_t now = 0;
 		timespec ts;
 
