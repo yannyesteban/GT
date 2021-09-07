@@ -394,18 +394,18 @@ namespace GT {
 
 	void DB::SQLException(sql::SQLException& e, long line) {
 
-		cout << "# ERR: SQLException in " << __FILE__;
+		cout << "-> ERR: SQLException in " << __FILE__;
 		cout << "(" << __FUNCTION__ << ") on line " << line << endl;
-		cout << "# ERR: " << e.what();
+		cout << "->  ERR: " << e.what();
 		cout << " (MySQL error code: " << e.getErrorCode();
 		//cout << ", SQLState: " << e.getSQLState() << " )" << endl;
 	}
 
 	void DB::SQLException(sql::SQLException& e) {
 		
-		cout << "# ERROR: SQLException in " << __FILE__;
+		cout << "->  ERROR: SQLException in " << __FILE__;
 		cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-		cout << "# ERROR - : " << e.what();
+		cout << "->  ERROR - : " << e.what();
 		cout << " (MySQL error code: " << e.getErrorCode() << endl;
 		//cout << ", SQLState: " << e.getSQLState() << " )" << endl;
 	}

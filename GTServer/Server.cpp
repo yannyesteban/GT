@@ -390,9 +390,14 @@ namespace GT {
 			int value = disconect(mDevices[getUnitName(r->unitId)].socket);
 
 			if (value > 0) {
+				SOCKET oldSocket = mDevices[getUnitName(r->unitId)].socket;
 				mDevices[getUnitName(r->unitId)].socket = 0;
 				mDevices[getUnitName(r->unitId)].type = 0;
 				db->setClientStatus(r->unitId, 0);
+
+				mDevices.erase(getUnitName(r->unitId));
+				clients.erase(oldSocket); 
+
 				DBEvent event;
 				event.unitId = r->unitId;
 				event.eventId = 211;
@@ -495,6 +500,18 @@ namespace GT {
 		//std::cout << "clock: "<< Info.clock  << " chrono " << (double(Info.clock-mClock) / CLOCKS_PER_SEC) << endl;
 		
 		clients[Info.client].clock = Info.clock;
+
+		for (std::map<SOCKET, GTClient>::iterator it = clients.begin(); it != clients.end(); ++it) {
+			printf("%20d", it->second.socket);
+
+			printf("%8s", it->second.device_id);
+			printf("%8d", it->second.id);
+			printf("%10d", it->second.socket);
+			printf("%10d", it->second.version_id);
+			printf("%12d\n", it->second.type);
+
+		}
+		
 		
 		if (db->isVersion(sync_msg->Keep_Alive_Header)) {
 
@@ -507,7 +524,21 @@ namespace GT {
 
 			sprintf(name, "%lu", sync_msg->Keep_Alive_Device_ID);
 			//printf("\nasync %d\n", sync_msg->Keep_Alive_Device_ID);
+			std::cout << "Info.client " << Info.client << "  name: " << name << "\n\n";
+			if (mDevices.find(name) != mDevices.end()) {
 
+				if (mDevices[name].socket != Info.client) {
+					SOCKET oldSocket = mDevices[name].socket;
+					mDevices[name].type = 0;
+					mDevices[name].socket = 0;
+					mDevices[name].version_id = 0;
+					clients.erase(oldSocket);
+					mDevices.erase(name);
+					
+				}
+				std::cout << "Existe name "<< name << "     - info " << mDevices[name].socket << " vs. " << Info.client << "\n\n";
+			}
+			
 			
 			mDevices[name] = clients[Info.client];
 
@@ -522,7 +553,8 @@ namespace GT {
 			
 
 			if (mDevices[name].type != 2) {
-
+				std::cout << "Validating version_id " << mDevices[name].version_id << "\n\n";
+				
 				
 				clients[Info.client].type = 2;
 				clients[Info.client].status = 1;
