@@ -9,7 +9,7 @@
   },
   "debug": false,
   "max_clients": 2000,
-  "port": 3341,
+  "port": 3317,
   "show_cache": false,
   "version": "1.0.0.1",
   "keep_alive":  100
