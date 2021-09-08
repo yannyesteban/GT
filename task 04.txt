@@ -2,8 +2,9 @@
 2.- y poner un boton icono arriba en la barra principal de la app a la izquierda
 3.- otra cosa los mensajes de sync no se muestran
 4. - tienes que habilitarlo a todas las unidades por defecto que se muestra en inmediato
-5.-no puedes poner que se puede seleccionar tambien la unidad desde el listado de pending?
-get positio borra borra
+5. -no puedes poner que se puede seleccionar tambien la unidad desde el listado de pending?
+6.- get position no se borra
 6.- unidades visible???
 7. ventana de comando se activa inmediata 
+8.- Anota tambien para aplicar a todos los vehiculos que llega el 201, 202 y 211 en ambos inmediatos
  

@@ -36,6 +36,8 @@ namespace GT {
 		SOCKET socket;
 		short int type = 0;
 		clock_t clock;
+
+		unsigned short header;
 		
 
 	};

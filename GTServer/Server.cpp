@@ -500,15 +500,20 @@ namespace GT {
 		//std::cout << "clock: "<< Info.clock  << " chrono " << (double(Info.clock-mClock) / CLOCKS_PER_SEC) << endl;
 		
 		clients[Info.client].clock = Info.clock;
+		clients[Info.client].header = sync_msg->Keep_Alive_Header;
 
 		for (std::map<SOCKET, GTClient>::iterator it = clients.begin(); it != clients.end(); ++it) {
-			printf("%20d", it->second.socket);
 
-			printf("%8s", it->second.device_id);
-			printf("%8d", it->second.id);
-			printf("%10d", it->second.socket);
-			printf("%10d", it->second.version_id);
-			printf("%12d\n", it->second.type);
+			if (it->second.type != 2) {
+				printf("%10d", it->second.header);
+
+				printf("%14s", it->second.device_id);
+				printf("%8d", it->second.id);
+				printf("%10d", it->second.socket);
+				printf("%10d", it->second.version_id);
+				printf("%12d\n", it->second.type);
+			}
+			
 
 		}
 		
