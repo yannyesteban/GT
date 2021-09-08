@@ -43,13 +43,13 @@ namespace GT {
 		//std::regex Pala("[0-9.a-zA-ZñÑáéíóúÁÉÍÓÚäëïöüÄËÏÖÜ]+");
 		std::regex Pala("[^,]+");
 		len = 0;
-		std::cout << "\nBUFFER " << buffer << "\n-----------------\n";
+		//std::cout << "\nBUFFER " << buffer << "\n-----------------\n";
 		while (std::regex_search(ss, m, Pala)) {
 			
 			for (int i = 0; i < m.size(); i++) {
 				if (len < wLength) {
 					w[len++] = m[i].str();
-					std::cout << "\nm-Size " << m.size() << "\n I: " << i <<  ", LENGTH " << len << "\n .........\n";
+					//std::cout << "\nm-Size " << m.size() << "\n I: " << i <<  ", LENGTH " << len << "\n .........\n";
 				}
 				
 			}
