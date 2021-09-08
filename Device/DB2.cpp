@@ -34,7 +34,8 @@ namespace GT {
 				a.*
 				FROM unit_active as a
 				INNER JOIN user_unit as u ON u.unit_id = a.unit_id
-				WHERE u.user='panda2'
+				WHERE u.user='panda'
+				#LIMIT 50
 				)"
 		);
 
@@ -57,13 +58,7 @@ namespace GT {
 			WHERE u.id = ?
 			ORDER BY f.order)");
 
-		stmtLoadTracking = cn->prepareStatement(R"(
-			SELECT t.*, now() as date_time, t.date_time as time2 
-			FROM tracking2 as t
-			WHERE 
-				unit_id = ?
-			AND id > ?
-			limit 1)");
+		
 		
 		mTrackingField.insert({ "unit_id", {1 ,1} });
 		mTrackingField.insert({ "device_cod", {2 ,1} });
@@ -270,11 +265,19 @@ namespace GT {
 		if (!connect()) {
 			return cmd;
 		}
-
+		return cmd;
 		
 		try {
+			if (stmtLoadTracking == nullptr) {
+				stmtLoadTracking = cn->prepareStatement(R"(
+				SELECT t.*, now() as date_time, t.date_time as time2 
+				FROM tracking2 as t
+				WHERE 
+					unit_id = ?
+				AND id > ?
+				limit 1)");
+			}
 			
-
 			sql::ResultSet* result;
 			stmtLoadTracking->setInt(1, unitId);
 			stmtLoadTracking->setInt(2, *id);
@@ -308,7 +311,7 @@ namespace GT {
 		} catch (sql::SQLException& e) {
 			SQLException(e, __LINE__);
 		}
-
+		cmd += "\n";
 		return cmd;
 	}
 

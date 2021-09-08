@@ -713,8 +713,8 @@ namespace GT {
 			std::cout << "unit_id : " << unit_id << " version(Format) " << version  << endl;
 			std::cout << "buffer: " << buffer << std::endl;
 			std::string  mm[30];
-			int n;
-			GT::Tool::getItem(mm, n, buffer);
+			int n = 0;
+			GT::Tool::getItem(mm, 30, n, buffer);
 
 			int x = 0;// counter of items
 			for (auto itr = mTrackingField.begin(); itr != mTrackingField.end(); ++itr) {
@@ -761,7 +761,7 @@ namespace GT {
 		//std::cout << "buffer: " << buffer << std::endl;
 		std::string  mm[30];
 		int n;
-		GT::Tool::getItem(mm, n, buffer);
+		GT::Tool::getItem(mm, 30, n, buffer);
 		std::string query = "INSERT INTO tracking ";
 		std::string qfields = "unit_id";
 		std::string qvalues(std::to_string(mClients[unit_id].unit_id));
@@ -820,7 +820,7 @@ namespace GT {
 
 		std::string  mm[30];
 		int n;
-		GT::Tool::getItem(mm, n, buffer);
+		GT::Tool::getItem(mm, 30, n, buffer);
 		std::string query = "INSERT INTO tracking ";
 		std::string qfields = "";
 		std::string qvalues = "";
@@ -1448,7 +1448,7 @@ namespace GT {
 		int unitId = mClients[unit_id].unit_id;
 		std::string paramsList[20];
 		int length = 0;
-		Tool::getItem(paramsList, length, commandResult->params.c_str());
+		Tool::getItem(paramsList, 20, length, commandResult->params.c_str());
 
 		std::vector<std::string> v;
 		

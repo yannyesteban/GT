@@ -55,7 +55,10 @@ int main()
         //A->db = db;
         A->run(&appInfo);
     } else {
-        auto C = new GT::Device(Info);
+        auto db = new GT::DB2(appInfo.db);
+        db->connect();
+        //db->init();
+        auto C = new GT::Device(Info, db);
         C->start();
     }
 

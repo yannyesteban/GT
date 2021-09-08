@@ -47,9 +47,9 @@ void runDevice(int unitId, GT::AppConfig* config, int clientId, GT::DB2* db) {
 		info.host = (char*)"localhost";//
 	}
 	
-	info.port = 3341;
+	info.port = 3317;
 	
-	auto C = new GT::Device(info);
+	auto C = new GT::Device(info, db);
 	//C->db = db;
 	C->clientId = clientId;
 	C->init(config);

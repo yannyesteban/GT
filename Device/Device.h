@@ -13,7 +13,7 @@ namespace GT {
 
 	class Device :public SocketClient {
 	public:
-		Device(CSInfo pInfo);
+		Device(CSInfo pInfo, DB2* db);
 		virtual void onConect();
 		bool isSyncMsg(char * buffer);
 		void onReceive(char* buffer, size_t size);

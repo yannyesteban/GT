@@ -1,7 +1,7 @@
 #include "Device.h"
 
-GT::Device::Device(CSInfo pInfo) :SocketClient(pInfo) {
-	
+GT::Device::Device(CSInfo pInfo, DB2* db2) :SocketClient(pInfo) {
+	db = db2;
 }
 
 void GT::Device::onConect() {
@@ -64,7 +64,7 @@ void GT::Device::syncTask() {
 }
 
 void GT::Device::trackingTask() {
-
+	std::cout << " BEGIN ID : " << beginId << "\n\n";
 	std::string cmd = db->loadTracking(unitId, &beginId, format);
 	std::cout << "Send: " << "Clien ID: " << clientId << ", " << std::endl;
 	send(getHost(), cmd.c_str(), cmd.size(), 0);
@@ -72,8 +72,8 @@ void GT::Device::trackingTask() {
 }
 
 void GT::Device::init(AppConfig* config) {
-	db = new GT::DB2(config->db);
-	db->connect();
+	//db = new GT::DB2(config->db);
+	//db->connect();
 	//db->init();
 
 }

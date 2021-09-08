@@ -20,7 +20,7 @@ namespace GT {
 	public:
 		static list<string> split(string text, char delimeter);
 		static void test();
-		static void getItem(std::string w[], int& len, const char* buffer);
+		static void getItem(std::string w[], int wLength, int& len, const char* buffer);
 		static void getItem(std::list<std::string> * w, int& len, const char* buffer);
 		static void getCommand(std::string w[], int& len, const char* buffer);
 		static void getSendCommand(std::string w[], int& len, const char* buffer);
