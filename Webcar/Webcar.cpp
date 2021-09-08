@@ -689,7 +689,7 @@ namespace WC {
 			
 		}
 		
-		std::string query = "INSERT INTO tracks_2020 (codequipo," + qFields + ") VALUES (" + to_string(codequipo).c_str() +","+ qValues + ")";
+		std::string query = "INSERT IGNORE INTO tracks_2020 (codequipo," + qFields + ") VALUES (" + to_string(codequipo).c_str() +","+ qValues + ")";
 		//cout << "codequipo " << codequipo << endl;
 		//cout << " query " << query.c_str() << endl;
 		
