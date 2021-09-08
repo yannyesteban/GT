@@ -504,7 +504,7 @@ namespace GT {
 
 		for (std::map<SOCKET, GTClient>::iterator it = clients.begin(); it != clients.end(); ++it) {
 
-			if (it->second.type != 2) {
+			//if (it->second.type != 2) {
 				printf("%10d", it->second.header);
 
 				printf("%14s", it->second.device_id);
@@ -512,7 +512,7 @@ namespace GT {
 				printf("%10d", it->second.socket);
 				printf("%10d", it->second.version_id);
 				printf("%12d\n", it->second.type);
-			}
+			//}
 			
 
 		}
