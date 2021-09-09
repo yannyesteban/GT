@@ -1,7 +1,7 @@
 #include "Device.h"
 
 GT::Device::Device(CSInfo pInfo, DB2* db2) :SocketClient(pInfo) {
-	db = db2;
+	//db = db2;
 }
 
 void GT::Device::onConect() {
@@ -72,8 +72,8 @@ void GT::Device::trackingTask() {
 }
 
 void GT::Device::init(AppConfig* config) {
-	//db = new GT::DB2(config->db);
-	//db->connect();
+	db = new GT::DB2(config->db);
+	db->connect();
 	//db->init();
 
 }

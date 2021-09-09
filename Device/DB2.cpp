@@ -34,8 +34,8 @@ namespace GT {
 				a.*
 				FROM unit_active as a
 				INNER JOIN user_unit as u ON u.unit_id = a.unit_id
-				WHERE u.user='panda'
-				#LIMIT 50
+				WHERE u.user='panda2'
+				LIMIT 5
 				)"
 		);
 
@@ -265,7 +265,7 @@ namespace GT {
 		if (!connect()) {
 			return cmd;
 		}
-		return cmd;
+		
 		
 		try {
 			if (stmtLoadTracking == nullptr) {
@@ -312,6 +312,9 @@ namespace GT {
 			SQLException(e, __LINE__);
 		}
 		cmd += "\n";
+
+		std::cout << ".........." << cmd << "\n\n";
+
 		return cmd;
 	}
 

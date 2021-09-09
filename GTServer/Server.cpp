@@ -185,7 +185,7 @@ namespace GT {
 	}
 	
 	void Server::onMessage(ConnInfo Info) {
-		std::cout << "Main ? My Thread is " << std::this_thread::get_id() << "\n\n";
+		//std::cout << "Main ? My Thread is " << std::this_thread::get_id() << "\n\n";
 		
 		if (clients.count(Info.client) <= 0) {
 			std::cout << Color::_red() << Color::bwhite() << "\nClient Dead: Id = " << Info.client << Color::_reset() << std::endl;
@@ -235,7 +235,7 @@ namespace GT {
 		IdHeader* header = (IdHeader*)Info.buffer;
 		std::string command = "";
 		
-		std::cout << "Header " << header->header << std::endl;
+		//std::cout << "Header " << header->header << std::endl;
 		/* message from Websocket Server == 10001 */
 		if (header->header == 10001) {
 			std::string str;
@@ -339,10 +339,10 @@ namespace GT {
 		if (header->header == 10100) {
 			RCommand* r = (RCommand*)Info.buffer;
 
-			std::cout << " W " << mDevices[getUnitName(r->unitId)].device_id << std::endl;
+			//std::cout << " W " << mDevices[getUnitName(r->unitId)].device_id << std::endl;
 
 			if (mDevices[getUnitName(r->unitId)].socket <= 0) {
-				std::cout << " E R R O R \n";
+				//std::cout << " E R R O R \n";
 				return 0;
 			}
 
@@ -541,7 +541,7 @@ namespace GT {
 					mDevices.erase(name);
 					
 				}
-				std::cout << "Existe name "<< name << "     - info " << mDevices[name].socket << " vs. " << Info.client << "\n\n";
+				//std::cout << "Existe name "<< name << "     - info " << mDevices[name].socket << " vs. " << Info.client << "\n\n";
 			}
 			
 			
@@ -558,7 +558,7 @@ namespace GT {
 			
 
 			if (mDevices[name].type != 2) {
-				std::cout << "Validating version_id " << mDevices[name].version_id << "\n\n";
+				//std::cout << "Validating version_id " << mDevices[name].version_id << "\n\n";
 				
 				
 				clients[Info.client].type = 2;
@@ -763,10 +763,12 @@ namespace GT {
 				
 				
 				if (len > 0) {
-
+					/*
 					std::cout << Color::_yellow() << "Receiving From: " << Color::_reset()
 						<< clients[Info.client].device_id << Color::_green() << " Message: " << Color::_yellow() << to.c_str() << std::endl;
-						
+						*/
+
+
 					//cout << "es un COMANDO de " << clients[Info.client].device_id <<  endl;
 					//cout << "la longitud del resultado es " << len << endl;
 					CommandResult  rCommand = {
@@ -785,19 +787,19 @@ namespace GT {
 
 					db->getIndexCommand(clients[Info.client].device_id, &rCommand, &unitResponse);
 
-					std::cout << " el TAG es " << rCommand.tag << "\n\n";
+					//std::cout << " el TAG es " << rCommand.tag << "\n\n";
 					if (rCommand.tag == "+2") {
-						std::cout << " el TAG es (x1)" << rCommand.tag << "\n\n";
+						//std::cout << " el TAG es (x1)" << rCommand.tag << "\n\n";
 						db->updateCommand(unitResponse.unitId, unitResponse.commandId, unitResponse.index, 2, rCommand.params);
 					}
 					else {
-						std::cout << " el TAG es (x2)" << rCommand.tag << "\n\n";
+						//std::cout << " el TAG es (x2)" << rCommand.tag << "\n\n";
 						db->updateCommand(unitResponse.unitId, unitResponse.commandId, unitResponse.index, 1, "");
 					}
 					
 
-					std::cout << " ---- Command Id " << unitResponse.commandId << std::endl;
-					std::cout << " ---- Index " << unitResponse.index << std::endl;
+					//std::cout << " ---- Command Id " << unitResponse.commandId << std::endl;
+					//std::cout << " ---- Index " << unitResponse.index << std::endl;
 
 					db->infoCommand(clients[Info.client].device_id, &rCommand, &unitResponse);
 					

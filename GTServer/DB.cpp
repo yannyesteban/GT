@@ -287,7 +287,7 @@ namespace GT {
 				)");
 		mTrackingField.insert({ "unit_id", {1 ,1} });
 		mTrackingField.insert({ "device_id", {2 ,2} });
-		mTrackingField.insert({ "date_time", {3 ,2} });
+		mTrackingField.insert({ "date_time", {3 ,3} });
 		mTrackingField.insert({ "longitude", {4 ,1} });
 		mTrackingField.insert({ "latitude", {5 ,1} });
 
@@ -695,6 +695,7 @@ namespace GT {
 	}
 	
 	bool DB::saveTrack(const char* unit_id, const char* buffer) {
+		
 		//std::string s(buffer);
 
 		//buffer = "2012000413,20190717161915,-66.845906,10.500806,1,279,983.0,4,2,0.0,1,12.27,0.01,0,0,0,1";
@@ -702,16 +703,19 @@ namespace GT {
 
 		//list<string> field = XT::Tool::split(s, ',');
 		
+
 		
-		
+		//const std::string s(buffer);
+		//vector<string> newItems =  
+			
 
 		try {
 			int version = mProtocols[mClients[unit_id].version_id].format_id;
 
 			version = mClients[unit_id].format_id;
 
-			std::cout << "unit_id : " << unit_id << " version(Format) " << version  << endl;
-			std::cout << "buffer: " << buffer << std::endl;
+			//std::cout << "unit_id : " << unit_id << " version(Format) " << version  << endl;
+			//std::cout << "buffer: " << buffer << std::endl;
 			std::string  mm[30];
 			int n = 0;
 			GT::Tool::getItem(mm, 30, n, buffer);
@@ -725,7 +729,7 @@ namespace GT {
 			
 			stmtInsertTracking->setInt(1, mClients[unit_id].unit_id);
 			for (std::list<string>::iterator it = mFormats[version].begin(); it != mFormats[version].end(); it++) {
-				//std::cout << "\n" << *it << "\n";
+				//std::cout << *it << " = " << mm[x] << "\n";
 				if (x > n) {
 					continue;
 				}

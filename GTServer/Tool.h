@@ -9,7 +9,7 @@
 #include <regex>
 #include <boost/algorithm/string.hpp>
 #include <string>
-
+#include <vector>
 
 
 
@@ -27,6 +27,7 @@ namespace GT {
 		static void getTracking(std::string w[], int& len, const char* buffer);
 		template <class Container>
 		static void split2(const std::string& str, Container& cont, char delim);
+		static list<string> split3(const string& s, char delim);
 		
 	};
 }

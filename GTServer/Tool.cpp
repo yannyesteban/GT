@@ -8,6 +8,19 @@ using namespace std;
 
 
 namespace GT {
+
+	list<string> Tool::split3(const string& s, char delim) {
+		list<string> result;
+		stringstream ss(s);
+		string item;
+
+		while (getline(ss, item, delim)) {
+			result.push_back(item);
+		}
+
+		return result;
+	}
+
 	list<string> Tool::split(string text, char delimeter) {
 
 		list<string>results;

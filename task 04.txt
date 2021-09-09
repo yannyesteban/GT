@@ -7,4 +7,4 @@
 6.- unidades visible???
 7. ventana de comando se activa inmediata 
 8.- Anota tambien para aplicar a todos los vehiculos que llega el 201, 202 y 211 en ambos inmediatos
- 
+9. ventana busqueda   eventa
