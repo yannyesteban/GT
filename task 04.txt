@@ -1,3 +1,4 @@
+ La ventana de configuracion de Output (5 horas)
 1.- la ventana de inmediato que muestra todos los vehiculo tiene que estar cerrada al abrir la aplicacion
 2.- y poner un boton icono arriba en la barra principal de la app a la izquierda
 3.- otra cosa los mensajes de sync no se muestran
@@ -8,3 +9,11 @@
 7. ventana de comando se activa inmediata 
 8.- Anota tambien para aplicar a todos los vehiculos que llega el 201, 202 y 211 en ambos inmediatos
 9. ventana busqueda   eventa
+
+10 si lo activaste para todas las unidades deberia est reflejado alli en esa ventanita
+tambien agrega lo que hemos hablado de la ventana de reportar
+
+HV-X08
+NENA-X174
+BEL-X494
+BEL-X605
