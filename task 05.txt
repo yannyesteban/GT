@@ -1,0 +1,12 @@
+1. cada vez que selecciono una traza a un nuevo vehiculo me muestra el primer punto muy lejo y brinca
+2. Duration Unit of duration is 100 milliseconds. Ex: if want to setup
+duration for 2 seconds, you have to give a 20 value. (Min. 1=
+0.1 second; Max. 255 = 25.5 seconds)
+
+3. [1:28 p. m., 13/9/2021] Tony: quiero que se muestra la  cantidad de pendiente en la ventana de info del vehiculo, tambien en el icono de pendiente general en la barra superior
+-
+[1:28 p. m., 13/9/2021] Tony: osea un numero
+[1:29 p. m., 13/9/2021] Tony: como en el icono de alarmas y enetos;
+
+organizar la ventana de  trazas ver los primeros los que tienen activado la traza 
+
