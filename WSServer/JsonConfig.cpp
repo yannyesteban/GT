@@ -39,6 +39,7 @@ namespace GT {
 		info.port = d["port"].GetInt();
 		info.show_cache = d["show_cache"].GetBool();
 		info.version = d["version"].GetString();
+		info.name = d["name"].GetString();
 		
 
 		/*

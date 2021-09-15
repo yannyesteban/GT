@@ -499,17 +499,26 @@ namespace GT {
 
         if (msgType == "connect") {
 
+            for (auto i = document.MemberBegin(); i != document.MemberEnd(); ++i)
+            {
+                std::cout << "key: " << i->name.GetString() << " : " << i->value.IsInt() << std::endl;
+                //WalkNodes(i->value);
+            }
+
             clients[Info.client].socket = Info.client;
-            std::string name = document["clientName"].GetString();
+            std::string name = document["name"].GetString();
+            std::string user = document["user"].GetString();
             
             strcpy_s(clients[Info.client].name, sizeof(clients[Info.client].name), name.c_str());
+            strcpy_s(clients[Info.client].user, sizeof(clients[Info.client].user), user.c_str());
             
             
 
             type = 1;
             cout << "connecting: " << clients[Info.client].name << endl;
 
-            cout << "client Name" << document["clientName"].GetString() << endl;
+            cout << "Name: " << name << endl;
+            cout << "User: " << name << endl;
 
 
             char buffer[DEFAULT_BUFLEN];
@@ -748,12 +757,13 @@ void test1(void * app, char* buffer, size_t size) {
 
 void test2(GT::CSInfo Info) {
 
+    std::cout << " ****** " << Info.name << "....\n\n";
 
     GT::RequestConnection c = {
         10001,
         Info.master,
-        "hub1",
-        "pepe",
+        "hub5",
+        "panda2",
         1,
         -2,
         "hola dejame entrar",
@@ -761,35 +771,46 @@ void test2(GT::CSInfo Info) {
 
 
     };
+
+    strcpy_s(c.name, sizeof(c.name), (char *)Info.name);
+    
     char buffer2[512];
     memcpy(buffer2, &c, sizeof(c));
     send(Info.master, buffer2, sizeof(buffer2), 0);
     
-    cout << "TEST DEBUG VALUE " << Info.master << endl;
+    std::cout << "TEST DEBUG VALUE " << Info.master << endl;
     send(Info.master, "Barcelona vs Real Madrid", strlen("Barcelona vs Real Madrid"), 0);
 }
 
 BOOL __stdcall mainhub(LPVOID param) {
     GT::WebServer* WS = (GT::WebServer*)param;
 
-    GT::CSInfo Info;
+    GT::CSInfo Info = { 0, 0, 0, 0, 0, 0, (char *) "", 0, (char*)"", (char*)"", (char*)"", 0,(char*)"" };
+
+    
     Info.host = (char *)WS->configInit.hub.host;
     Info.port = WS->configInit.hub.port;// std::to_string(WS->configInit.hub.port).c_str();
+    
 
-    cout << "el puerto del hug es " << WS->configInit.hub.port << endl << endl;
-    puts("Activate the HUB server");
+
+   
+    Info.name = (char *)WS->configInit.name;
+
+    std::cout << "el puerto del hug es " << WS->configInit.hub.port << endl << endl;
+    std::cout << "Activate the HUB server " << endl;
+    std::cout << "Name " << WS->configInit.name << endl;
     WS->hub = new GT::Hub(Info);
     WS->hub->appData = WS;
     WS->hub->CallConection = test2;
     WS->hub->callReceive = test1;
-    cout << ANSI_COLOR_RESET "Asking for Connection..." << WS->configInit.port << endl;
+    std::cout << ANSI_COLOR_RESET "Asking for Connection..." << WS->configInit.port << endl;
     while (WS->reconnect) {
         WS->hub->start();
-        cout << ANSI_COLOR_RESET "Reconnecting..."<< WS->configInit.port << endl;
+        std::cout << ANSI_COLOR_RESET "Reconnecting..."<< WS->configInit.port << endl;
         Sleep(5000);
     }
 
-    cout << "Godd Bye" << endl;
+    std::cout << "Godd Bye" << endl;
     return true;
 }
 

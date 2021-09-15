@@ -20,8 +20,9 @@ namespace GT {
 	struct WebClient {
 		int id = -2;
 		int version_id = -2;
-
+		char user[40];
 		char name[40];
+		
 		short int status = 0;
 		SOCKET socket;
 		short int type = 0;

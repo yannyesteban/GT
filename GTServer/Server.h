@@ -38,6 +38,8 @@ namespace GT {
 		clock_t clock;
 
 		unsigned short header;
+
+		char name[40];
 		
 
 	};

@@ -180,6 +180,7 @@ namespace GT {
 			clients[Info.client].socket = Info.client;
 			clients[Info.client].type = 1;
 			strcpy(clients[Info.client].device_id, "unknow");
+			strcpy_s(clients[Info.client].name, sizeof(clients[Info.client].name), "nameless");
 			
 		}
 	}
@@ -238,12 +239,22 @@ namespace GT {
 		//std::cout << "Header " << header->header << std::endl;
 		/* message from Websocket Server == 10001 */
 		if (header->header == 10001) {
+
+			if (rClients.find(Info.client) != rClients.end()) {
+				rClients.erase(Info.client);
+
+				std::cout << "Existe Cliente WEBSOCKET "<<  "\n\n";
+			}
+
+
 			std::string str;
 
 			RequestConnection* r = (RequestConnection*)Info.buffer;
 
-
+			strcpy_s(clients[Info.client].name, sizeof(clients[Info.client].name), r->name);
+			
 			rClients[Info.client] = {};
+			
 			strcpy_s(rClients[Info.client].name, sizeof(rClients[Info.client].name), r->name);
 			strcpy_s(rClients[Info.client].user, sizeof(rClients[Info.client].user), r->user);
 
@@ -251,7 +262,7 @@ namespace GT {
 			rClients[Info.client].status = 1;
 			rClients[Info.client].socket = Info.client;
 
-			//cout << "Hub " << rClients[Info.client].user << endl;
+			cout << "Cliente Name: " << r->name << endl;
 			return 0;
 
 		}
@@ -467,20 +478,25 @@ namespace GT {
 
 		//strcpy(info.date, "0000-00-00 00:00:00");
 		//strcpy(info.date, "");
-		db->setClientStatus(resp.unitId, 0);
+		
 		//db->saveResponse(&resp, "DISCONNECTED");
 		
+		if (resp.unitId > 0) {
+			db->setClientStatus(resp.unitId, 0);
 
-		DBEvent event;
-		event.unitId = clients[Info.client].id;
-		strftime(event.dateTime, sizeof(event.dateTime), "%F %T", timeinfo);
-		event.eventId = 202;
-		strcpy(event.title, "disconnected");
-		strcpy(event.info, "");
-		db->insertEvent(&event);
+			DBEvent event;
+			event.unitId = clients[Info.client].id;
+			strftime(event.dateTime, sizeof(event.dateTime), "%F %T", timeinfo);
+			event.eventId = 202;
+			strcpy(event.title, "disconnected");
+			strcpy(event.info, "");
+			db->insertEvent(&event);
+		}
+		
 		broadcast(&resp);
 		clients.erase(Info.client);
-		return;
+		rClients.erase(Info.client);
+		
 
 
 
@@ -507,7 +523,7 @@ namespace GT {
 			//if (it->second.type != 2) {
 				printf("%10d", it->second.header);
 
-				printf("%14s", it->second.device_id);
+				printf("%14s", it->second.name);
 				printf("%8d", it->second.id);
 				printf("%10d", it->second.socket);
 				printf("%10d", it->second.version_id);
@@ -567,6 +583,8 @@ namespace GT {
 
 				mDevices[name].type = 2;
 				strcpy(mDevices[name].device_id, (const char*)name);
+				strcpy_s(mDevices[name].name, sizeof(mDevices[name].name), (const char*)name);
+
 				InfoClient cInfo = db->getInfoClient(name);
 				mDevices[name].id = cInfo.unit_id;
 				mDevices[name].version_id = cInfo.version_id;
@@ -576,7 +594,8 @@ namespace GT {
 				clients[Info.client].id = cInfo.unit_id;
 				clients[Info.client].version_id = cInfo.version_id;
 				strcpy(clients[Info.client].device_id, (const char*)name);
-				
+				strcpy_s(clients[Info.client].name, sizeof(clients[Info.client].name), (const char*)name);
+
 
 
 				setUnitName(cInfo.unit_id, name);

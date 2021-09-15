@@ -18,6 +18,7 @@ namespace GT {
 
 	struct WSAppConfig {
 		const char* appname;
+		
 		InfoDB db;
 		InfoHub hub;
 		bool debug;
@@ -25,6 +26,7 @@ namespace GT {
 		unsigned int port;
 		bool show_cache;
 		const char* version;
+		const char* name;
 		
 	};
 

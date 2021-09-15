@@ -28,6 +28,7 @@ namespace GT {
 	};
 	struct AppConfig {
 		const char* appname;
+		const char* name;
 		unsigned int port;
 		unsigned int max_clients;
 		const char* version;

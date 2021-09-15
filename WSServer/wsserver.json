@@ -1,5 +1,6 @@
 {
   "appname": "WS Server",
+  "name":  "sock_01",
 
   "db": {
     "host": "localhost",
@@ -10,7 +11,7 @@
   },
   "hub": {
     "host": "localhost",
-    "port": 3341
+    "port": 3317
   },
 
   "debug": false,

@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string>
+#include <iostream>
 
 // Need to link with Ws2_32.lib, Mswsock.lib, and Advapi32.lib
 #pragma comment (lib, "Ws2_32.lib")
@@ -31,6 +32,7 @@ namespace GT {
 		char* host;
 		//const char * port;
 		unsigned int port;
+		char* name;
 	} CSInfo;
 
 	class SocketClient {

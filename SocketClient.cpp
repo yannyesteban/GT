@@ -3,6 +3,8 @@
 namespace GT {
 	SocketClient::SocketClient(CSInfo pInfo) :info(pInfo) {
 
+		std::cout << "INFO ERROR " << info.error << "\n\n";
+
 	}
 	bool SocketClient::start() {
 		// Initialize Winsock
@@ -67,6 +69,8 @@ namespace GT {
 		}
 		
 		info.master = master;
+		
+		
 		onConect();
 		// listen
 		char recvbuf[1024];
