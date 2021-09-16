@@ -117,7 +117,8 @@ namespace GT {
 						Info.clock = clock();
 						clients[i] = tSocket;
 						//CallConection(Info);
-						
+						std::cout << "new conecction " << Info.address  << "\n\n";
+
 						//CallConection(master, new_socket, clients, i, maxClients, info);
 						//printf("Adding to list of sockets at index %d \n", i);
 						onConnect(Info);
