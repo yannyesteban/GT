@@ -180,7 +180,11 @@ namespace GT {
 			clients[Info.client].socket = Info.client;
 			clients[Info.client].type = 1;
 			strcpy(clients[Info.client].device_id, "unknow");
+
 			strcpy_s(clients[Info.client].name, sizeof(clients[Info.client].name), "nameless");
+			//strcpy_s(clients[Info.client].address, sizeof(clients[Info.client].name), "nameless");
+
+			clients[Info.client].address = Info.address;
 			
 		}
 	}
@@ -522,6 +526,7 @@ namespace GT {
 
 			//if (it->second.type != 2) {
 				printf("%10d", it->second.header);
+				printf("%20s", it->second.address);
 
 				printf("%14s", it->second.name);
 				printf("%8d", it->second.id);
