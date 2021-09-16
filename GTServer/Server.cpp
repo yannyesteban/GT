@@ -175,9 +175,11 @@ namespace GT {
 			
 	
 			std::cout << Color::_green()<< "\nNew Client: Id = " << Info.client << Color::_reset() << std::endl;
+			std::cout << " CLOCK " << Info.clock << "\n";
 	
 			clients[Info.client].status = 1;
 			clients[Info.client].socket = Info.client;
+			clients[Info.client].clock = Info.clock;
 			clients[Info.client].type = 1;
 			strcpy(clients[Info.client].device_id, "unknow");
 
@@ -519,17 +521,19 @@ namespace GT {
 		//cout << " Syncro: "<< sync_msg->Keep_Alive_Header << endl << Info.buffer << endl;
 		//std::cout << "clock: "<< Info.clock  << " chrono " << (double(Info.clock-mClock) / CLOCKS_PER_SEC) << endl;
 		
-		clients[Info.client].clock = Info.clock;
+		//clients[Info.client].clock = Info.clock;
 		clients[Info.client].header = sync_msg->Keep_Alive_Header;
-
+		double timeInSeconds = 0;
+		clock_t endTime = clock();
 		for (std::map<SOCKET, GTClient>::iterator it = clients.begin(); it != clients.end(); ++it) {
-
+			timeInSeconds = (double(endTime - it->second.clock) / CLOCKS_PER_SEC);
 			//if (it->second.type != 2) {
 				printf("%10d", it->second.header);
-				printf("%20s", it->second.address);
+				printf("%15s", it->second.address);
 
 				printf("%14s", it->second.name);
-				printf("%8d", it->second.id);
+				printf("%6d", it->second.header);
+				printf("%10.3f", timeInSeconds);
 				printf("%10d", it->second.socket);
 				printf("%10d", it->second.version_id);
 				printf("%12d\n", it->second.type);
