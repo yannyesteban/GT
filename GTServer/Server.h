@@ -40,7 +40,7 @@ namespace GT {
 		unsigned short header;
 
 		char name[40];
-		char* address;
+		char address[20];
 		
 
 	};

@@ -182,9 +182,9 @@ namespace GT {
 			strcpy(clients[Info.client].device_id, "unknow");
 
 			strcpy_s(clients[Info.client].name, sizeof(clients[Info.client].name), "nameless");
-			//strcpy_s(clients[Info.client].address, sizeof(clients[Info.client].name), "nameless");
+			strcpy_s(clients[Info.client].address, sizeof(clients[Info.client].address), Info.address);
 
-			clients[Info.client].address = Info.address;
+			
 			
 		}
 	}
