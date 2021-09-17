@@ -71,7 +71,7 @@ namespace GT {
 		bool deviceMessage(ConnInfo Info);
 
 		void broadcast(RCommand * response);
-
+		void isAlive();
 		int keepAliveTime = 90;
 		
 	private:

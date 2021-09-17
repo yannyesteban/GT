@@ -25,6 +25,10 @@ namespace GT {
 	}
 
 	void runTimeOut(std::map < SOCKET, GTClient> * clients, Server* s, int keepAliveTime) {
+
+
+
+
 		clock_t mClock;
 		
 		
@@ -36,7 +40,8 @@ namespace GT {
 			std::cout << "My Thread is " << std::this_thread::get_id() << "\n\n";
 			
 			std::this_thread::sleep_for(std::chrono::seconds(10));
-			
+			s->isAlive();
+			continue;
 			
 			mClock = clock();
 			
@@ -162,7 +167,7 @@ namespace GT {
 		//first->join();
 		InfoPending infoPending;
 		db->getInfoPending(274,&infoPending);
-		//std::thread* threadTimeOut = new std::thread(runTimeOut, &clients, this, keepAliveTime);
+		std::thread* threadTimeOut = new std::thread(runTimeOut, &clients, this, keepAliveTime);
 		return true;
 	}
 
@@ -180,7 +185,7 @@ namespace GT {
 			clients[Info.client].status = 1;
 			clients[Info.client].socket = Info.client;
 			clients[Info.client].clock = Info.clock;
-			clients[Info.client].type = 1;
+			clients[Info.client].type = 0;
 			strcpy(clients[Info.client].device_id, "unknow");
 
 			strcpy_s(clients[Info.client].name, sizeof(clients[Info.client].name), "nameless");
@@ -256,7 +261,7 @@ namespace GT {
 			std::string str;
 
 			RequestConnection* r = (RequestConnection*)Info.buffer;
-
+			clients[Info.client].type = 1;
 			strcpy_s(clients[Info.client].name, sizeof(clients[Info.client].name), r->name);
 			
 			rClients[Info.client] = {};
@@ -511,6 +516,25 @@ namespace GT {
 	
 	bool Server::isSyncMsg(ConnInfo Info) {
 
+		double timeInSeconds = 0;
+		clock_t endTime = clock();
+		for (std::map<SOCKET, GTClient>::iterator it = clients.begin(); it != clients.end(); ++it) {
+			timeInSeconds = (double(endTime - it->second.clock) / CLOCKS_PER_SEC);
+			//if (it->second.type != 2) {
+			printf("%10d", it->second.header);
+			printf("%18s", it->second.address);
+
+			printf("%12s", it->second.name);
+			printf("%6d", it->second.header);
+			printf("%10.3f", timeInSeconds);
+			printf("%8d", it->second.socket);
+			printf("%8d", it->second.version_id);
+			printf("%6d\n", it->second.type);
+			//}
+
+
+		}
+
 
 		//double diffClock = (double(Info.clock) - double(mClock)) / CLOCKS_PER_SEC;
 		//cout << "clock " << diffClock << endl;
@@ -523,24 +547,7 @@ namespace GT {
 		
 		//clients[Info.client].clock = Info.clock;
 		clients[Info.client].header = sync_msg->Keep_Alive_Header;
-		double timeInSeconds = 0;
-		clock_t endTime = clock();
-		for (std::map<SOCKET, GTClient>::iterator it = clients.begin(); it != clients.end(); ++it) {
-			timeInSeconds = (double(endTime - it->second.clock) / CLOCKS_PER_SEC);
-			//if (it->second.type != 2) {
-				printf("%10d", it->second.header);
-				printf("%18s", it->second.address);
-
-				printf("%12s", it->second.name);
-				printf("%6d", it->second.header);
-				printf("%10.3f", timeInSeconds);
-				printf("%8d", it->second.socket);
-				printf("%8d", it->second.version_id);
-				printf("%6d\n", it->second.type);
-			//}
-			
-
-		}
+		
 		
 		
 		if (db->isVersion(sync_msg->Keep_Alive_Header)) {
@@ -920,6 +927,38 @@ namespace GT {
 
 	void Server::setClientName(int unitId, std::string name) {
 		mClientName[unitId] = name;
+	}
+
+	void Server::isAlive() {
+		double timeInSeconds = 0;
+		clock_t endTime = clock();
+		for (std::map<SOCKET, GTClient>::iterator it = clients.begin(); it != clients.end(); ++it) {
+			timeInSeconds = (double(endTime) - double(it->second.clock) / CLOCKS_PER_SEC);
+
+			printf("%10d", it->second.header);
+			printf("%18s", it->second.address);
+			printf("%12s", it->second.name);
+			printf("%6d", it->second.header);
+			printf("%10.3f", timeInSeconds);
+			printf("%8d", int(it->second.socket));
+			printf("%8d", it->second.version_id);
+			printf("%6d\n", it->second.type);
+
+			if (it->second.type == 2 && timeInSeconds > keepAliveTime) {
+				printf("%50s\n", "-- DISCONECTING TO:");
+				printf("%10d", it->second.header);
+				printf("%18s", it->second.address);
+				printf("%12s", it->second.name);
+				printf("%6d", it->second.header);
+				printf("%10.3f", timeInSeconds);
+				printf("%8d", int(it->second.socket));
+				printf("%8d", it->second.version_id);
+				printf("%6d\n", it->second.type);
+				disconect(it->second.socket);
+				clients.erase(it->first);
+			}
+
+		}
 	}
 
 }
