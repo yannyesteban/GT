@@ -1003,9 +1003,11 @@ namespace GT {
 
 	void Server::isAlive() {
 		double timeInSeconds = 0;
+		double delta = 0;
 		clock_t endTime = clock();
 		for (std::map<SOCKET, GTClient>::iterator it = clients.begin(); it != clients.end(); ++it) {
 			timeInSeconds = (double(endTime - it->second.clock) / CLOCKS_PER_SEC);
+			delta = (double(endTime - it->second.lastClock) / CLOCKS_PER_SEC);
 			 
 			printf(ANSI_COLOR_RESET);
 
@@ -1021,7 +1023,7 @@ namespace GT {
 			printf("%12s", it->second.name);
 			printf("%6d", it->second.header);
 			printf("%12.3f", timeInSeconds);
-			printf("%12.3f", (double(endTime - it->second.lastClock) / CLOCKS_PER_SEC));
+			printf("%12.3f", delta);
 			printf("%8d", int(it->second.socket));
 			printf("%8d", it->second.version_id);
 			printf("%6d\n", it->second.type);
@@ -1033,7 +1035,7 @@ namespace GT {
 				printf("%12s", it->second.name);
 				printf("%6d", it->second.header);
 				printf("%12.3f", timeInSeconds);
-				printf("%12.3f", (double(endTime - it->second.lastClock) / CLOCKS_PER_SEC));
+				printf("%12.3f", delta);
 				printf("%8d", int(it->second.socket));
 				printf("%8d", it->second.version_id);
 				printf("%6d\n", it->second.type);
@@ -1041,14 +1043,14 @@ namespace GT {
 				clients.erase(it->first);
 			}
 
-			if (it->second.type == 2 && timeInSeconds > keepAliveTime) {
+			if (it->second.type == 2 && delta > keepAliveTime) {
 				printf("%50s\n", "-- DISCONECTING TO:");
 				printf("%10d", it->second.header);
 				printf("%18s", it->second.address);
 				printf("%12s", it->second.name);
 				printf("%6d", it->second.header);
 				printf("%12.3f", timeInSeconds);
-				printf("%12.3f", (double(endTime - it->second.lastClock) / CLOCKS_PER_SEC));
+				printf("%12.3f", delta);
 				printf("%8d", int(it->second.socket));
 				printf("%8d", it->second.version_id);
 				printf("%6d\n", it->second.type);
