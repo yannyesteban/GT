@@ -937,6 +937,15 @@ namespace GT {
 		for (std::map<SOCKET, GTClient>::iterator it = clients.begin(); it != clients.end(); ++it) {
 			timeInSeconds = (double(endTime - it->second.clock) / CLOCKS_PER_SEC);
 			 
+			printf(ANSI_COLOR_RESET);
+
+			if (it->second.type == 0) {
+				printf(ANSI_COLOR_YELLOW);
+			}
+			if (it->second.type == 1) {
+				printf(ANSI_COLOR_CYAN);
+			}
+
 			printf("%10d", it->second.header);
 			printf("%18s", it->second.address);
 			printf("%12s", it->second.name);

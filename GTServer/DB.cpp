@@ -270,7 +270,7 @@ namespace GT {
 		stmtInsertPending = cn->prepareStatement("INSERT INTO pending (`unit_id`, `command_id`, `command`, `tag`, `index`, `user`, `type`, `mode`,`server_time`, `command_index`) VALUES (?,?,?,?,?,?,?,?,?,?)");
 		
 		stmtInsertTracking = cn->prepareStatement(
-			R"(INSERT INTO tracking 
+			R"(INSERT IGNORE INTO tracking 
 
 				(unit_id, device_id, date_time, longitude, latitude,
 				speed, heading, altitude, satellite, event_id, mileage,
@@ -707,7 +707,8 @@ namespace GT {
 		
 		//const std::string s(buffer);
 		//vector<string> newItems =  
-			
+		
+		bool error = false;
 
 		try {
 			int version = mProtocols[mClients[unit_id].version_id].format_id;
@@ -735,6 +736,11 @@ namespace GT {
 				}
 				std::string value = mm[x];
 				int pos = mTrackingField[it->c_str()].pos;
+				if (value == "" && (mTrackingField[it->c_str()].type == 1 || mTrackingField[it->c_str()].type == 3)) {
+					error = 1;
+					std::cout << "Error in Track, pos: " << pos << "   value:" << value << endl;
+					return false;
+				}
 				stmtInsertTracking->setString(pos, value.c_str());
 
 				x++;

@@ -83,7 +83,7 @@ bool GT::Device::beginTasks() {
 	timespec ts2;
 	float elapsed;
 	int base;
-
+	Sleep(5000);
 	while (true) {
 		
 		Sleep(200);
