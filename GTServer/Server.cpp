@@ -199,6 +199,20 @@ namespace GT {
 	void Server::onMessage(ConnInfo Info) {
 		//std::cout << "Main ? My Thread is " << std::this_thread::get_id() << "\n\n";
 		
+
+		
+
+		auto x = clients.find(Info.client);
+
+
+		if (x != clients.end()) {
+			//clock_t endTime = clock();
+			x->second.lastClock = clock();
+
+			//std::cout << "CLOCK " << clients[Info.client].lastClock << "\n";
+			
+		}
+
 		if (clients.count(Info.client) <= 0) {
 			std::cout << Color::_red() << Color::bwhite() << "\nClient Dead: Id = " << Info.client << Color::_reset() << std::endl;
 			//printf("error client dead!!!!\n");
@@ -457,9 +471,65 @@ namespace GT {
 
 		return header->type;
 	}
+	
+	void Server::closeClient(SOCKET client) {
+		std::cout << " ON - CLOSE \n\n";
+
+		clients[client].device_id;
+		RCommand resp;
+		resp.unitId = clients[client].id;
+		resp.header = 0;
+		resp.commandId = 0;
+		resp.id = 0;
+		resp.index = 0;
+		resp.level = 0;
+
+		resp.mode = 0;
+		resp.type = 6;
+		resp.typeMessage = ClientMsg::Disconnecting;
+		strcpy(resp.message, "DISCONNECTED");
+		strcpy(resp.unit, clients[client].device_id);
+		strcpy(resp.user, clients[client].device_id);
+		strcpy(resp.name, getClientName(clients[client].id).c_str());
+
+		time_t rawtime;
+		struct tm* timeinfo;
+
+
+		time(&rawtime);
+		timeinfo = localtime(&rawtime);
+
+		strftime(resp.date, sizeof(resp.date), "%F %T", timeinfo);
+
+		//strcpy(info.date, "0000-00-00 00:00:00");
+		//strcpy(info.date, "");
+
+		//db->saveResponse(&resp, "DISCONNECTED");
+
+		if (resp.unitId > 0) {
+			db->setClientStatus(resp.unitId, 0);
+
+			DBEvent event;
+			event.unitId = clients[client].id;
+			strftime(event.dateTime, sizeof(event.dateTime), "%F %T", timeinfo);
+			event.eventId = 202;
+			strcpy(event.title, "disconnected");
+			strcpy(event.info, "");
+			db->insertEvent(&event);
+		}
+
+		broadcast(&resp);
+		clients.erase(client);
+		rClients.erase(client);
+
+
+	}
 
 	void Server::onClose(ConnInfo Info) {
 		std::cout << " ON - CLOSE \n\n";
+		closeClient(Info.client);
+
+		return;
 
 		clients[Info.client].device_id;
 		RCommand resp;
@@ -951,6 +1021,7 @@ namespace GT {
 			printf("%12s", it->second.name);
 			printf("%6d", it->second.header);
 			printf("%12.3f", timeInSeconds);
+			printf("%12.3f", (double(endTime - it->second.lastClock) / CLOCKS_PER_SEC));
 			printf("%8d", int(it->second.socket));
 			printf("%8d", it->second.version_id);
 			printf("%6d\n", it->second.type);
@@ -962,12 +1033,30 @@ namespace GT {
 				printf("%12s", it->second.name);
 				printf("%6d", it->second.header);
 				printf("%12.3f", timeInSeconds);
+				printf("%12.3f", (double(endTime - it->second.lastClock) / CLOCKS_PER_SEC));
 				printf("%8d", int(it->second.socket));
 				printf("%8d", it->second.version_id);
 				printf("%6d\n", it->second.type);
 				disconect(it->second.socket);
 				clients.erase(it->first);
 			}
+
+			if (it->second.type == 2 && timeInSeconds > keepAliveTime) {
+				printf("%50s\n", "-- DISCONECTING TO:");
+				printf("%10d", it->second.header);
+				printf("%18s", it->second.address);
+				printf("%12s", it->second.name);
+				printf("%6d", it->second.header);
+				printf("%12.3f", timeInSeconds);
+				printf("%12.3f", (double(endTime - it->second.lastClock) / CLOCKS_PER_SEC));
+				printf("%8d", int(it->second.socket));
+				printf("%8d", it->second.version_id);
+				printf("%6d\n", it->second.type);
+				disconect(it->second.socket);
+				//closeClient(it->second.socket);
+			}
+
+			printf(ANSI_COLOR_RESET);
 
 		}
 	}

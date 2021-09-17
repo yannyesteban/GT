@@ -36,6 +36,7 @@ namespace GT {
 		SOCKET socket;
 		short int type = 0;
 		clock_t clock;
+		clock_t lastClock;
 
 		unsigned short header;
 
@@ -72,6 +73,7 @@ namespace GT {
 
 		void broadcast(RCommand * response);
 		void isAlive();
+		void closeClient(SOCKET client);
 		int keepAliveTime = 90;
 		
 	private:
