@@ -946,7 +946,7 @@ namespace GT {
 			printf("%8d", it->second.version_id);
 			printf("%6d\n", it->second.type);
 
-			if (it->second.type == 2 && timeInSeconds > keepAliveTime) {
+			if (it->second.type == 0 && timeInSeconds > keepAliveTime) {
 				printf("%50s\n", "-- DISCONECTING TO:");
 				printf("%10d", it->second.header);
 				printf("%18s", it->second.address);
