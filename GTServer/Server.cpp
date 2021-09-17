@@ -518,6 +518,7 @@ namespace GT {
 
 		double timeInSeconds = 0;
 		clock_t endTime = clock();
+		/*
 		for (std::map<SOCKET, GTClient>::iterator it = clients.begin(); it != clients.end(); ++it) {
 			timeInSeconds = (double(endTime - it->second.clock) / CLOCKS_PER_SEC);
 			//if (it->second.type != 2) {
@@ -534,6 +535,7 @@ namespace GT {
 
 
 		}
+		*/
 
 
 		//double diffClock = (double(Info.clock) - double(mClock)) / CLOCKS_PER_SEC;
