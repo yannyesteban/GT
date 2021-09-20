@@ -17,6 +17,17 @@ namespace GT {
         }
     }
 
+    HubConfig getHugConfig(rapidjson::Value& d)
+    {
+        HubConfig info;
+        info.name = d["name"].GetString();
+        info.host = d["host"].GetString();
+        info.port = d["port"].GetInt();
+        
+
+        return info;
+    }
+
     WebServer::WebServer(SocketInfo pInfo):
         WebSocketServer(pInfo),
         
@@ -24,6 +35,50 @@ namespace GT {
     }
     
     void WebServer::init() {
+
+        rapidjson::Document d = loadConfig("wsserver.json");
+
+
+        info.port = d["port"].GetInt();
+        info.maxClients = d["max_clients"].GetInt();
+        
+
+        InfoDB infoDB = {
+
+            d["db"]["host"].GetString(),
+            d["db"]["port"].GetString(),
+            d["db"]["name"].GetString(),
+            d["db"]["user"].GetString(),
+            d["db"]["pass"].GetString(),
+            false
+
+        };
+        db = new DB(infoDB);
+        db->connect();
+
+        const rapidjson::Value& a = d["hubs"];
+        std::vector<std::thread*> tasks;
+        for (rapidjson::SizeType i = 0; i < a.Size(); i++) {
+            rapidjson::Value& pp = d["hubs"][i];
+            HubConfig infoConfig = getHugConfig(pp);
+
+            std::cout << "K --Size " << a.Size() << "\n\n";
+            std::cout << "K --App " << infoConfig.name << "\n\n";
+            std::cout << "K --POrt " << infoConfig.port << "\n\n";
+
+
+            tasks.push_back(new std::thread(runHub, &infoConfig, this));
+            Sleep(100);
+
+        }
+
+        start();
+        for (std::vector<std::thread*>::iterator it = tasks.begin(); it != tasks.end(); ++it) {
+            (*it)->join();
+        }
+
+        return;
+
         std::thread* first = new std::thread(runTimer);
 
         //auto appInfo = GT::Config::load("config.json");
@@ -35,8 +90,8 @@ namespace GT {
         cout << "Hub port: " << appInfo.hub.port << endl;
         //config = pConfig;
         // pConfig.db.debug = pConfig.debug;
-        db = new DB(appInfo.db);
-        db->connect();
+        //db = new DB(appInfo.db);
+        //db->connect();
 
 
         info.port = configInit.port;
@@ -192,7 +247,7 @@ namespace GT {
 
         json.Accept(writer5);
 
-        std::cout << "A5: " << bf5.GetString() << std::endl;
+        std::cout << "Return to Wepapp: \n";// << bf5.GetString() << std::endl;
 
 
 
@@ -214,7 +269,7 @@ namespace GT {
     }
 
     void WebServer::sendToDevice(ConnInfo Info, int unitId, int commandId, int index, int mode) {
-        SOCKET s = hub->getHost();
+        //SOCKET s = hub->getHost();
 
         GT::RCommand r = {
             //10020,
@@ -263,7 +318,8 @@ namespace GT {
         strcpy(r.message, strCommand.c_str());
         char buffer2[1024];
         memcpy(buffer2, &r, sizeof(r));
-        send(s, buffer2, (int)sizeof(buffer2), 0);
+        //send(s, buffer2, (int)sizeof(buffer2), 0);
+        sendToServers(buffer2, (int)sizeof(buffer2));
         //send(Info.client, "yanny", strlen("yanny"), 0);
 
         char buffer[DEFAULT_BUFLEN];
@@ -306,7 +362,7 @@ namespace GT {
 
     void WebServer::sendToDevice(SOCKET server, GT::RCommand* request)
     {
-        SOCKET s = hub->getHost();
+        //SOCKET s = hub->getHost();
 
         
 
@@ -340,7 +396,8 @@ namespace GT {
         std::cout << " REQUEST " << sizeof(GT::RCommand) << "\n\n";
 
         memcpy(buffer2, request, sizeof(GT::RCommand));
-        send(server, buffer2, (int)sizeof(buffer2), 0);
+        //send(server, buffer2, (int)sizeof(buffer2), 0);
+        sendToServers(buffer2, (int)sizeof(buffer2));
 
         return;
         //send(Info.client, "yanny", strlen("yanny"), 0);
@@ -376,6 +433,21 @@ namespace GT {
 
     }
 
+    int WebServer::sendToServers(char* buffer, int len)
+    {
+        
+
+        std::map<std::string, Hub*> hubs;
+
+
+        for (std::map<std::string, Hub*>::iterator it = hubs.begin(); it != hubs.end(); ++it) {
+            
+            send(it->second->getHost(), buffer, len, 0);
+        }
+        
+        return 0;
+    }
+
     
     
     
@@ -397,7 +469,7 @@ namespace GT {
         PrettyWriter<StringBuffer> writer4(bf4);
         f.Accept(writer4);
 
-        std::cout << "--> A: " << bf4.GetString() << " \n<--" << std::endl;
+        //std::cout << "--> A: " << bf4.GetString() << " \n<--" << std::endl;
 
        
 
@@ -408,16 +480,16 @@ namespace GT {
         
         const char* x = decodeMessage(Info);
         
-        SOCKET s = hub->getHost();
+        //SOCKET s = hub->getHost();
         
         Document document;
         document.Parse(x);
 
-        std::cout <<"Comando Puro \n\n\n" << x << "\n\n\n\n";
+        //std::cout <<"Comando Puro \n\n\n" << x << "\n\n\n\n";
 
         if (!document.IsObject()) {
             
-            printf(" Connecting !\n");
+            printf("Connecting !\n");
             return;
         }
 
@@ -436,7 +508,7 @@ namespace GT {
         if (msgType == "CS") {
             for (auto i = document.MemberBegin(); i != document.MemberEnd(); ++i)
             {
-                std::cout << "key: " << i->name.GetString() << " : " << i->value.IsInt() << std::endl;
+                //std::cout << "key: " << i->name.GetString() << " : " << i->value.IsInt() << std::endl;
                 //WalkNodes(i->value);
             }
             if (document["unitId"].IsInt() &&
@@ -454,11 +526,11 @@ namespace GT {
         }
 
         if (msgType == "RC") {
-            std::cout << "RC\n\n";
+            //std::cout << "RC\n\n";
 
             for (auto i = document.MemberBegin(); i != document.MemberEnd(); ++i)
             {
-                std::cout << "key: " << i->name.GetString() << " : " << i->value.IsInt() << std::endl;
+                //std::cout << "key: " << i->name.GetString() << " : " << i->value.IsInt() << std::endl;
                 //WalkNodes(i->value);
             }
             if (document["unitId"].IsInt() ) {
@@ -493,15 +565,15 @@ namespace GT {
 
         int cmdIndex = 0;// document["cmdIndex"].GetInt();
         //string msgName = document["name"].GetString();
-        std::cout << "msgType " << msgType << endl;
-        std::cout << "cmdIndex " << cmdIndex << endl;
+        //std::cout << "msgType " << msgType << endl;
+        //std::cout << "cmdIndex " << cmdIndex << endl;
         unsigned short type = 0;
 
         if (msgType == "connect") {
 
             for (auto i = document.MemberBegin(); i != document.MemberEnd(); ++i)
             {
-                std::cout << "key: " << i->name.GetString() << " : " << i->value.IsInt() << std::endl;
+                //std::cout << "key: " << i->name.GetString() << " : " << i->value.IsInt() << std::endl;
                 //WalkNodes(i->value);
             }
 
@@ -515,10 +587,10 @@ namespace GT {
             
 
             type = 1;
-            cout << "connecting: " << clients[Info.client].name << endl;
+            //cout << "connecting: " << clients[Info.client].name << endl;
 
-            cout << "Name: " << name << endl;
-            cout << "User: " << name << endl;
+            //cout << "Name: " << name << endl;
+            //cout << "User: " << name << endl;
 
 
             char buffer[DEFAULT_BUFLEN];
@@ -546,13 +618,13 @@ namespace GT {
 
 
         for (SizeType i = 0; i < values.Size(); i++) {
-            std::cout << "         hooolaaaaaaaaa " << std::endl;
+           // std::cout << "         hooolaaaaaaaaa " << std::endl;
             params.push_back(values[i].GetString());
             std::cout << " Array " << i << " es " << values[i].GetString() << std::endl;
         }
 
         for (std::list<std::string>::iterator it = params.begin() ; it != params.end(); ++it) {
-            std::cout << " Array \t" << *it <<  std::endl;
+            //std::cout << " Array \t" << *it <<  std::endl;
         }
         
         //cout << values[0].GetString() << endl;
@@ -562,28 +634,28 @@ namespace GT {
         int header = 10020;
         if (msgType == "SET") {
             type = 1;
-            cout << "configuración" << endl;
+            //cout << "configuración" << endl;
         }
 
         if (msgType == "GET") {
             type = 2;
-            cout << "recuperación" << endl;
+            //cout << "recuperación" << endl;
         }
 
         if (msgType == "RC") {
             type = 10;
             header = 10100;
-            cout << "reconnection" << endl;
+            //cout << "reconnection" << endl;
         }
 
         if (msgType == "h") {
             type = 3;
-            cout << "history" << endl;
+            //cout << "history" << endl;
         }
 
         if (msgType == "rr") {
             type = 4;
-            cout << "send pending" << endl;
+            //cout << "send pending" << endl;
             
             GT::RCommand rc;
             rc.header = 10300;
@@ -591,11 +663,12 @@ namespace GT {
 
             char buffer2[1024];
             memcpy(buffer2, &rc, sizeof(rc));
-            send(s, buffer2, (int)sizeof(buffer2), 0);
+            //send(s, buffer2, (int)sizeof(buffer2), 0);
+            sendToServers(buffer2, (int)sizeof(buffer2));
             return;
         }
 
-        std::cout << "Type: " << type << std::endl;
+        //std::cout << "Type: " << type << std::endl;
        
        
         
@@ -612,7 +685,7 @@ namespace GT {
         PrettyWriter<StringBuffer> writer(bf);
         document.Accept(writer);
 
-        std::cout << "-----------A: "<< bf.GetString() << std::endl;
+        //std::cout << "-----------A: "<< bf.GetString() << std::endl;
 
 
         //printf("%s\n", document["comdValues"].GetString());
@@ -631,7 +704,7 @@ namespace GT {
 
         const char* json = bf2.GetString();
 
-        std::cout << " ********** B: " << bf2.GetString() << std::endl;
+        //std::cout << " ********** B: " << bf2.GetString() << std::endl;
 
 
        
@@ -671,7 +744,7 @@ namespace GT {
         std::string str = db->createCommand(&r, params);
 
         strcpy(r.message, str.c_str());
-        cout << endl << "Unidad" <<  r.unit << endl << "COMANDO " << str << endl << endl;
+        //cout << endl << "Unidad" <<  r.unit << endl << "COMANDO " << str << endl << endl;
        
         //db->addPending(document["unitId"].GetInt(), document["commandId"].GetInt(), tag, str, "pepe", type, (unsigned short)document["level"].GetInt());
         db->addPending(&r);
@@ -679,7 +752,8 @@ namespace GT {
         strcpy(r.message, str.c_str());
         char buffer2[1024];
         memcpy(buffer2, &r, sizeof(r));
-        send(s, buffer2, (int)sizeof(buffer2), 0);
+        //send(s, buffer2, (int)sizeof(buffer2), 0);
+        sendToServers(buffer2, (int)sizeof(buffer2));
         //send(Info.client, "yanny", strlen("yanny"), 0);
 
         char buffer[DEFAULT_BUFLEN];
@@ -742,8 +816,8 @@ void test1(void * app, char* buffer, size_t size) {
     GT::RCommand* x = (GT::RCommand*)buffer;
 
 
-    cout << "TEST 1 Receiving ..." << endl;
-    cout << "Buffer ..." << x->message << endl;
+    //cout << "TEST 1 Receiving ..." << endl;
+    //cout << "Buffer ..." << x->message << endl;
     GT::WebServer* WS = (GT::WebServer*)app;
 
 
@@ -757,7 +831,7 @@ void test1(void * app, char* buffer, size_t size) {
 
 void test2(GT::CSInfo Info) {
 
-    std::cout << " ****** " << Info.name << "....\n\n";
+    //std::cout << " ****** " << Info.name << "....\n\n";
 
     GT::RequestConnection c = {
         10001,
@@ -778,7 +852,7 @@ void test2(GT::CSInfo Info) {
     memcpy(buffer2, &c, sizeof(c));
     send(Info.master, buffer2, sizeof(buffer2), 0);
     
-    std::cout << "TEST DEBUG VALUE " << Info.master << endl;
+    //std::cout << "TEST DEBUG VALUE " << Info.master << endl;
     send(Info.master, "Barcelona vs Real Madrid", strlen("Barcelona vs Real Madrid"), 0);
 }
 
@@ -814,3 +888,68 @@ BOOL __stdcall mainhub(LPVOID param) {
     return true;
 }
 
+rapidjson::Document loadConfig(const char* path)
+{
+
+
+    FILE* fp = fopen(path, "rb"); // non-Windowsyannyesteban@ho use "r"
+
+    if (fp == NULL)
+    {
+        perror("Error while opening the file.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    char* readBuffer;
+
+    readBuffer = (char*)malloc(1500);
+    rapidjson::FileReadStream is(fp, readBuffer, sizeof(readBuffer));
+    rapidjson::Document d;
+
+    d.ParseStream(is);
+    fclose(fp);
+
+
+    if (readBuffer != NULL) {
+        readBuffer[0] = '\0';
+        free(readBuffer);
+    }
+    return d;
+}
+
+
+
+void runHub(HubConfig* config, LPVOID param/*LPVOID param, HubConfig* c*/)
+{
+    GT::WebServer* WS = (GT::WebServer*)param;
+
+    GT::CSInfo Info = { 0, 0, 0, 0, 0, 0, (char*)"", 0, (char*)"", (char*)"", (char*)"", 0,(char*)"" };
+
+
+    Info.host = (char*)config->host;
+    Info.port = config->port;// std::to_string(WS->configInit.hub.port).c_str();
+
+
+
+
+    Info.name = (char*)config->name;
+
+    std::cout << "el puerto del hug es " << config->port << endl << endl;
+    std::cout << "Activate the HUB server " << endl;
+    std::cout << "Name " << config->name << endl;
+    auto hub = new GT::Hub(Info);
+    WS->hubs[Info.name] = hub;
+
+    hub = new GT::Hub(Info);
+    hub->appData = WS;
+    hub->CallConection = test2;
+    hub->callReceive = test1;
+    std::cout << ANSI_COLOR_RESET "Asking for Connection..." << config->port << endl;
+    while (WS->reconnect) {
+        hub->start();
+        std::cout << ANSI_COLOR_RESET "Reconnecting..." << config->port << endl;
+        Sleep(5000);
+    }
+
+    std::cout << "Godd Bye" << endl;
+}

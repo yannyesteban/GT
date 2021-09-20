@@ -39,6 +39,9 @@
     <ClCompile Include="..\Webcar\Webcar.cpp">
       <Filter>Archivos de origen</Filter>
     </ClCompile>
+    <ClCompile Include="GTComm.cpp">
+      <Filter>Archivos de origen</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Server.h">
@@ -53,8 +56,12 @@
     <ClInclude Include="Tool.h">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
+    <ClInclude Include="GTComm.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="config.json" />
+    <None Include="setting.json" />
   </ItemGroup>
 </Project>

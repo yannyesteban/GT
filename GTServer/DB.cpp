@@ -1373,7 +1373,7 @@ namespace GT {
 					Document document;
 					document.Parse(params.c_str());
 
-					std::cout << "Comando Puro \n\n\n" << params << "\n\n\n\n";
+					//std::cout << "Comando Puro \n\n\n" << params << "\n\n\n\n";
 					if (params != "") {
 						if (!document.IsObject()) {
 

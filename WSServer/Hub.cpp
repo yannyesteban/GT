@@ -6,6 +6,8 @@ namespace GT {
 
 	void Hub::onConect() {
 		
+		
+		//strcpy(info.name, "zeta!");
 		CallConection(info);
 
 	}

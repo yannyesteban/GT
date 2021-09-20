@@ -38,7 +38,7 @@ int main()
 
     WebServer* S = new WebServer(Info);
     S->init();
-    S->start();
+    //S->start();
     
     //S->startListen();
     return 1;

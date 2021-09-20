@@ -10,9 +10,22 @@
     "user": "root"
   },
   "hub": {
+    "name": "h_3317",
     "host": "localhost",
     "port": 3317
   },
+  "hubs": [
+    {
+      "name": "h_3317",
+      "host": "localhost",
+      "port": 3317
+    },
+    {
+      "name": "h_3341",
+      "host": "localhost",
+      "port": 3341
+    }
+  ],
 
   "debug": false,
   "max_clients": 17,

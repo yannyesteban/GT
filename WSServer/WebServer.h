@@ -13,10 +13,25 @@
 #include <thread>         // std::thread
 #include <chrono>         // std::chrono::seconds
 #include <iomanip> // para la fecha
+
+struct HubConfig {
+	const char* name;
+	const char* host;
+	unsigned int port;
+
+};
+
+rapidjson::Document loadConfig(const char* path);
+
+void runHub(HubConfig* con, LPVOID param);
+
 BOOL WINAPI mainhub(LPVOID param);
 using namespace rapidjson;
 namespace GT {
 	void runTimer();
+
+	
+
 	struct WebClient {
 		int id = -2;
 		int version_id = -2;
@@ -28,6 +43,8 @@ namespace GT {
 		short int type = 0;
 
 	};
+
+	HubConfig getHugConfig(rapidjson::Value& v);
 
 	class WebServer : public WebSocketServer {
 	public:
@@ -46,9 +63,13 @@ namespace GT {
 		int Token = 4737;
 		bool reconnect = true;
 
+		std::map<std::string, Hub*> hubs;
+
 		void sendCommand(int unitId, int commandId, int index, int mode);
 		void sendToDevice(ConnInfo Info, int unitId, int commandId, int index, int mode);
 		void sendToDevice(SOCKET server, GT::RCommand * request);
+
+		int sendToServers(char * buffer, int len);
 	private:
 		DB* db;
 		

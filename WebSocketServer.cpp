@@ -11,11 +11,11 @@ namespace GT {
     WebSocketServer::~WebSocketServer() {
 	}
     void WebSocketServer::onConnect(ConnInfo Info) {
-        puts("onConnect");
+        //puts("onConnect");
     }
 
     void WebSocketServer::onMessage(ConnInfo Info) {
-        puts("_CallMessage");
+        //puts("_CallMessage");
 
         if (!handshake(Info)) {
             //message(Info);
@@ -23,7 +23,7 @@ namespace GT {
     }
 
     void WebSocketServer::onClose(ConnInfo Info) {
-        puts("onClose");
+        //puts("onClose");
     }
     
 
@@ -41,7 +41,7 @@ namespace GT {
         char* pKey = strstr(Info.buffer, "Sec-WebSocket-Key:");
         //printf("recibiendo:\n\n%s\n\n", Info.buffer);
         if (pKey) {
-            puts("handshake");
+            //puts("handshake");
             //printf("Hola INIT \r\n");
             // parse just the key part
             pKey = strchr(pKey, ' ') + 1;
@@ -78,12 +78,12 @@ namespace GT {
     }
 
     bool WebSocketServer::message(ConnInfo Info) {
-        puts(ANSI_COLOR_RED "_CallMessage");
+        //puts(ANSI_COLOR_RED "_CallMessage");
 
 
         const char* ssss = decodeMessage(Info);
 
-        printf(ANSI_COLOR_YELLOW "%s\n" ANSI_COLOR_RESET, ssss);
+        //printf(ANSI_COLOR_YELLOW "%s\n" ANSI_COLOR_RESET, ssss);
 
 
         //char message[] = Info.buffer;
@@ -91,7 +91,7 @@ namespace GT {
         size_t size=0;
         encodeMessage((char *)"QUEEEE", buffer, size);
 
-        printf("%s(%d)\n", Info.buffer, size);
+        //printf("%s(%d)\n", Info.buffer, size);
 
         send(Info.client, buffer, (int)size, 0);
         

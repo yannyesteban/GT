@@ -207,7 +207,7 @@ namespace GT {
 						Info.valread = valread;
 						Info.clock = clock();
 
-						std::cout << "\n\n**** reloj: " << Info.clock << std::endl;
+						//std::cout << "\n\n**** reloj: " << Info.clock << std::endl;
 						//CallMessage(Info);
 						onMessage(Info);
 						

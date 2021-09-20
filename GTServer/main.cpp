@@ -9,12 +9,22 @@
 #include "Config.h"
 
 #include <iomanip> // para la fecha
+
+#include "GTComm.h"
+
+
 using namespace GT;
 
 int main()
 {
     setlocale(LC_CTYPE, "Spanish");
     system("cls");
+    auto inf = GTAppConfig({
+
+        });
+    auto admin = new GTComm(inf);
+    admin->start();
+    return 12474737;
 
     auto t = std::time(nullptr);
     auto tm = *std::localtime(&t);

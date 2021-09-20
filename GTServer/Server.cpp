@@ -185,6 +185,7 @@ namespace GT {
 			clients[Info.client].status = 1;
 			clients[Info.client].socket = Info.client;
 			clients[Info.client].clock = Info.clock;
+			clients[Info.client].lastClock = Info.clock;
 			clients[Info.client].type = 0;
 			strcpy(clients[Info.client].device_id, "unknow");
 

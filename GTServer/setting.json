@@ -1,0 +1,50 @@
+{
+  "appname": "GTComm",
+  "db": {
+    "host": "localhost",
+    "name": "gt",
+    "pass": "123456",
+    "port": "3306",
+    "user": "root"
+  },
+  "debug": false,
+  "max_clients": 2000,
+  "port": 3317,
+  "show_cache": false,
+  "version": "1.0.0.1",
+  "keep_alive": 100,
+  "servers": [
+    {
+      "appname": "SERVER: 3341",
+      "db": {
+        "host": "localhost",
+        "name": "gt",
+        "pass": "123456",
+        "port": "3306",
+        "user": "root"
+      },
+      "debug": false,
+      "max_clients": 2000,
+      "port": 3341,
+      "show_cache": false,
+      "version": "1.0.0.1",
+      "keep_alive": 100
+    },
+    {
+      "appname": "SERVER: 3317",
+      "db": {
+        "host": "localhost",
+        "name": "gt",
+        "pass": "123456",
+        "port": "3306",
+        "user": "root"
+      },
+      "debug": false,
+      "max_clients": 2000,
+      "port": 3317,
+      "show_cache": false,
+      "version": "1.0.0.1",
+      "keep_alive": 100
+    }
+  ]
+}
