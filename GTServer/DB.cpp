@@ -1998,7 +1998,7 @@ namespace GT {
 
 				if (result->next()) {
 
-					std::cout << " ---- 888 " << result->getInt("command_id") << std::endl;
+					//std::cout << " ---- 888 " << result->getInt("command_id") << std::endl;
 					info->header = (unsigned short)1;
 					info->index = 0;
 					info->mode = 1;
@@ -2098,9 +2098,9 @@ namespace GT {
 			int len;
 			Tool::getItem(&list, len, params.c_str());
 
-			cout << ANSI_COLOR_YELLOW "Update: unitId " << unitId << endl;
-			cout << ANSI_COLOR_MAGENTA "Update: commandId " << commandId << endl;
-			cout << ANSI_COLOR_MAGENTA "Update: values " << values << endl;
+			//cout << ANSI_COLOR_YELLOW "Update: unitId " << unitId << endl;
+			//cout << ANSI_COLOR_MAGENTA "Update: commandId " << commandId << endl;
+			//cout << ANSI_COLOR_MAGENTA "Update: values " << values << endl;
 
 			
 

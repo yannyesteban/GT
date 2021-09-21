@@ -305,6 +305,15 @@ namespace GT {
 			response.unitId = r->unitId;
 			response.level = r->level;
 			std::string str = r->message;
+
+			//mDevices[getUnitName(r->unitId)]
+			auto x = mDevices.find(getUnitName(r->unitId));
+			if (x == mDevices.end()) {
+
+				std::cout << "Sending message: " << str << "to Nothing\n\n";
+				return 0;
+			}
+
 			char buffer[1024];
 			strcpy_s(response.message, sizeof(response.message), str.c_str());
 			//strcpy(response.message, str.c_str());
@@ -340,7 +349,7 @@ namespace GT {
 			timeinfo = localtime(&rawtime);
 
 			
-
+			/*
 			DBEvent event;
 			event.unitId = r->unitId;
 			event.eventId = 209;
@@ -350,7 +359,7 @@ namespace GT {
 			strcpy_s(event.info, sizeof(r->message), r->message);
 			//strcpy(event.info, "");
 			db->insertEvent(&event);
-
+			*/
 			/*
 			std::cout << "Header: " << response.header << std::endl;
 			std::cout << "Message: " << response.message << std::endl;
@@ -628,7 +637,7 @@ namespace GT {
 
 
 
-			std::cout << "synchronization " << std::endl;
+			//std::cout << "synchronization " << std::endl;
 			//printf(ANSI_COLOR_CYAN "---> verification of sync (%lu)..(%d).\n" ANSI_COLOR_RESET, sync_msg->Keep_Alive_Device_ID, sync_msg->Keep_Alive_Header);
 			//puts(sync_msg->Keep_Alive_Device_ID));
 
@@ -916,7 +925,7 @@ namespace GT {
 
 					
 					unitResponse.delay = difftime(now, unitResponse.time);
-					std::cout << Color::_magenta() << " delay Time: " << unitResponse.delay << Color::_reset() << std::endl;
+					//std::cout << Color::_magenta() << " delay Time: " << unitResponse.delay << Color::_reset() << std::endl;
 
 
 					//db->saveResponse(&unitResponse, to.c_str());

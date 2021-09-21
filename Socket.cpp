@@ -117,7 +117,7 @@ namespace GT {
 						Info.clock = clock();
 						clients[i] = tSocket;
 						//CallConection(Info);
-						std::cout << "new conecction " << Info.address  << "\n\n";
+						//std::cout << "new conecction " << Info.address  << "\n\n";
 
 						//CallConection(master, new_socket, clients, i, maxClients, info);
 						//printf("Adding to list of sockets at index %d \n", i);
@@ -148,8 +148,8 @@ namespace GT {
 							closesocket(s);
 							clients[i] = 0;
 						} else {
-							printf("buffer %s", buffer);
-							printf("recv failed with error code: [ %d ]", error_code);
+							//printf("buffer %s", buffer);
+							printf("\nrecv failed with error code: [ %d ]\n", error_code);
 						}
 						//CallClientError(master, s, buffer, valread, i, WSAGetLastError());
 						ConnInfo Info;
@@ -202,7 +202,7 @@ namespace GT {
 						//Info.maxClients = maxClients;
 						Info.address = inet_ntoa(address.sin_addr);
 						Info.port = ntohs(address.sin_port);
-						Info.tag = (char*)"yanny";
+						Info.tag = (char*)"GT";
 						Info.buffer = buffer;
 						Info.valread = valread;
 						Info.clock = clock();

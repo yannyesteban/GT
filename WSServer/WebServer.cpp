@@ -61,11 +61,9 @@ namespace GT {
         for (rapidjson::SizeType i = 0; i < a.Size(); i++) {
             rapidjson::Value& pp = d["hubs"][i];
             HubConfig infoConfig = getHugConfig(pp);
-
-            std::cout << "K --Size " << a.Size() << "\n\n";
-            std::cout << "K --App " << infoConfig.name << "\n\n";
-            std::cout << "K --POrt " << infoConfig.port << "\n\n";
-
+            
+            //std::cout << "App: " << infoConfig.name << ", ";
+            //std::cout << "Port:" << infoConfig.port << "\n";
 
             tasks.push_back(new std::thread(runHub, &infoConfig, this));
             Sleep(100);
@@ -109,7 +107,7 @@ namespace GT {
 	}
 
     void WebServer::onConnect(ConnInfo Info) {
-        puts("onConnect 2020");
+        
     }
 
     void WebServer::test2(unsigned int socket) {
@@ -124,13 +122,14 @@ namespace GT {
 
     WebClient WebServer::getClient(void) {
 
-
+        /*
         for (std::map<SOCKET, WebClient>::iterator it = clients.begin(); it != clients.end(); ++it) {
 
             printf("%40s", it->second.name);
             
 
         }
+        */
         return WebClient();
     }
 
@@ -139,15 +138,15 @@ namespace GT {
         IdHeader* header = (IdHeader*)buffer;
         std::string command = "";
 
-        std::cout << ANSI_COLOR_MAGENTA "Real Header: " << header->header << endl;
+        //std::cout << ANSI_COLOR_MAGENTA "Real Header: " << header->header << endl;
         if (header->header == 10050) {
         
             RCommand* response = (RCommand*)buffer;
-            std::cout << ANSI_COLOR_YELLOW "10050 Message: " << response->message << std::endl;
-            cout << " TEST " << clients.size() << "........" << endl;
+            std::cout << ANSI_COLOR_YELLOW "Message Receive: " << response->message << std::endl;
+            //cout << " TEST " << clients.size() << "........" << endl;
             for (std::map<SOCKET, WebClient>::iterator it = clients.begin(); it != clients.end(); ++it) {
-                cout << " --- Name: " << it->second.name << endl;
-                cout << " --- socket: " << it->first << endl;
+                //cout << " --- Name: " << it->second.name << endl;
+                //cout << " --- socket: " << it->first << endl;
                 string str = response->message;
                 char buffer2[512];
                 size_t size2;
@@ -171,16 +170,16 @@ namespace GT {
 
         if (header->header == 10021) {
             RCommand* response = (RCommand*)buffer;
-            std::cout << ANSI_COLOR_YELLOW "10021 Header: " << response->header << std::endl;
-            std::cout << "Message: " << response->message << std::endl;
+            //std::cout << ANSI_COLOR_YELLOW "10021 Header: " << response->header << std::endl;
+            std::cout << "Sending Message: " << response->message << " to WebApp\n" << std::endl;
             
-            std::cout << "UnitId: " << response->unitId << std::endl;
-            std::cout << "Mode: " << response->mode << std::endl;
-            std::cout << "User: " << response->user << std::endl;
-            std::cout << "Unit: " << response->unit << std::endl;
-            std::cout << "ID: " << response->id << std::endl;
-            printf(ANSI_COLOR_RED "...%s....\n" ANSI_COLOR_RESET, response->unit);
-            getClient();
+            //std::cout << "UnitId: " << response->unitId << std::endl;
+            //std::cout << "Mode: " << response->mode << std::endl;
+            //std::cout << "User: " << response->user << std::endl;
+            //std::cout << "Unit: " << response->unit << std::endl;
+            //std::cout << "ID: " << response->id << std::endl;
+            //printf(ANSI_COLOR_RED "...%s....\n" ANSI_COLOR_RESET, response->unit);
+            //getClient();
             //send(r->id, "yet 2030", 8, 0);
             //WS->test2(r->id);
 
@@ -188,10 +187,10 @@ namespace GT {
             string str = response->message;
             char buffer2[512];
             size_t size2;
-           encodeMessage((char*)str.c_str(), buffer2, size2);
+            encodeMessage((char*)str.c_str(), buffer2, size2);
 
             send(response->id, buffer2, size2, 0);
-            //cout << "jamas" << endl;
+            
             return 1;
         }
 
@@ -247,7 +246,7 @@ namespace GT {
 
         json.Accept(writer5);
 
-        std::cout << "Return to Wepapp: \n";// << bf5.GetString() << std::endl;
+        //std::cout << "Return to Wepapp: \n";// << bf5.GetString() << std::endl;
 
 
 
@@ -308,7 +307,7 @@ namespace GT {
         strcpy(r.message, strCommand.c_str());
         strcpy(r.command, role.c_str());
         
-        cout << endl << "Unidad" << r.unit << endl << "COMANDO " << strCommand << endl << endl;
+        //cout << endl << "Unidad" << r.unit << endl << "COMANDO " << strCommand << endl << endl;
 
         //db->addPending(document["unitId"].GetInt(), document["commandId"].GetInt(), tag, str, "pepe", type, (unsigned short)document["level"].GetInt());
         
@@ -319,6 +318,20 @@ namespace GT {
         char buffer2[1024];
         memcpy(buffer2, &r, sizeof(r));
         //send(s, buffer2, (int)sizeof(buffer2), 0);
+
+        //std::cout << "BUFFER 1: " << buffer2 << "\n\n";
+
+
+        DBEvent event;
+        event.unitId = unitId;
+        event.eventId = 209;
+        //strftime(event.dateTime, sizeof(event.dateTime), "%F %T", timeinfo);
+        strcpy(event.title, r.command);
+        strcpy(event.user, r.user);
+        strcpy_s(event.info, sizeof(r.message), r.message);
+        //strcpy(event.info, "");
+        db->insertEvent(&event);
+
         sendToServers(buffer2, (int)sizeof(buffer2));
         //send(Info.client, "yanny", strlen("yanny"), 0);
 
@@ -437,11 +450,12 @@ namespace GT {
     {
         
 
-        std::map<std::string, Hub*> hubs;
-
+        //std::map<std::string, Hub*> hubs;
+        
 
         for (std::map<std::string, Hub*>::iterator it = hubs.begin(); it != hubs.end(); ++it) {
             
+        
             send(it->second->getHost(), buffer, len, 0);
         }
         
@@ -489,7 +503,7 @@ namespace GT {
 
         if (!document.IsObject()) {
             
-            printf("Connecting !\n");
+            //printf("Connecting !\n");
             return;
         }
 
@@ -506,11 +520,13 @@ namespace GT {
         string msgType = document["type"].GetString();
 
         if (msgType == "CS") {
+            /*
             for (auto i = document.MemberBegin(); i != document.MemberEnd(); ++i)
             {
-                //std::cout << "key: " << i->name.GetString() << " : " << i->value.IsInt() << std::endl;
+                std::cout << "key: " << i->name.GetString() << " : " << i->value.IsInt() << std::endl;
                 //WalkNodes(i->value);
             }
+            */
             if (document["unitId"].IsInt() &&
                 document["commandId"].IsInt() &&
                 document["index"].IsInt() &&
@@ -570,13 +586,13 @@ namespace GT {
         unsigned short type = 0;
 
         if (msgType == "connect") {
-
+            /*
             for (auto i = document.MemberBegin(); i != document.MemberEnd(); ++i)
             {
                 //std::cout << "key: " << i->name.GetString() << " : " << i->value.IsInt() << std::endl;
                 //WalkNodes(i->value);
             }
-
+            */
             clients[Info.client].socket = Info.client;
             std::string name = document["name"].GetString();
             std::string user = document["user"].GetString();
@@ -925,31 +941,27 @@ void runHub(HubConfig* config, LPVOID param/*LPVOID param, HubConfig* c*/)
 
     GT::CSInfo Info = { 0, 0, 0, 0, 0, 0, (char*)"", 0, (char*)"", (char*)"", (char*)"", 0,(char*)"" };
 
-
     Info.host = (char*)config->host;
     Info.port = config->port;// std::to_string(WS->configInit.hub.port).c_str();
-
-
-
-
     Info.name = (char*)config->name;
 
-    std::cout << "el puerto del hug es " << config->port << endl << endl;
-    std::cout << "Activate the HUB server " << endl;
-    std::cout << "Name " << config->name << endl;
+    
+    std::cout << "\n*****************************************\nConnecting to: " << config->name << " on Port: "<< config->port << endl;
+   
     auto hub = new GT::Hub(Info);
-    WS->hubs[Info.name] = hub;
-
-    hub = new GT::Hub(Info);
     hub->appData = WS;
     hub->CallConection = test2;
     hub->callReceive = test1;
-    std::cout << ANSI_COLOR_RESET "Asking for Connection..." << config->port << endl;
+
+    WS->hubs[config->name] = hub;
+    WS->nHubs++;
+    //std::cout << "Size "<< WS->nHubs << "- - -" << WS->hubs.size() << endl;
+    //std::cout << ANSI_COLOR_RESET "Asking for Connection..." << config->port << endl;
     while (WS->reconnect) {
         hub->start();
         std::cout << ANSI_COLOR_RESET "Reconnecting..." << config->port << endl;
         Sleep(5000);
     }
 
-    std::cout << "Godd Bye" << endl;
+    //std::cout << "Godd Bye" << endl;
 }

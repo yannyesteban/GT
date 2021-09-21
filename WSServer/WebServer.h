@@ -64,6 +64,7 @@ namespace GT {
 		bool reconnect = true;
 
 		std::map<std::string, Hub*> hubs;
+		int nHubs = 0;
 
 		void sendCommand(int unitId, int commandId, int index, int mode);
 		void sendToDevice(ConnInfo Info, int unitId, int commandId, int index, int mode);
