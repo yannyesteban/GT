@@ -1,0 +1,3 @@
+1. colocar un "+" en la ventana pending con informacion del comando.
+2. que el las ventanas de los menus de la derecha que se abren encima de la info y el resto
+3. estos tipos de comandos no necesitan el save
