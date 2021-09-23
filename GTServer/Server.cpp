@@ -1065,6 +1065,8 @@ namespace GT {
 				printf("%8d", it->second.version_id);
 				printf("%6d\n", it->second.type);
 				disconect(it->second.socket);
+				clients.erase(it->second.socket);
+				//rClients.erase(it->second.socket);
 				//closeClient(it->second.socket);
 			}
 
