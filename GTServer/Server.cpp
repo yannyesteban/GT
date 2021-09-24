@@ -4,7 +4,9 @@
 using namespace rapidjson;
 using namespace std;
 namespace GT {
-	
+	std::mutex m;
+
+
 	
 	void runTimer() {
 		setlocale(LC_CTYPE, "Spanish");
@@ -40,7 +42,9 @@ namespace GT {
 			std::cout << "My Thread is " << std::this_thread::get_id() << "\n\n";
 			
 			std::this_thread::sleep_for(std::chrono::seconds(10));
+			m.lock();
 			s->isAlive();
+			m.unlock();
 			continue;
 			
 			mClock = clock();

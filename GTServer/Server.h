@@ -2,6 +2,7 @@
 #include <sstream>
 #include <ctime>
 #include <thread>         // std::thread
+#include <mutex>
 #include <chrono>         // std::chrono::seconds
 #include <mysql/jdbc.h>
 #include "Color.h"

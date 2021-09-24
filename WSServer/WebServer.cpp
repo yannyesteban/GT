@@ -66,7 +66,7 @@ namespace GT {
             //std::cout << "Port:" << infoConfig.port << "\n";
 
             tasks.push_back(new std::thread(runHub, &infoConfig, this));
-            Sleep(100);
+            //Sleep(100);
 
         }
 
