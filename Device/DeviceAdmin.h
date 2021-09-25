@@ -2,6 +2,7 @@
 
 #include <iostream>       // std::cout
 #include <thread>         // std::thread
+#include <mutex>
 #include "Device.h"
 #include <vector>
 #include "DB2.h"

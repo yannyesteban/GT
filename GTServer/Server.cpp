@@ -42,9 +42,9 @@ namespace GT {
 			std::cout << "My Thread is " << std::this_thread::get_id() << "\n\n";
 			
 			std::this_thread::sleep_for(std::chrono::seconds(10));
-			m.lock();
+			//m.lock();
 			s->isAlive();
-			m.unlock();
+			//m.unlock();
 			continue;
 			
 			mClock = clock();

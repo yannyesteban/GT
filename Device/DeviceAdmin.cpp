@@ -1,6 +1,6 @@
 #include "DeviceAdmin.h"
 
-
+std::mutex m;
 
 GT::DeviceAdmin::DeviceAdmin() {
 }
@@ -22,7 +22,7 @@ void GT::DeviceAdmin::run(AppConfig * config) {
 		//std::thread Tasks(runDevice);
 		std::thread * first = new std::thread(runDevice, Devices[i], config, i, db);
 		Tasks.push_back(first);
-		Sleep(1000);
+		//Sleep(1000);
 	}
 	std::cout << "\n\n\n\nEND\n\n\n";
 	for (int i = 0; i < Devices.size(); i++) {
@@ -47,15 +47,18 @@ void runDevice(int unitId, GT::AppConfig* config, int clientId, GT::DB2* db) {
 		info.host = (char*)"localhost";//
 	}
 	
+	std::cout << " Unit Id "<< unitId <<"\n";
+
 	info.port = 3317;
-	
+	m.lock();
 	auto C = new GT::Device(info, db);
 	//C->db = db;
 	C->clientId = clientId;
 	C->init(config);
 	//C->config = config;
 	C->setUnitName(unitId);
+	m.unlock();
 	C->start();
-
-	std::cout << " *********** BYE ***************\n";
+	
+	
 }
