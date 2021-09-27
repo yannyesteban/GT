@@ -86,7 +86,7 @@ namespace GT {
 			//printf(ANSI_COLOR_GREEN);
 			if (iResult > 0) {
 
-				//puts(ANSI_COLOR_YELLOW "Waiting Message...." ANSI_COLOR_RESET);
+				//puts(ANSI_COLOR_YELLOW "******\n\n\nWaiting Message...." ANSI_COLOR_RESET);
 				onReceive(recvbuf, recvbuflen);
 			} else if (iResult == 0) {
 				printf("Connection closed\n");

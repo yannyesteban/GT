@@ -26,7 +26,7 @@ namespace GT {
 		if (initialized) {
 			//return;
 		}
-
+		std::cout << "DB2 INIT()\n";
 		initialized = true;
 
 		stmtLoadUnits = cn->prepareStatement(
@@ -34,7 +34,8 @@ namespace GT {
 				a.*
 				FROM unit_active as a
 				INNER JOIN user_unit as u ON u.unit_id = a.unit_id
-				WHERE u.user='panda2'
+				WHERE u.user='panda'
+LIMIT 50
 				
 				)"
 		);
@@ -257,7 +258,8 @@ namespace GT {
 
 	std::string DB2::loadTracking(int unitId, int * id, std::vector<std::string> format2) {
 		
-
+		
+		
 		std::string cmd = "";
 
 		std::vector<std::string> format;

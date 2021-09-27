@@ -202,6 +202,8 @@ namespace GT {
 	}
 	
 	void Server::onMessage(ConnInfo Info) {
+
+		std::cout << Info.buffer << "\n";
 		//std::cout << "Main ? My Thread is " << std::this_thread::get_id() << "\n\n";
 		
 
@@ -314,7 +316,26 @@ namespace GT {
 			auto x = mDevices.find(getUnitName(r->unitId));
 			if (x == mDevices.end()) {
 
+				std::string message = "SENDING TO NOTHING ";
 				std::cout << "Sending message: " << str << "to Nothing\n\n";
+
+				char buffer[1024];
+				strcpy_s(response.message, sizeof(response.message), message.c_str());
+				//strcpy(response.message, str.c_str());
+				//std::cout << " el mensaje es [" << response.message << "]\n\n"<< strlen(message.c_str()) << message<<"\n";
+				str = r->unit;
+
+
+				strcpy_s(response.unit, sizeof(response.unit), r->unit);
+				//strcpy_s(response.unit, str.c_str());
+
+				str = r->user;
+				strcpy_s(response.user, sizeof(response.user), str.c_str());
+				//strcpy_s(response.user, str.c_str());
+
+
+				memcpy(buffer, &response, sizeof(response));
+				send(Info.client, buffer, (int)sizeof(buffer), 0);
 				return 0;
 			}
 

@@ -8,12 +8,13 @@
 #include "Types.h"
 #include "SocketClient.h"
 #include "DB2.h"
+#include <mutex>
 
 namespace GT {
 
 	class Device :public SocketClient {
 	public:
-		Device(CSInfo pInfo, DB2* db);
+		Device(CSInfo pInfo, DB2* db, std::mutex& m);
 		virtual void onConect();
 		bool isSyncMsg(char * buffer);
 		void onReceive(char* buffer, size_t size);
@@ -29,6 +30,7 @@ namespace GT {
 		DB2 * db;
 		AppConfig* config;
 		int clientId = 0;
+		
 
 	private:
 		float syncTime = 20;
@@ -52,6 +54,8 @@ namespace GT {
 
 		time_t now = 0;
 		timespec ts;
+
+		std::mutex& mMutex;
 
 	};
 }

@@ -58,7 +58,8 @@ int main()
         auto db = new GT::DB2(appInfo.db);
         db->connect();
         //db->init();
-        auto C = new GT::Device(Info, db);
+        std::mutex m;
+        auto C = new GT::Device(Info, db, m);
         C->start();
     }
 

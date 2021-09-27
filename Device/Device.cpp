@@ -1,7 +1,8 @@
 #include "Device.h"
 
-GT::Device::Device(CSInfo pInfo, DB2* db2) :SocketClient(pInfo) {
-	//db = db2;
+GT::Device::Device(CSInfo pInfo, DB2* db2, std::mutex& mu) :mMutex(mu), SocketClient(pInfo) {
+	
+	db = db2;
 }
 
 void GT::Device::onConect() {
@@ -64,15 +65,18 @@ void GT::Device::syncTask() {
 }
 
 void GT::Device::trackingTask() {
+	//std::lock_guard<std::mutex> guard(mMutex);
+	mMutex.lock();
 	std::cout << " BEGIN ID : " << beginId << "\n\n";
 	std::string cmd = db->loadTracking(unitId, &beginId, format);
+	mMutex.unlock();
 	std::cout << "Send: " << "Clien ID: " << clientId << ", " << std::endl;
 	send(getHost(), cmd.c_str(), cmd.size(), 0);
 
 }
 
 void GT::Device::init(AppConfig* config) {
-	db = new GT::DB2(config->db);
+	//db = new GT::DB2(config->db);
 	db->connect();
 	//db->init();
 

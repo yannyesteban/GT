@@ -3,6 +3,9 @@
 using namespace rapidjson;
 using namespace std;
 
+std::mutex m2;
+std::mutex m1;
+
 namespace GT {
 
     void runTimer() {
@@ -55,21 +58,40 @@ namespace GT {
         };
         db = new DB(infoDB);
         db->connect();
-
+        std::map<std::string, HubConfig> mConfig;
         const rapidjson::Value& a = d["hubs"];
+
+        for (rapidjson::SizeType i = 0; i < a.Size(); i++) {
+            rapidjson::Value& pp = d["hubs"][i];
+            HubConfig infoConfig = getHugConfig(pp);
+            mConfig[infoConfig.name] = infoConfig;
+            //std::cout << "App: " << infoConfig.name << ", ";
+            //std::cout << "Port:" << infoConfig.port << "\n";
+
+            //tasks.push_back(new std::thread(runHub, &infoConfig, this));
+            //Sleep(100);
+
+        }
         std::vector<std::thread*> tasks;
+        for (std::map<std::string, HubConfig>::iterator it = mConfig.begin(); it != mConfig.end(); ++it) {
+            std::cout << "App: " << it->second.name << ", ";
+            std::cout << "Port:" << it->second.port << "\n";
+            tasks.push_back(new std::thread(runHub, &it->second, this));
+        }
+
+        /*
         for (rapidjson::SizeType i = 0; i < a.Size(); i++) {
             rapidjson::Value& pp = d["hubs"][i];
             HubConfig infoConfig = getHugConfig(pp);
             
-            //std::cout << "App: " << infoConfig.name << ", ";
-            //std::cout << "Port:" << infoConfig.port << "\n";
+            std::cout << "App: " << infoConfig.name << ", ";
+            std::cout << "Port:" << infoConfig.port << "\n";
 
             tasks.push_back(new std::thread(runHub, &infoConfig, this));
             //Sleep(100);
 
         }
-
+        */
         start();
         for (std::vector<std::thread*>::iterator it = tasks.begin(); it != tasks.end(); ++it) {
             (*it)->join();
@@ -171,7 +193,7 @@ namespace GT {
         if (header->header == 10021) {
             RCommand* response = (RCommand*)buffer;
             //std::cout << ANSI_COLOR_YELLOW "10021 Header: " << response->header << std::endl;
-            std::cout << "Sending Message: " << response->message << " to WebApp\n" << std::endl;
+            std::cout << "Message Receive: " << response->message << "\n" << std::endl;
             
             //std::cout << "UnitId: " << response->unitId << std::endl;
             //std::cout << "Mode: " << response->mode << std::endl;
@@ -226,7 +248,7 @@ namespace GT {
         
         json.AddMember("unitId", response->unitId, json.GetAllocator());
         json.AddMember("commandId", response->commandId, json.GetAllocator());
-        json.AddMember("index", response->index, json.GetAllocator());
+        json.AddMember("index", response->index +65, json.GetAllocator());
         json.AddMember("delay", response->delay, json.GetAllocator());
         json.AddMember("type", (int)response->typeMessage, json.GetAllocator());
         
@@ -307,7 +329,7 @@ namespace GT {
         strcpy(r.message, strCommand.c_str());
         strcpy(r.command, role.c_str());
         
-        //cout << endl << "Unidad" << r.unit << endl << "COMANDO " << strCommand << endl << endl;
+        cout << endl << "Unit Id: " << unitId << ", Command " << strCommand << endl << endl;
 
         //db->addPending(document["unitId"].GetInt(), document["commandId"].GetInt(), tag, str, "pepe", type, (unsigned short)document["level"].GetInt());
         
@@ -827,27 +849,28 @@ namespace GT {
 }
 
 
-void test1(void * app, char* buffer, size_t size) {
+void CallReceive(void * app, char* buffer, size_t size) {
 
     GT::RCommand* x = (GT::RCommand*)buffer;
 
 
-    //cout << "TEST 1 Receiving ..." << endl;
+    //cout << "TEST 1 Receiving ..."<< buffer << endl;
     //cout << "Buffer ..." << x->message << endl;
     GT::WebServer* WS = (GT::WebServer*)app;
 
-
+    m2.lock();
     if (WS->getHeader(buffer) == 0) {
         cout << "ERROR" << endl;
     }
+    m2.unlock();
 
     
     
 }
 
-void test2(GT::CSInfo Info) {
+void CallConection(GT::CSInfo Info) {
 
-    //std::cout << " ****** " << Info.name << "....\n\n";
+   std::cout << " CallConection ****** " << Info.name << "....\n\n";
 
     GT::RequestConnection c = {
         10001,
@@ -868,7 +891,11 @@ void test2(GT::CSInfo Info) {
     memcpy(buffer2, &c, sizeof(c));
     send(Info.master, buffer2, sizeof(buffer2), 0);
     
-    //std::cout << "TEST DEBUG VALUE " << Info.master << endl;
+    std::cout << "TEST DEBUG VALUE " << Info.master << endl;
+    send(Info.master, "Barcelona vs Real Madrid", strlen("Barcelona vs Real Madrid"), 0);
+    send(Info.master, "Barcelona vs Real Madrid", strlen("Barcelona vs Real Madrid"), 0);
+    send(Info.master, "Barcelona vs Real Madrid", strlen("Barcelona vs Real Madrid"), 0);
+    send(Info.master, "Barcelona vs Real Madrid", strlen("Barcelona vs Real Madrid"), 0);
     send(Info.master, "Barcelona vs Real Madrid", strlen("Barcelona vs Real Madrid"), 0);
 }
 
@@ -891,8 +918,8 @@ BOOL __stdcall mainhub(LPVOID param) {
     std::cout << "Name " << WS->configInit.name << endl;
     WS->hub = new GT::Hub(Info);
     WS->hub->appData = WS;
-    WS->hub->CallConection = test2;
-    WS->hub->callReceive = test1;
+    WS->hub->CallConection = CallConection;
+    WS->hub->callReceive = CallReceive;
     std::cout << ANSI_COLOR_RESET "Asking for Connection..." << WS->configInit.port << endl;
     while (WS->reconnect) {
         WS->hub->start();
@@ -937,6 +964,8 @@ rapidjson::Document loadConfig(const char* path)
 
 void runHub(HubConfig* config, LPVOID param/*LPVOID param, HubConfig* c*/)
 {
+    
+    m1.lock();
     GT::WebServer* WS = (GT::WebServer*)param;
 
     GT::CSInfo Info = { 0, 0, 0, 0, 0, 0, (char*)"", 0, (char*)"", (char*)"", (char*)"", 0,(char*)"" };
@@ -946,17 +975,18 @@ void runHub(HubConfig* config, LPVOID param/*LPVOID param, HubConfig* c*/)
     Info.name = (char*)config->name;
 
     
-    std::cout << "\n*****************************************\nConnecting to: " << config->name << " on Port: "<< config->port << endl;
+    std::cout << "\nConnecting to: " << config->name << " on Port: "<< config->port << endl;
    
     auto hub = new GT::Hub(Info);
     hub->appData = WS;
-    hub->CallConection = test2;
-    hub->callReceive = test1;
+    hub->CallConection = CallConection;
+    hub->callReceive = CallReceive;
 
     WS->hubs[config->name] = hub;
     WS->nHubs++;
     //std::cout << "Size "<< WS->nHubs << "- - -" << WS->hubs.size() << endl;
     //std::cout << ANSI_COLOR_RESET "Asking for Connection..." << config->port << endl;
+    m1.unlock();
     while (WS->reconnect) {
         hub->start();
         std::cout << ANSI_COLOR_RESET "Reconnecting..." << config->port << endl;

@@ -4,7 +4,7 @@
 #include <string>
 #include "Color.h"
 #include "Types.h"
-
+#include <mutex>
 
 #include "rapidjson/document.h"
 #include "rapidjson/prettywriter.h" // for stringify JSON
@@ -32,6 +32,7 @@ namespace GT {
 		void loadUnits(std::vector<int> * Devices);
 		void loadFormat(int unitId, std::vector<std::string>* format);
 		std::string loadTracking(int unitId, int * id, std::vector<std::string> format);
+		
 	private:
 		InfoDB info;
 

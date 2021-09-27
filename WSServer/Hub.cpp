@@ -13,6 +13,7 @@ namespace GT {
 	}
 
 	void Hub::onReceive(char* buffer, size_t size) {
+		
 
 		callReceive(appData, buffer, size);
 
