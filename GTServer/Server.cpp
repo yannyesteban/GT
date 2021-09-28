@@ -1040,6 +1040,7 @@ namespace GT {
 		double timeInSeconds = 0;
 		double delta = 0;
 		clock_t endTime = clock();
+		printf("\n/**********Clients List **********/\n", it->second.header);
 		for (std::map<SOCKET, GTClient>::iterator it = clients.begin(); it != clients.end(); ++it) {
 			timeInSeconds = (double(endTime - it->second.clock) / CLOCKS_PER_SEC);
 			delta = (double(endTime - it->second.lastClock) / CLOCKS_PER_SEC);
@@ -1052,7 +1053,7 @@ namespace GT {
 			if (it->second.type == 1) {
 				printf(ANSI_COLOR_CYAN);
 			}
-			printf("\n/**********Clients List **********/\n", it->second.header);
+			
 			printf("%10d", it->second.header);
 			printf("%18s", it->second.address);
 			printf("%12s", it->second.name);
