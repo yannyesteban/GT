@@ -1040,7 +1040,7 @@ namespace GT {
 		double timeInSeconds = 0;
 		double delta = 0;
 		clock_t endTime = clock();
-		printf("\n/**********Clients List **********/\n", it->second.header);
+		printf("\n/**********Clients List **********/\n");
 		for (std::map<SOCKET, GTClient>::iterator it = clients.begin(); it != clients.end(); ++it) {
 			timeInSeconds = (double(endTime - it->second.clock) / CLOCKS_PER_SEC);
 			delta = (double(endTime - it->second.lastClock) / CLOCKS_PER_SEC);
