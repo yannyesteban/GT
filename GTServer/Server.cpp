@@ -1052,7 +1052,7 @@ namespace GT {
 			if (it->second.type == 1) {
 				printf(ANSI_COLOR_CYAN);
 			}
-
+			printf("\n/**********Clients List **********/\n", it->second.header);
 			printf("%10d", it->second.header);
 			printf("%18s", it->second.address);
 			printf("%12s", it->second.name);
