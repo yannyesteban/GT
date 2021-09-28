@@ -248,7 +248,7 @@ namespace GT {
         
         json.AddMember("unitId", response->unitId, json.GetAllocator());
         json.AddMember("commandId", response->commandId, json.GetAllocator());
-        json.AddMember("index", response->index +65, json.GetAllocator());
+        json.AddMember("index", response->index, json.GetAllocator());
         json.AddMember("delay", response->delay, json.GetAllocator());
         json.AddMember("type", (int)response->typeMessage, json.GetAllocator());
         

@@ -1382,7 +1382,7 @@ namespace GT {
 						}
 						for (auto i = document.MemberBegin(); i != document.MemberEnd(); ++i)
 						{
-							std::cout << "key: " << i->name.GetString() << " : " << i->value.IsInt() << std::endl;
+							//std::cout << "key: " << i->name.GetString() << " : " << i->value.IsInt() << std::endl;
 							//WalkNodes(i->value);
 							if (i->value.IsInt()) {
 								value = std::to_string(i->value.GetInt());
@@ -1974,7 +1974,9 @@ namespace GT {
 
 			if (stmtIndexCommand == nullptr) {
 				stmtIndexCommand = cn->prepareStatement(R"(SELECT r.*,
-				c.id as command_id,CASE WHEN r.id IS NOT NULL THEN r.role ELSE c.command END as command, u.id as unit_id, IFNULL(w_index, 0) as indexed
+				c.id as command_id,
+				CASE WHEN r.id IS NOT NULL THEN r.role ELSE c.command END as command, 
+				u.id as unit_id, IFNULL(w_index, 0) as indexed
 
 
 				FROM unit as u
@@ -2000,7 +2002,9 @@ namespace GT {
 
 					//std::cout << " ---- 888 " << result->getInt("command_id") << std::endl;
 					info->header = (unsigned short)1;
-					info->index = 0;
+					//info->index = 0;
+
+					info->index = (unsigned short)result->getInt("indexed");
 					info->mode = 1;
 					//info->type = (unsigned short)result->getInt("type");
 					//info->level = (unsigned short)result->getInt("level");
@@ -2075,9 +2079,9 @@ namespace GT {
 	}
 	
 
-	void DB::updateCommand(int unitId, int commandId, int index, int mode, std::string params) {
+	int DB::updateCommand(int unitId, int commandId, int index, int mode, std::string params) {
 		if (!connect()) {
-			return;
+			return 0;
 		}
 
 		try {
@@ -2088,19 +2092,28 @@ namespace GT {
 				WHERE unit_id = ? AND command_id = ? AND uc.index = ? )");
 			}
 
+			printf(R"(UPDATE unit_command as uc
+				SET user = 'none', status = 3, uc.values = ?
+				WHERE unit_id = %d AND command_id = %d AND uc.index = %d )", unitId, commandId, index);
 			
 			std::string values = "";
-
+			cout << ANSI_COLOR_YELLOW "Update: params " << params << endl;
 
 			commandValue(params, values);
 
-			std::list<std::string> list;
+			std::vector<std::string> list;
 			int len;
 			Tool::getItem(&list, len, params.c_str());
 
-			//cout << ANSI_COLOR_YELLOW "Update: unitId " << unitId << endl;
-			//cout << ANSI_COLOR_MAGENTA "Update: commandId " << commandId << endl;
-			//cout << ANSI_COLOR_MAGENTA "Update: values " << values << endl;
+			if (index > 0 && index < list.size()) {
+				index = std::stoi(list[0]);
+			}
+
+			cout << ANSI_COLOR_YELLOW "Update: index " << index<< endl;
+
+			cout << ANSI_COLOR_YELLOW "Update: unitId " << unitId << endl;
+			cout << ANSI_COLOR_MAGENTA "Update: commandId " << commandId << endl;
+			cout << ANSI_COLOR_MAGENTA "Update: values " << values << endl;
 
 			
 
@@ -2117,7 +2130,7 @@ namespace GT {
 		} catch (sql::SQLException& e) {
 			SQLException(e, __LINE__);
 		}
-
+		return index;
 	}
 	void DB::updateUnitConnected() {
 		if (!connect()) {

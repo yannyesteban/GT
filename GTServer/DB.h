@@ -150,7 +150,7 @@ namespace GT {
 
 		void insertEvent(DBEvent * infoEvent);
 
-		void updateCommand(int unitId, int commandId, int index, int mode, std::string params);
+		int updateCommand(int unitId, int commandId, int index, int mode, std::string params);
 		void updateUnitConnected();
 		void commandValue(std::string & params, std::string & value);
 		void setStatusToDisconneted(unsigned int unitId);

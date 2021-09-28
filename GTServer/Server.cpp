@@ -35,11 +35,11 @@ namespace GT {
 		
 		
 
-		std::cout << s->keepAliveTime << std::endl;
+		//std::cout << s->keepAliveTime << std::endl;
 		while (true) {
 			
 			//s->db->updateUnitConnected();
-			std::cout << "My Thread is " << std::this_thread::get_id() << "\n\n";
+			//std::cout << "My Thread is " << std::this_thread::get_id() << "\n\n";
 			
 			std::this_thread::sleep_for(std::chrono::seconds(10));
 			//m.lock();
@@ -184,7 +184,7 @@ namespace GT {
 			
 	
 			std::cout << Color::_green()<< "\nNew Client: Id = " << Info.client << Color::_reset() << std::endl;
-			std::cout << " CLOCK " << Info.clock << "\n";
+			//std::cout << " CLOCK " << Info.clock << "\n";
 	
 			clients[Info.client].status = 1;
 			clients[Info.client].socket = Info.client;
@@ -203,7 +203,7 @@ namespace GT {
 	
 	void Server::onMessage(ConnInfo Info) {
 
-		std::cout << Info.buffer << "\n";
+		//std::cout << Info.buffer << "\n";
 		//std::cout << "Main ? My Thread is " << std::this_thread::get_id() << "\n\n";
 		
 
@@ -449,14 +449,14 @@ namespace GT {
 			std::cout << Color::_green() << "Sending: " << response.message
 				<< Color::_reset() << " to: "
 				<< mDevices[getUnitName(r->unitId)].device_id << " (" << r->unit << ")\n";
-			
+			/*
 			std::cout << "Header: " << response.header << std::endl;
 			std::cout << "Message: " << response.message << std::endl;
 			std::cout << "UnitId: " << response.unitId << std::endl;
 			std::cout << "Mode: " << response.mode << std::endl;
 			std::cout << "User: " << response.user << std::endl;
 			std::cout << "Unit: " << response.unit << std::endl;
-			
+			*/
 
 			int value = disconect(mDevices[getUnitName(r->unitId)].socket);
 
@@ -932,11 +932,11 @@ namespace GT {
 					//std::cout << " el TAG es " << rCommand.tag << "\n\n";
 					if (rCommand.tag == "+2") {
 						//std::cout << " el TAG es (x1)" << rCommand.tag << "\n\n";
-						db->updateCommand(unitResponse.unitId, unitResponse.commandId, unitResponse.index, 2, rCommand.params);
+						unitResponse.index = db->updateCommand(unitResponse.unitId, unitResponse.commandId, unitResponse.index, 2, rCommand.params);
 					}
 					else {
 						//std::cout << " el TAG es (x2)" << rCommand.tag << "\n\n";
-						db->updateCommand(unitResponse.unitId, unitResponse.commandId, unitResponse.index, 1, "");
+						unitResponse.index = db->updateCommand(unitResponse.unitId, unitResponse.commandId, unitResponse.index, 1, "");
 					}
 					
 
