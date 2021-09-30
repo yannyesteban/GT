@@ -21,6 +21,18 @@ namespace GT {
 		return result;
 	}
 
+	vector<string> Tool::splitv(const string& s, char delim) {
+		vector<string> result;
+		stringstream ss(s);
+		string item;
+
+		while (getline(ss, item, delim)) {
+			result.push_back(item);
+		}
+
+		return result;
+	}
+
 	list<string> Tool::split(string text, char delimeter) {
 
 		list<string>results;

@@ -29,6 +29,7 @@ namespace GT {
 		template <class Container>
 		static void split2(const std::string& str, Container& cont, char delim);
 		static list<string> split3(const string& s, char delim);
+		static vector<string> splitv(const string& s, char delim);
 		
 	};
 }

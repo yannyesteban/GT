@@ -2092,28 +2092,32 @@ namespace GT {
 				WHERE unit_id = ? AND command_id = ? AND uc.index = ? )");
 			}
 
+			/*
 			printf(R"(UPDATE unit_command as uc
 				SET user = 'none', status = 3, uc.values = ?
 				WHERE unit_id = %d AND command_id = %d AND uc.index = %d )", unitId, commandId, index);
-			
+			*/
 			std::string values = "";
-			cout << ANSI_COLOR_YELLOW "Update: params " << params << endl;
+			//cout << ANSI_COLOR_YELLOW "Update: params " << params << endl;
 
 			commandValue(params, values);
 
 			std::vector<std::string> list;
 			int len;
-			Tool::getItem(&list, len, params.c_str());
+			//Tool::getItem(&list, len, params.c_str());
+
+			list = Tool::splitv(params.c_str(), ',');
 
 			if (index > 0 && index < list.size()) {
 				index = std::stoi(list[0]);
 			}
 
-			cout << ANSI_COLOR_YELLOW "Update: index " << index<< endl;
+			
 
 			cout << ANSI_COLOR_YELLOW "Update: unitId " << unitId << endl;
 			cout << ANSI_COLOR_MAGENTA "Update: commandId " << commandId << endl;
-			cout << ANSI_COLOR_MAGENTA "Update: values " << values << endl;
+			cout << ANSI_COLOR_YELLOW "Update: index " << index << endl;
+			//cout << ANSI_COLOR_MAGENTA "Update: values " << values << endl;
 
 			
 
@@ -2161,10 +2165,11 @@ namespace GT {
 	}
 	void DB::commandValue(std::string & params, std::string & value) {
 
-		std::list<std::string> list;
+		std::list<std::string> list = Tool::split3(params.c_str(), ',');
 		int len;
-		Tool::getItem(&list, len, params.c_str());
-		std::cout << list.size() << "\n\n";
+		//Tool::getItem(&list, len, params.c_str());
+		
+		//std::cout << list.size() << "\n\n";
 
 		Document json;
 		json.SetObject();
