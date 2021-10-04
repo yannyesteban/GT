@@ -169,8 +169,8 @@ namespace GT {
 		//std::thread* first = new std::thread(runTimer);
 
 		//first->join();
-		InfoPending infoPending;
-		db->getInfoPending(274,&infoPending);
+		//InfoPending infoPending;
+		//db->getInfoPending(274,&infoPending);
 		std::thread* threadTimeOut = new std::thread(runTimeOut, &clients, this, keepAliveTime);
 		return true;
 	}

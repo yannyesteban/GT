@@ -337,7 +337,7 @@ namespace GT {
 
 		
 
-		initStatus();
+		//initStatus();
 		loadProtocols();
 		loadVersions();
 		loadClients();
