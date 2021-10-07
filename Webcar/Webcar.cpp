@@ -669,7 +669,8 @@ namespace WC {
 		//cout << " trama " << info.parametros << endl;
 		int nameSize = names.size();
 		int valueSize = values.size();
-
+		bool error = false;
+		std::string ver = "";
 		for (int i = 0; i < nameSize; i++) {
 			
 			//cout << " names.at " << i << ", " << names.at(i) << endl;
@@ -679,16 +680,23 @@ namespace WC {
 				//cout << " values.at " << i << ", " << values.at(i) << endl;
 				trackParams[names.at(i)] = values.at(i);
 				qValues += ((qValues != "") ? "," : "") + quot + values.at(i) + quot;
+				ver = values.at(i);
+				if (ver == "") {
+					error = true;
+				}
 			} else {
 				//cout << " values.at " << i << ", " << " NULLLL" << endl;
 				qValues += ((qValues != "") ? "," : "") + (string)"null";
+				error = true;
 			}
 
 			
 			
 			
 		}
-		
+		if (error) {
+			return;
+		}
 		std::string query = "INSERT IGNORE INTO tracks_2020 (codequipo," + qFields + ") VALUES (" + to_string(codequipo).c_str() +","+ qValues + ")";
 		//cout << "codequipo " << codequipo << endl;
 		//cout << " query " << query.c_str() << endl;
