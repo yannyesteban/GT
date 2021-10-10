@@ -721,6 +721,9 @@ namespace GT {
 			int n = 0;
 			GT::Tool::getItem(mm, 30, n, buffer);
 
+			if (n <= 0) {
+				return false;
+			}
 			int x = 0;// counter of items
 			for (auto itr = mTrackingField.begin(); itr != mTrackingField.end(); ++itr) {
 				//cout << itr->first << "\t ============= " << itr->second.pos << '\n';

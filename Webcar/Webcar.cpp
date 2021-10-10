@@ -14,7 +14,23 @@ bool isNumber(std::string ss) {
 	return false;
 
 }
+std::string alphaNumeric(std::string ss) {
+	
+	std::smatch m;
+	//std::string ss("\xFA\xF8\xE7\x03\xB1yanny nunez,4.5,-8.369898,esteban");
 
+	std::regex Pala("([a-zA-Z0-9\\-\\,\\.\\s]+)");
+
+	while (std::regex_search(ss, m, Pala)) {
+		for (int i = 0; i < m.size(); i++) {
+			std::cout << " *** " << m[i].str() << "\n";
+			return m[i].str();
+		}
+
+		ss = m.suffix().str();
+	}
+	return "";
+}
 std::string toBin(int n) {
 	std::string r;
 	while (n != 0) {
@@ -31,6 +47,23 @@ std::string toBinR(int n) {
 		n /= 2;
 	}
 	return r;
+}
+
+std::vector<std::string> getItem(const char* buffer) {
+	std::vector<string> result;
+	std::smatch m;
+	std::string ss(buffer);
+	
+	std::regex Pala("[^,]+");
+	
+	while (std::regex_search(ss, m, Pala)) {
+		for (int i = 0; i < m.size(); i++) {
+			result.push_back(m[i].str());
+		}
+
+		ss = m.suffix().str();
+	}
+	return result;
 }
 
 std::vector<std::string> explode(std::string const& s, char delim) {
@@ -83,6 +116,7 @@ namespace WC {
 		delete stmtAlarm;
 		delete stmtDevice;
 		delete stmtLastId;
+		delete stmtTrack;
 	}
 
 	bool Webcar::connect(InfoDB info) {
@@ -132,7 +166,7 @@ namespace WC {
 		*/
 		stmtSpeed->setInt(1, P->velocidad);
 		if (!stmtSpeed->execute()) {
-			cout << "todo mal" << endl;
+			//cout << "todo mal" << endl;
 		}
 
 		//sql::PreparedStatement* p_stmt;
@@ -483,7 +517,7 @@ namespace WC {
 
 		}
 
-		cout << "test --> " << A->sitioModo << endl;
+		//cout << "test --> " << A->sitioModo << endl;
 		return false;
 	}
 
@@ -656,55 +690,109 @@ namespace WC {
 	}
 
 	void Webcar::insertTrack(std::string name, std::string track) {
-		
+
+		if (stmtTrack == nullptr) {
+			cPos["id_equipo"] = 2;
+			cPos["fecha_hora"] = 3;
+			cPos["longitud"] = 4;
+			cPos["latitud"] = 5;
+			cPos["velocidad"] = 6;
+			cPos["heading"] = 7;
+			cPos["altitud"] = 8;
+			cPos["satelites"] = 9;
+			cPos["event_id"] = 10;
+			cPos["input"] = 11;
+			cPos["millas"] = 12;
+			cPos["analog_input_1"] = 13;
+			cPos["analog_input_2"] = 14;
+			cPos["analog_output"] = 15;
+			cPos["output"] = 16;
+			cPos["counter_1"] = 17;
+			cPos["counter_2"] = 18;
+
+			std::string qTracking = R"(INSERT INTO tracks_2020 
+				(codequipo, id_equipo, fecha_hora, longitud, latitud,
+				velocidad, heading, altitud, satelites,
+				event_id, input, millas, 
+				analog_input_1, analog_input_2, analog_output,
+				output, counter_1, counter_2
+				)
+			VALUES (
+				?,?,?,?,?,
+				?,?,?,?,
+				?,?,?,
+				?,?,?,
+				?,?,?
+
+			)
+			)";
+			stmtTrack = cn->prepareStatement(qTracking);
+		}
 		
 		InfoDevice info = getInfoDevice(name);
 		int codequipo = info.codequipo;
-		std::vector<string> values = explode(track, ',');
+		std::vector<string> values = getItem(track.c_str());
 		std::vector<string> names = info.params;
-		std::string qFields = info.parametros;
-		std::string qValues = "";
-		int index = 0;
-		std::string quot = "'";
-		//cout << " trama " << info.parametros << endl;
+		
 		int nameSize = names.size();
 		int valueSize = values.size();
-		bool error = false;
+		
 		std::string ver = "";
-		for (int i = 0; i < nameSize; i++) {
+
+
+		//std::cout << "Track " << track << "\nCODEQUIPO " << codequipo << "\n";
+		try {
+			bool error = false;
 			
-			//cout << " names.at " << i << ", " << names.at(i) << endl;
-			
-			
-			if (i < valueSize) {
-				//cout << " values.at " << i << ", " << values.at(i) << endl;
-				trackParams[names.at(i)] = values.at(i);
-				qValues += ((qValues != "") ? "," : "") + quot + values.at(i) + quot;
-				ver = values.at(i);
-				if (ver == "") {
-					error = true;
+
+			stmtTrack->setInt(1, codequipo);
+			for (auto itr = cPos.begin(); itr != cPos.end(); ++itr) {
+				//cout << itr->first << "\t ============= " << itr->second.pos << '\n';
+				if (itr->second == 3) {
+					stmtTrack->setString(itr->second, "2000-01-01 00:00:00");
+					continue;
 				}
-			} else {
-				//cout << " values.at " << i << ", " << " NULLLL" << endl;
-				qValues += ((qValues != "") ? "," : "") + (string)"null";
-				error = true;
+				stmtTrack->setString(itr->second, "0");
+
+			}
+			int pos = 0;
+			std::string field = "";
+			std::string value = "";
+			for (int i = 0; i < nameSize; i++) {
+				field = names.at(i).c_str();
+				if (i >= valueSize) {
+					if (field == "fecha_hora") {
+						value = "2000-01-01 00:00:00";
+						//std::cout << " error en fecha hora \n\n\n\n\n";
+					} else {
+						value = "0";
+					}
+					
+				} else {
+					value = values.at(i).c_str();
+				}
+
+				//std::cout << "******\n Field: " << field << " value " << value << "\n\n";
+
+				trackParams[field] = value;
+
+				pos = cPos[field];
+
+				if (value == "") {
+					if (name == "longitud" || name == "latitud") {
+						error = true;
+					}
+					continue;
+				}
+				stmtTrack->setString(pos, value);
+
+			}
+			if (error) {
+				return;
 			}
 
+			stmtTrack->execute();
 			
-			
-			
-		}
-		if (error) {
-			return;
-		}
-		std::string query = "INSERT IGNORE INTO tracks_2020 (codequipo," + qFields + ") VALUES (" + to_string(codequipo).c_str() +","+ qValues + ")";
-		//cout << "codequipo " << codequipo << endl;
-		//cout << " query " << query.c_str() << endl;
-		
-		try {
-			sql::Statement* stmt = cn->createStatement();
-			stmt->execute(query.c_str());
-			delete stmt;
 			int trackId = 0;
 			sql::ResultSet* result = nullptr;
 			if (stmtLastId->execute()) {
@@ -716,40 +804,12 @@ namespace WC {
 				}
 				delete result;
 			}
-			//cout << " last ID : " << trackId << endl;
-			/*
-			P.codequipo = codequipo;
-			P.trackId = trackId;
-			P.idEquipo = name;
-			P.fechaHora = trackParams["fecha_hora"];
-			P.longitud = trackParams["longitud"];
-			P.longitud = trackParams["longitud"];
-			P.longitud = trackParams["longitud"];
-			P.longitud = trackParams["longitud"];
-			*/
-
-			if (!isNumber(trackParams["longitud"])) {
-				return;
-			}
-			if (!isNumber(trackParams["latitud"])) {
-				return;
-			}
-			if (!isNumber(trackParams["velocidad"])) {
-				return;
-			}
-			if (!isNumber(trackParams["input"])) {
-				return;
-			}
-
-
-			WC::TrackParam P ({ trackId, codequipo, name.c_str(),trackParams["fecha_hora"].c_str(), stof(trackParams["longitud"]), stof(trackParams["latitud"]),stoi(trackParams["velocidad"]), stoi(trackParams["input"]) });
-			evalTrack(&P);
-
 			
+			WC::TrackParam P ({ trackId, codequipo, name.c_str(),trackParams["fecha_hora"], stof(trackParams["longitud"]), stof(trackParams["latitud"]),stoi(trackParams["velocidad"]), stoi(trackParams["input"]) });
+			evalTrack(&P);
 
 
 		} catch (sql::SQLException& e) {
-
 
 			cout << endl << endl << "# ERR: SQLException in " << __FILE__;
 			cout << endl << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
@@ -757,9 +817,7 @@ namespace WC {
 			cout << endl << " (MySQL error code: " << e.getErrorCode();
 			//cout << ", SQLState: " << e.getSQLState().c_str() << " )" << endl;
 
-
 		}
-		
 	}
 
 	AppConfig Webcar::loadConfig(const char* path) {

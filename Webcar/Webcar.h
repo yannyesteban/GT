@@ -17,7 +17,8 @@ bool isNumber(std::string str);
 std::string toBin(int n);
 std::string toBinR(int n);
 std::vector<std::string> explode(std::string const& s, char delim);
-
+std::vector<std::string> getItem(const char* buffer);
+std::string alphaNumeric(std::string ss);
 namespace WC {
 	struct InfoDB {
 
@@ -208,6 +209,9 @@ namespace WC {
 		sql::PreparedStatement* stmtAlarm;
 		sql::PreparedStatement* stmtDevice;
 		sql::PreparedStatement* stmtLastId;
+
+		sql::PreparedStatement* stmtTrack;
+		std::map<std::string, int> cPos;
 		const char* qSpeedVar = "SELECT ? into @_vel;";
 		//const char* qMain = R"(SELECT @_vel:=? as v1,@_vel+1 as z,
 		const char* qMain = R"(SELECT @_vel+1 as z,

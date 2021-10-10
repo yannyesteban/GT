@@ -18,6 +18,7 @@ namespace GT {
 	class Tool {
 
 	public:
+		static std::string alphaNumeric(std::string ss);
 		static list<string> split(string text, char delimeter);
 		static void test();
 		static void getItem(std::string w[], int wLength, int& len, const char* buffer);

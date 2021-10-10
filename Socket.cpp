@@ -62,9 +62,9 @@ namespace GT {
 		//fd_set writefds;
 		SOCKET s;
 
-		int MAXRECV = 2048;
-
-		char* buffer = (char*)malloc((MAXRECV + 1) * sizeof(char));
+		int MAXRECV = 4096;
+		int lenBuffer = (1 + MAXRECV) * sizeof(char);
+		char * buffer = (char*)malloc(lenBuffer);
 
 		for (i = 0; i < maxClients; i++) {
 			
@@ -74,7 +74,7 @@ namespace GT {
 		while (TRUE) {
 			FD_ZERO(&readfds);//clear the socket fd set
 			FD_SET(master, &readfds);//add master socket to fd set
-			//memset(&buffer, 0, MAXRECV);//clear the buffer
+			memset(buffer, 0, lenBuffer);//clear the buffer
 			//add child sockets to fd set
 			for (i = 0; i < maxClients; i++) {
 				s = clients[i];
@@ -137,7 +137,7 @@ namespace GT {
 
 					//Check if it was for closing , and also read the incoming message
 					//recv does not place a null terminator at the end of the string (whilst printf %s assumes there is one).
-					//memset(&buffer, 0, MAXRECV);//clear the buffer
+					memset(buffer, 0, lenBuffer);//clear the buffer
 					valread = recv(s, buffer, MAXRECV, 0);
 					if (valread == SOCKET_ERROR) {
 						int error_code = WSAGetLastError();
@@ -190,6 +190,9 @@ namespace GT {
 						closesocket(s);
 						clients[i] = 0;
 					} else {
+
+						//std::cout << "VALREAD " << valread << "\n";
+						
 						//Echo back the message that came in
 						//add null character, if you want to use with printf/puts or other string handling functions
 						buffer[valread] = '\0';

@@ -8,6 +8,8 @@
 #include <sstream>
 #include <algorithm>
 #include <iterator>
+#include <iostream>
+#include <regex>
 
 #include "suma.h"
 bool isNumber(std::string str);
@@ -20,6 +22,22 @@ void split2(const std::string& str, Container& cont, char delim = ' ');
 int main()
 {
    
+	std::vector<std::string> result;
+	std::smatch m;
+	std::string ss("\xFA\xF8\xE7\x03\xB1yanny nunez,4.5,-8.369898,esteban");
+
+	std::regex Pala("([a-zA-Z0-9\\-\\,\\.\\s]+)");
+
+	while (std::regex_search(ss, m, Pala)) {
+		for (int i = 0; i < m.size(); i++) {
+			std::cout << " *** " << m[i].str() << "\n";
+
+		}
+
+		ss = m.suffix().str();
+	}
+	return 1;
+
 	std::string t = "T44";
 	if (isNumber(t)) {
 		std::cout << "si es un numero " << t << std::endl;

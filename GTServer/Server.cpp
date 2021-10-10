@@ -5,6 +5,7 @@ using namespace rapidjson;
 using namespace std;
 namespace GT {
 	std::mutex m;
+	std::mutex m2;
 
 
 	
@@ -219,12 +220,13 @@ namespace GT {
 			//std::cout << "CLOCK " << clients[Info.client].lastClock << "\n";
 			
 		}
-
+		/*
 		if (clients.count(Info.client) <= 0) {
 			std::cout << Color::_red() << Color::bwhite() << "\nClient Dead: Id = " << Info.client << Color::_reset() << std::endl;
 			//printf("error client dead!!!!\n");
 			return;
 		}
+		*/
 		//printf("recibiendo: %i, tag: %s, buffer: %s\n", Info.client,Info.tag, Info.buffer);
 		/*
 		SyncMsg xx = {
@@ -870,31 +872,23 @@ namespace GT {
 
 		//std::string string = (char*)message;
 		std::stringstream ss((char*)Info.buffer);
+
+
+		//std::string s2(Tool::alphaNumeric(Info.buffer));
+
+
 		std::string to;
 		int i = 0;
 
 		std::string result[50];
 		int len;
 		int nLine = 0;
-		//std::cout << "My Buffer " << Info.buffer << std::endl;
+		//std::cout << "My Buffer " << Info.buffer << " \n\nEND BUFFER" << std::endl;
+		//std::cout << "My String " << s2 << " \n\nEND BUFFER" << std::endl;
 		if (Info.buffer != NULL) {
 			while (std::getline(ss, to)) {//, '\n'
 				//std::cout << "My Command " << to.c_str() << std::endl;
 				//std::cout << to.c_str() << "\n\n";
-				
-				/*
-				Tool::getTracking(result, len, to.c_str());
-				if (len >= 5) {
-					//cout << ANSI_COLOR_CYAN "Saving Track: mode 5" << endl;
-					//db->saveTrack(clients[Info.client].device_id, result[4].c_str());
-					
-					if (clients[Info.client].device_id, result[4].c_str()) {
-						cout << Color::_yellow() << "Saving Track from: " << Color::_reset() << getUnitName(clients[Info.client].id)  << endl;
-					}
-					continue;
-				}
-				*/
-				
 
 				Tool::getCommand(result, len, to.c_str());
 				
@@ -991,10 +985,12 @@ namespace GT {
 					//cout << ANSI_COLOR_CYAN "Saving Track: " << mClients[unit_id].device_id << endl;
 					if (db->saveTrack(clients[Info.client].device_id, to.c_str())) {
 						cout << Color::_cyan() << "Saving Track from: " << Color::_reset() << getUnitName(clients[Info.client].id)   << endl;
+
+						//std::cout << " MY Tracking " << to.c_str() << "\n\n";
+						webcar->insertTrack(clients[Info.client].device_id, to.c_str());
 						//cout << Color::_cyan() << "--- Track: " << Color::_reset() << to.c_str() << endl;
 					}
 					
-					webcar->insertTrack(clients[Info.client].device_id, to.c_str());
 				}
 				
 			}
@@ -1037,6 +1033,7 @@ namespace GT {
 	}
 
 	void Server::isAlive() {
+		m2.lock();
 		double timeInSeconds = 0;
 		double delta = 0;
 		clock_t endTime = clock();
@@ -1092,13 +1089,15 @@ namespace GT {
 				printf("%6d\n", it->second.type);
 				disconect(it->second.socket);
 				clients.erase(it->second.socket);
-				//rClients.erase(it->second.socket);
-				//closeClient(it->second.socket);
+				rClients.erase(it->second.socket);
+				closeClient(it->second.socket);
 			}
 
 			printf(ANSI_COLOR_RESET);
 
 		}
+
+		m2.unlock();
 	}
 
 }
