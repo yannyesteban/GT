@@ -178,26 +178,28 @@ namespace GT {
 
 	void Server::onConnect(ConnInfo Info) {
 
+		std::cout << Color::_green() << "\nNew Client: Id = " << Info.client << Color::_reset() << std::endl;
+		//std::cout << " CLOCK " << Info.clock << "\n";
+
+		clients[Info.client].status = 1;
+		clients[Info.client].socket = Info.client;
+		clients[Info.client].clock = Info.clock;
+		clients[Info.client].lastClock = Info.clock;
+		clients[Info.client].type = 0;
+		strcpy(clients[Info.client].device_id, "unknow");
+
+		strcpy_s(clients[Info.client].name, sizeof(clients[Info.client].name), "nameless");
+		strcpy_s(clients[Info.client].address, sizeof(clients[Info.client].address), Info.address);
+
+
+
 		//printf("coneccting client ID %d\n", Info.client);
 		if (clients.count(Info.client) > 0) {
 			//
 		} else {
 			
 	
-			std::cout << Color::_green()<< "\nNew Client: Id = " << Info.client << Color::_reset() << std::endl;
-			//std::cout << " CLOCK " << Info.clock << "\n";
 	
-			clients[Info.client].status = 1;
-			clients[Info.client].socket = Info.client;
-			clients[Info.client].clock = Info.clock;
-			clients[Info.client].lastClock = Info.clock;
-			clients[Info.client].type = 0;
-			strcpy(clients[Info.client].device_id, "unknow");
-
-			strcpy_s(clients[Info.client].name, sizeof(clients[Info.client].name), "nameless");
-			strcpy_s(clients[Info.client].address, sizeof(clients[Info.client].address), Info.address);
-
-			
 			
 		}
 	}
