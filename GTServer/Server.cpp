@@ -43,9 +43,9 @@ namespace GT {
 			//std::cout << "My Thread is " << std::this_thread::get_id() << "\n\n";
 			
 			std::this_thread::sleep_for(std::chrono::seconds(10));
-			//m.lock();
+			m.lock();
 			s->isAlive();
-			//m.unlock();
+			m.unlock();
 			continue;
 			
 			mClock = clock();
@@ -1035,7 +1035,7 @@ namespace GT {
 	}
 
 	void Server::isAlive() {
-		m2.lock();
+		//m2.lock();
 		double timeInSeconds = 0;
 		double delta = 0;
 		clock_t endTime = clock();
@@ -1053,10 +1053,10 @@ namespace GT {
 				printf(ANSI_COLOR_CYAN);
 			}
 			
-			printf("%10d", it->second.header);
+			//printf("%10d", it->second.header);
 			printf("%18s", it->second.address);
 			printf("%12s", it->second.name);
-			printf("%6d", it->second.header);
+			//printf("%6d", it->second.header);
 			printf("%12.3f", timeInSeconds);
 			printf("%12.3f", delta);
 			printf("%8d", int(it->second.socket));
@@ -1065,25 +1065,26 @@ namespace GT {
 
 			if (it->second.type == 0 && timeInSeconds > keepAliveTime) {
 				printf("%50s\n", "-- DISCONECTING TO:");
-				printf("%10d", it->second.header);
+				//printf("%10d", it->second.header);
 				printf("%18s", it->second.address);
 				printf("%12s", it->second.name);
-				printf("%6d", it->second.header);
+				//printf("%6d", it->second.header);
 				printf("%12.3f", timeInSeconds);
 				printf("%12.3f", delta);
 				printf("%8d", int(it->second.socket));
 				printf("%8d", it->second.version_id);
 				printf("%6d\n", it->second.type);
 				disconect(it->second.socket);
-				clients.erase(it->first);
+				clients.erase(it->second.socket);
+				rClients.erase(it->second.socket);
 			}
 
 			if (it->second.type == 2 && delta > keepAliveTime) {
 				printf("%50s\n", "-- DISCONECTING TO:");
-				printf("%10d", it->second.header);
+				//printf("%10d", it->second.header);
 				printf("%18s", it->second.address);
 				printf("%12s", it->second.name);
-				printf("%6d", it->second.header);
+				//printf("%6d", it->second.header);
 				printf("%12.3f", timeInSeconds);
 				printf("%12.3f", delta);
 				printf("%8d", int(it->second.socket));
@@ -1099,7 +1100,7 @@ namespace GT {
 
 		}
 
-		m2.unlock();
+		//m2.unlock();
 	}
 
 }
