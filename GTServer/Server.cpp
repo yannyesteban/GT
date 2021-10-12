@@ -1042,7 +1042,7 @@ namespace GT {
 			printf("%8d", it->second.version_id);
 			printf("%6d\n", it->second.type);
 
-			if (it->second.type == 0 && timeInSeconds > keepAliveTime) {
+			if (it->second.type == 0 && timeInSeconds > (double)keepAliveTime) {
 				printf("%50s\n", "-- DISCONECTING TO UNKNOWN");
 				//printf("%10d", it->second.header);
 				printf("%3d", n);
@@ -1059,7 +1059,7 @@ namespace GT {
 				rClients.erase(it->first);
 			}
 
-			if (it->second.type == 2 && delta > keepAliveTime) {
+			if (it->second.type == 2 && delta > (double)keepAliveTime) {
 				printf("%50s\n", "-- DISCONECTING TO DEVICE");
 				printf("%3d", n);
 				//printf("%10d", it->second.header);
