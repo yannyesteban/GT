@@ -1043,7 +1043,7 @@ namespace GT {
 			printf("%6d\n", it->second.type);
 
 			if (it->second.type == 0 && timeInSeconds > keepAliveTime) {
-				printf("%50s\n", "-- DISCONECTING TO:");
+				printf("%50s\n", "-- DISCONECTING TO UNKNOWN");
 				//printf("%10d", it->second.header);
 				printf("%3d", n);
 				printf("%18s", it->second.address);
@@ -1054,13 +1054,13 @@ namespace GT {
 				printf("%8d", int(it->second.socket));
 				printf("%8d", it->second.version_id);
 				printf("%6d\n", it->second.type);
-				disconect(it->second.socket);
-				clients.erase(it->second.socket);
-				rClients.erase(it->second.socket);
+				disconect(it->first);
+				clients.erase(it->first);
+				rClients.erase(it->first);
 			}
 
 			if (it->second.type == 2 && delta > keepAliveTime) {
-				printf("%50s\n", "-- DISCONECTING TO:");
+				printf("%50s\n", "-- DISCONECTING TO DEVICE");
 				printf("%3d", n);
 				//printf("%10d", it->second.header);
 				printf("%18s", it->second.address);
@@ -1071,10 +1071,10 @@ namespace GT {
 				printf("%8d", int(it->second.socket));
 				printf("%8d", it->second.version_id);
 				printf("%6d\n", it->second.type);
-				disconect(it->second.socket);
-				clients.erase(it->second.socket);
-				rClients.erase(it->second.socket);
-				closeClient(it->second.socket);
+				disconect(it->first);
+				clients.erase(it->first);
+				rClients.erase(it->first);
+				closeClient(it->first);
 			}
 
 			printf(ANSI_COLOR_RESET);
