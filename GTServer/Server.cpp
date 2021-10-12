@@ -192,35 +192,15 @@ namespace GT {
 		strcpy_s(clients[Info.client].address, sizeof(clients[Info.client].address), Info.address);
 
 
-
-		//printf("coneccting client ID %d\n", Info.client);
-		if (clients.count(Info.client) > 0) {
-			//
-		} else {
-			
-	
-	
-			
-		}
 	}
 	
 	void Server::onMessage(ConnInfo Info) {
 
-		//std::cout << Info.buffer << "\n";
-		//std::cout << "Main ? My Thread is " << std::this_thread::get_id() << "\n\n";
-		
-
-		
-
 		auto x = clients.find(Info.client);
 
-
 		if (x != clients.end()) {
-			//clock_t endTime = clock();
 			x->second.lastClock = clock();
-
 			//std::cout << "CLOCK " << clients[Info.client].lastClock << "\n";
-			
 		}
 		/*
 		if (clients.count(Info.client) <= 0) {
@@ -663,9 +643,6 @@ namespace GT {
 		
 		if (db->isVersion(sync_msg->Keep_Alive_Header)) {
 
-
-
-
 			//std::cout << "synchronization " << std::endl;
 			//printf(ANSI_COLOR_CYAN "---> verification of sync (%lu)..(%d).\n" ANSI_COLOR_RESET, sync_msg->Keep_Alive_Device_ID, sync_msg->Keep_Alive_Header);
 			//puts(sync_msg->Keep_Alive_Device_ID));
@@ -1040,7 +1017,9 @@ namespace GT {
 		double delta = 0;
 		clock_t endTime = clock();
 		printf("\n/**********Clients List **********/\n");
+		int n = 0;
 		for (std::map<SOCKET, GTClient>::iterator it = clients.begin(); it != clients.end(); ++it) {
+			n++;
 			timeInSeconds = (double(endTime - it->second.clock) / CLOCKS_PER_SEC);
 			delta = (double(endTime - it->second.lastClock) / CLOCKS_PER_SEC);
 			 
@@ -1053,7 +1032,7 @@ namespace GT {
 				printf(ANSI_COLOR_CYAN);
 			}
 			
-			//printf("%10d", it->second.header);
+			printf("%3d", n);
 			printf("%18s", it->second.address);
 			printf("%12s", it->second.name);
 			//printf("%6d", it->second.header);
@@ -1066,6 +1045,7 @@ namespace GT {
 			if (it->second.type == 0 && timeInSeconds > keepAliveTime) {
 				printf("%50s\n", "-- DISCONECTING TO:");
 				//printf("%10d", it->second.header);
+				printf("%3d", n);
 				printf("%18s", it->second.address);
 				printf("%12s", it->second.name);
 				//printf("%6d", it->second.header);
@@ -1081,6 +1061,7 @@ namespace GT {
 
 			if (it->second.type == 2 && delta > keepAliveTime) {
 				printf("%50s\n", "-- DISCONECTING TO:");
+				printf("%3d", n);
 				//printf("%10d", it->second.header);
 				printf("%18s", it->second.address);
 				printf("%12s", it->second.name);
