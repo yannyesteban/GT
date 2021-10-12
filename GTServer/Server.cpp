@@ -1072,9 +1072,9 @@ namespace GT {
 				printf("%8d", it->second.version_id);
 				printf("%6d\n", it->second.type);
 				disconect(it->first);
-				//clients.erase(it->first);
-				//rClients.erase(it->first);
-				closeClient(it->first);
+				clients.erase(it->first);
+				rClients.erase(it->first);
+				//closeClient(it->first);
 			}
 
 			printf(ANSI_COLOR_RESET);
