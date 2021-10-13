@@ -196,6 +196,8 @@ namespace GT {
 	
 	void Server::onMessage(ConnInfo Info) {
 
+
+		std::cout << "NEW MESSAGE FROM " << Info.client << "\n";
 		auto x = clients.find(Info.client);
 
 		if (x != clients.end()) {
@@ -718,8 +720,6 @@ namespace GT {
 				strcpy(info.unit, name);
 				strcpy(info.user, name);
 				strcpy(info.name, cInfo.name);
-				
-				
 
 				strftime(info.date, sizeof(info.date), "%F %T", timeinfo);
 
