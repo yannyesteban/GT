@@ -143,7 +143,7 @@ namespace GT {
 						int error_code = WSAGetLastError();
 						if (error_code == WSAECONNRESET) {
 							//Somebody disconnected , get his details and print
-							printf(ANSI_COLOR_RED "1. Host disconnected unexpectedly, ip: %s, port: %d \n" ANSI_COLOR_RESET, inet_ntoa(address.sin_addr), ntohs(address.sin_port));
+							printf(ANSI_COLOR_CYAN "1. Host disconnected unexpectedly, ip: %s, port: %d \nsocketId: %d \n" ANSI_COLOR_RESET, inet_ntoa(address.sin_addr), ntohs(address.sin_port), s);
 							//Close the socket and mark as 0 in list for reuse
 							closesocket(s);
 							clients[i] = 0;
@@ -166,8 +166,7 @@ namespace GT {
 						Info.error = WSAGetLastError();
 						//CallClose(Info);
 						onClose(Info);
-					}
-					if (valread == 0) {
+					} else if (valread == 0) {
 						//Somebody disconnected , get his details and print
 						printf("2. Host disconnected , ip %s , port %d \n", inet_ntoa(address.sin_addr), ntohs(address.sin_port));
 
@@ -212,6 +211,7 @@ namespace GT {
 
 						//std::cout << "\n\n**** reloj: " << Info.clock << std::endl;
 						//CallMessage(Info);
+						
 						onMessage(Info);
 						
 					}

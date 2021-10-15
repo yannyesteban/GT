@@ -29,43 +29,12 @@ namespace GT {
 
 	void runTimeOut(std::map < SOCKET, GTClient> * clients, Server* s, int keepAliveTime) {
 
-
-
-
-		clock_t mClock;
-		
-		
-
-		//std::cout << s->keepAliveTime << std::endl;
 		while (true) {
-			
-			//s->db->updateUnitConnected();
-			//std::cout << "My Thread is " << std::this_thread::get_id() << "\n\n";
 			
 			std::this_thread::sleep_for(std::chrono::seconds(10));
 			m.lock();
 			s->isAlive();
 			m.unlock();
-			continue;
-			
-			mClock = clock();
-			
-			for (std::map<SOCKET, GTClient>::iterator it = clients->begin(); it != clients->end(); ++it) {
-				
-				double diffClock = (double(mClock) - double(it->second.clock)) / CLOCKS_PER_SEC;
-				//cout << "CLOCK -> " << diffClock << " type :" << it->second.type << endl;
-				if (diffClock > 160 && it->second.type ==2) {
-					cout << "cerrando el socket del cliente " << it->second.socket << endl;
-					//s->disconect(it->second.socket);
-				}
-				//printf("%12s", it->first.c_str());
-				//printf("%10s", it->second.device_id);
-				//printf("%10d\n", it->second.id);
-
-				//std::cout << "---- one clock " << it->second.clock;
-			}
-
-
 		}
 
 	}
@@ -197,13 +166,16 @@ namespace GT {
 	void Server::onMessage(ConnInfo Info) {
 
 
-		std::cout << "NEW MESSAGE FROM " << Info.client << "\n";
+		
+		
 		auto x = clients.find(Info.client);
 
 		if (x != clients.end()) {
 			x->second.lastClock = clock();
+		
 			//std::cout << "CLOCK " << clients[Info.client].lastClock << "\n";
 		}
+		
 		/*
 		if (clients.count(Info.client) <= 0) {
 			std::cout << Color::_red() << Color::bwhite() << "\nClient Dead: Id = " << Info.client << Color::_reset() << std::endl;
@@ -494,7 +466,10 @@ namespace GT {
 	}
 	
 	void Server::closeClient(SOCKET client) {
-		std::cout << " ON - CLOSE \n\n";
+		m.lock();
+		
+		
+		std::cout << "ON CLOSE ID: "<< client  <<" \n";
 
 		clients[client].device_id;
 		RCommand resp;
@@ -540,14 +515,15 @@ namespace GT {
 		}
 
 		broadcast(&resp);
+		//std::cout << "closing Client: " << client << " size:" << clients.size() << " \n";
 		clients.erase(client);
 		rClients.erase(client);
-
-
+		//std::cout << "closing Client: " << client << " size:" << clients.size() << " \n";
+		m.unlock();
 	}
 
 	void Server::onClose(ConnInfo Info) {
-		std::cout << " ON - CLOSE \n\n";
+		
 		closeClient(Info.client);
 
 		return;
@@ -1033,6 +1009,7 @@ namespace GT {
 			}
 			
 			printf("%3d", n);
+			printf("%6d", it->first);
 			printf("%18s", it->second.address);
 			printf("%12s", it->second.name);
 			//printf("%6d", it->second.header);
@@ -1046,6 +1023,7 @@ namespace GT {
 				printf("%50s\n", "-- DISCONECTING TO UNKNOWN");
 				//printf("%10d", it->second.header);
 				printf("%3d", n);
+				printf("%6d", it->first);
 				printf("%18s", it->second.address);
 				printf("%12s", it->second.name);
 				//printf("%6d", it->second.header);
@@ -1062,6 +1040,7 @@ namespace GT {
 			if (it->second.type == 2 && delta > (double)keepAliveTime) {
 				printf("%50s\n", "-- DISCONECTING TO DEVICE");
 				printf("%3d", n);
+				printf("%6d", it->first);
 				//printf("%10d", it->second.header);
 				printf("%18s", it->second.address);
 				printf("%12s", it->second.name);

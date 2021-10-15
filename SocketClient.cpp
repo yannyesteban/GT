@@ -101,6 +101,7 @@ namespace GT {
 		return true;
 	}
 	void SocketClient::stop() {
+		closesocket(master);
 	}
 	void SocketClient::onReceive(char* buffer, size_t size) {
 		//printf("*** Message: %s\nBytes received: %d\n> ", buffer, size);

@@ -88,8 +88,9 @@ bool GT::Device::beginTasks() {
 	float elapsed;
 	int base;
 	Sleep(5000);
+	int d = 0;
 	while (true) {
-		
+		d++;
 		Sleep(200);
 		//time(&time2);
 		base = timespec_get(&ts2, TIME_UTC);
@@ -116,6 +117,10 @@ bool GT::Device::beginTasks() {
 		ts = ts2;
 
 		//break;
+		if (d == 20) {
+			std::cout << "STOP \n\n";
+			stop();
+		}
 
 	}
 

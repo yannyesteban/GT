@@ -35,7 +35,7 @@ namespace GT {
 				FROM unit_active as a
 				INNER JOIN user_unit as u ON u.unit_id = a.unit_id
 				WHERE u.user='panda'
-LIMIT 50
+LIMIT 2
 				
 				)"
 		);
