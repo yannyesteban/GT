@@ -1019,7 +1019,7 @@ namespace GT {
 			printf("%8d", it->second.version_id);
 			printf("%6d\n", it->second.type);
 
-			if (it->second.type == 0 && timeInSeconds > 40) {
+			if (it->second.type == 0 && timeInSeconds > 60) {
 				printf("%50s\n", "-- DISCONECTING TO UNKNOWN");
 				//printf("%10d", it->second.header);
 				printf("%3d", n);
