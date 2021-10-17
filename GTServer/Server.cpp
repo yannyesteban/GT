@@ -655,7 +655,7 @@ namespace GT {
 
 			
 			
-			Server::isAlive();
+			
 
 			//db->saveEvent("88", 4);
 			//printf(ANSI_COLOR_RED "SYNC MESSAGGE FROM: (%s) %d, version: %d \n" ANSI_COLOR_RESET, name, mDevices[name].id, mDevices[name].version_id);
