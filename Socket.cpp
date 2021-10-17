@@ -145,28 +145,28 @@ namespace GT {
 							//Somebody disconnected , get his details and print
 							printf(ANSI_COLOR_CYAN "1. Host disconnected unexpectedly, ip: %s, port: %d \nsocketId: %d \n" ANSI_COLOR_RESET, inet_ntoa(address.sin_addr), ntohs(address.sin_port), (int)s);
 							//Close the socket and mark as 0 in list for reuse
-							
+							ConnInfo Info;
+							Info.master = master;
+							Info.client = s;
+							Info.clients = clients;
+							Info.index = i;
+							Info.maxClients = maxClients;
+							Info.address = inet_ntoa(address.sin_addr);
+							Info.port = ntohs(address.sin_port);
+							Info.tag = (char*)"error UNO";
+							Info.buffer = buffer;
+							Info.valread = valread;
+							Info.error = WSAGetLastError();
+							//CallClose(Info);
+							closesocket(s);
+							clients[i] = 0;
+							onClose(Info);
 						} else {
 							//printf("buffer %s", buffer);
 							printf("\nrecv failed with error code: [ %d ]\n", error_code);
 						}
 						//CallClientError(master, s, buffer, valread, i, WSAGetLastError());
-						ConnInfo Info;
-						Info.master = master;
-						Info.client = s;
-						Info.clients = clients;
-						Info.index = i;
-						Info.maxClients = maxClients;
-						Info.address = inet_ntoa(address.sin_addr);
-						Info.port = ntohs(address.sin_port);
-						Info.tag = (char*)"error UNO";
-						Info.buffer = buffer;
-						Info.valread = valread;
-						Info.error = WSAGetLastError();
-						//CallClose(Info);
-						closesocket(s);
-						clients[i] = 0;
-						onClose(Info);
+						
 					} else if (valread == 0) {
 						//Somebody disconnected , get his details and print
 						printf("2. Host disconnected , ip %s , port %d \n", inet_ntoa(address.sin_addr), ntohs(address.sin_port));
