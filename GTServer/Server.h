@@ -47,9 +47,26 @@ namespace GT {
 
 	};
 
+	struct GTClient2 {
+		SOCKET socket;
+		short int type = 0;
+		int id = -2;
+		char name[50];
+		char address[20];
+		int formatId = -2;
+		
+		clock_t clock;
+		clock_t lastClock;
+		
+		char user[50];
+		
+		short int status = 0;
+
+	};
+
 	
 
-	void runPending(std::map<string, GTClient > * mDevices, DB* db);
+	void runPending(std::map<string, GTClient2 > * mDevices, DB* db);
 	void runTimer();
 	class Server: public Socket {
 	public:
@@ -76,14 +93,15 @@ namespace GT {
 		void isAlive();
 		void closeClient(SOCKET client);
 		int keepAliveTime = 90;
+		int waitTime = 30;
 		
 	private:
 		bool debug;
 		
 		clock_t mClock;
-		std::map<SOCKET, RClient> rClients;
-		std::map<SOCKET, GTClient> clients;
-		std::map<string, GTClient > mDevices;
+		//std::map<SOCKET, RClient> rClients;
+		std::map<SOCKET, GTClient2> clients;
+		//std::map<string, GTClient2 > mDevices;
 		std::map<int, string> mUnitName;
 		std::map<int, string> mClientName;
 		//AppConfig * config;
@@ -99,6 +117,8 @@ namespace GT {
 		void setClientName(int unitId, std::string name);
 
 		WC::Webcar * webcar;
+		SOCKET getSocket(int id);
+		SOCKET getSocket(std::string name);
 		
 		//RCommand unitResponse;
 	};

@@ -876,7 +876,7 @@ void CallConection(GT::CSInfo Info) {
         10001,
         Info.master,
         "hub5",
-        "panda2",
+        "panda-x5",
         1,
         -2,
         "hola dejame entrar",

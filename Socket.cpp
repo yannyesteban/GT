@@ -117,7 +117,7 @@ namespace GT {
 						Info.clock = clock();
 						clients[i] = tSocket;
 						//CallConection(Info);
-						//std::cout << "new conecction " << Info.address  << "\n\n";
+						std::cout << "new conecction " << Info.address << " ON " << tSocket << "\n\n";
 
 						//CallConection(master, new_socket, clients, i, maxClients, info);
 						//printf("Adding to list of sockets at index %d \n", i);
@@ -143,10 +143,9 @@ namespace GT {
 						int error_code = WSAGetLastError();
 						if (error_code == WSAECONNRESET) {
 							//Somebody disconnected , get his details and print
-							printf(ANSI_COLOR_CYAN "1. Host disconnected unexpectedly, ip: %s, port: %d \nsocketId: %d \n" ANSI_COLOR_RESET, inet_ntoa(address.sin_addr), ntohs(address.sin_port), s);
+							printf(ANSI_COLOR_CYAN "1. Host disconnected unexpectedly, ip: %s, port: %d \nsocketId: %d \n" ANSI_COLOR_RESET, inet_ntoa(address.sin_addr), ntohs(address.sin_port), (int)s);
 							//Close the socket and mark as 0 in list for reuse
-							closesocket(s);
-							clients[i] = 0;
+							
 						} else {
 							//printf("buffer %s", buffer);
 							printf("\nrecv failed with error code: [ %d ]\n", error_code);
@@ -165,6 +164,8 @@ namespace GT {
 						Info.valread = valread;
 						Info.error = WSAGetLastError();
 						//CallClose(Info);
+						closesocket(s);
+						clients[i] = 0;
 						onClose(Info);
 					} else if (valread == 0) {
 						//Somebody disconnected , get his details and print
@@ -184,10 +185,11 @@ namespace GT {
 						Info.valread = valread;
 						Info.error = WSAGetLastError();
 						//CallClose(Info);
-						onClose(Info);
-						//CallClientError(master, s, buffer, valread, i, WSAGetLastError());
 						closesocket(s);
 						clients[i] = 0;
+						onClose(Info);
+						//CallClientError(master, s, buffer, valread, i, WSAGetLastError());
+						
 					} else {
 
 						//std::cout << "VALREAD " << valread << "\n";

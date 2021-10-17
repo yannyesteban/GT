@@ -117,9 +117,10 @@ bool GT::Device::beginTasks() {
 		ts = ts2;
 
 		//break;
+		
 		if (d == 20) {
 			std::cout << "STOP \n\n";
-			stop();
+			//stop();
 		}
 
 	}

@@ -108,14 +108,7 @@ namespace GT {
 		initialized = true;
 
 		string query = "";
-		query = R"(SELECT u.id as unit_id, d.id as device_id, d.name as device_name, version_id, n.name, format_id
-				FROM unit as u
-				INNER JOIN device as d on d.id = u.device_id
-				INNER JOIN unit_name as n ON n.id = u.name_id
-				INNER JOIN device_version as v on v.id = d.version_id
-				WHERE d.name = ?)";
-
-		stmtInfoClient = cn->prepareStatement(query.c_str());
+		
 
 		
 		
@@ -638,11 +631,11 @@ namespace GT {
 
 			if (p_stmt->execute()) {
 				result = p_stmt->getResultSet();
-				int version;
+				int formatId;
 				
 				while (result->next()) {
-					version = result->getInt("format_id");
-					mFormats[version].push_back(result->getString("parameter").c_str());
+					formatId = result->getInt("format_id");
+					mFormats[formatId].push_back(result->getString("parameter").c_str());
 				}
 
 				delete result;
@@ -693,8 +686,8 @@ namespace GT {
 			*/
 		}
 	}
-	
-	bool DB::saveTrack(const char* unit_id, const char* buffer) {
+	/* SI*/
+	bool DB::saveTrack(int unitId, int formatId, const char* buffer) {
 		
 		//std::string s(buffer);
 
@@ -711,10 +704,7 @@ namespace GT {
 		bool error = false;
 
 		try {
-			int version = mProtocols[mClients[unit_id].version_id].format_id;
-
-			version = mClients[unit_id].format_id;
-
+			
 			//std::cout << "unit_id : " << unit_id << " version(Format) " << version  << endl;
 			//std::cout << "buffer: " << buffer << std::endl;
 			std::string  mm[30];
@@ -731,8 +721,8 @@ namespace GT {
 				
 			}
 			
-			stmtInsertTracking->setInt(1, mClients[unit_id].unit_id);
-			for (std::list<string>::iterator it = mFormats[version].begin(); it != mFormats[version].end(); it++) {
+			stmtInsertTracking->setInt(1, unitId);
+			for (std::list<string>::iterator it = mFormats[formatId].begin(); it != mFormats[formatId].end(); it++) {
 				//std::cout << *it << " = " << mm[x] << "\n";
 				if (x > n) {
 					continue;
@@ -758,7 +748,7 @@ namespace GT {
 
 		return false;
 	}
-
+	/* NO */
 	bool DB::saveTrack2(const char* unit_id, const char* buffer) {
 		//std::string s(buffer);
 
@@ -821,7 +811,7 @@ namespace GT {
 		
 		return false;
 	}
-	
+	/* NO*/
 	bool DB::saveTrack(const char* unit_id, int id, int version, const char* buffer) {
 
 		//std::string s(buffer);
@@ -1424,6 +1414,18 @@ namespace GT {
 		int unit_id = 0, version_id = 0, device_id = 0;
 		InfoClient info = {0,0,0,0,""};
 		try {
+
+
+			if (stmtInfoClient == nullptr) {
+
+				stmtInfoClient = cn->prepareStatement(
+					R"(SELECT u.id as unit_id, d.id as device_id, d.name as device_name, version_id, n.name, format_id
+				FROM unit as u
+				INNER JOIN device as d on d.id = u.device_id
+				INNER JOIN unit_name as n ON n.id = u.name_id
+				INNER JOIN device_version as v on v.id = d.version_id
+				WHERE d.name = ?)");
+			}
 			sql::ResultSet* result;
 			
 			stmtInfoClient->setString(1, id.c_str());

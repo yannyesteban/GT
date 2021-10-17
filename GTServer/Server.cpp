@@ -27,7 +27,7 @@ namespace GT {
 		}
 	}
 
-	void runTimeOut(std::map < SOCKET, GTClient> * clients, Server* s, int keepAliveTime) {
+	void runTimeOut(std::map < SOCKET, GTClient2> * clients, Server* s, int keepAliveTime) {
 
 		while (true) {
 			
@@ -118,6 +118,7 @@ namespace GT {
 		//config = pConfig;
 		
 		keepAliveTime = pConfig.keep_alive;
+		waitTime = pConfig.waitTime;
 		pConfig.db.debug = pConfig.debug;
 		db = new DB(pConfig.db);
 		db->connect();
@@ -147,33 +148,43 @@ namespace GT {
 
 	void Server::onConnect(ConnInfo Info) {
 
+		auto client = clients.find(Info.client);
+
+		if (client != clients.end()) {
+			clients.erase(client);
+		}
+
 		std::cout << Color::_green() << "\nNew Client: Id = " << Info.client << Color::_reset() << std::endl;
-		//std::cout << " CLOCK " << Info.clock << "\n";
 
-		clients[Info.client].status = 1;
-		clients[Info.client].socket = Info.client;
-		clients[Info.client].clock = Info.clock;
-		clients[Info.client].lastClock = Info.clock;
-		clients[Info.client].type = 0;
-		strcpy(clients[Info.client].device_id, "unknow");
-
+		
+		clients.insert({
+			Info.client, 
+			{
+				Info.client,
+				0,
+				-2,
+				"",
+				"",
+				-2,
+				Info.clock,
+				Info.clock,
+				"",
+				1
+			}
+		});
+			
 		strcpy_s(clients[Info.client].name, sizeof(clients[Info.client].name), "nameless");
 		strcpy_s(clients[Info.client].address, sizeof(clients[Info.client].address), Info.address);
-
 
 	}
 	
 	void Server::onMessage(ConnInfo Info) {
-
-
 		
 		
 		auto x = clients.find(Info.client);
 
 		if (x != clients.end()) {
 			x->second.lastClock = clock();
-		
-			//std::cout << "CLOCK " << clients[Info.client].lastClock << "\n";
 		}
 		
 		/*
@@ -223,13 +234,39 @@ namespace GT {
 	}
 	
 	unsigned short Server::getHeader(ConnInfo Info) {
+		SOCKET socket = Info.client;
+		auto found = clients.find(socket);
+
+		if (found == clients.end()) {
+			return false;
+		}
+
+		auto & webclient = found->second;
+
+
 		IdHeader* header = (IdHeader*)Info.buffer;
 		std::string command = "";
 		
 		//std::cout << "Header " << header->header << std::endl;
 		/* message from Websocket Server == 10001 */
+
 		if (header->header == 10001) {
 
+			std::string str;
+
+			RequestConnection* r = (RequestConnection*)Info.buffer;
+			webclient.type = 1;
+			strcpy_s(webclient.name, sizeof(webclient.name), r->name);
+			strcpy_s(webclient.user, sizeof(webclient.user), r->user);
+			
+			std::cout << "Connecting WEB SOCKET " << r->name << std::endl;
+
+			return 0;
+
+		}
+		/*
+		if (header->header == 88810001) {
+			std::cout << "header == 10001 " << header->header << std::endl;
 			if (rClients.find(Info.client) != rClients.end()) {
 				rClients.erase(Info.client);
 
@@ -253,10 +290,11 @@ namespace GT {
 			rClients[Info.client].socket = Info.client;
 
 			cout << "Cliente Name: " << r->name << endl;
+			cout << "User: " << r->user << endl;
 			return 0;
 
 		}
-		
+		*/
 		if (header->header == 10020) {
 			RCommand* r = (RCommand*)Info.buffer;
 
@@ -270,87 +308,56 @@ namespace GT {
 			response.level = r->level;
 			std::string str = r->message;
 
-			//mDevices[getUnitName(r->unitId)]
-			auto x = mDevices.find(getUnitName(r->unitId));
-			if (x == mDevices.end()) {
+			SOCKET deviceSocket = getSocket(r->unitId);
+
+			auto found = clients.find(deviceSocket);
+			if (found == clients.end()) {
+
 
 				std::string message = "SENDING TO NOTHING ";
-				std::cout << "Sending message: " << str << "to Nothing\n\n";
+				std::cout << "Sending message: " << str << " to Nothing\n\n";
 
 				char buffer[1024];
 				strcpy_s(response.message, sizeof(response.message), message.c_str());
-				//strcpy(response.message, str.c_str());
-				//std::cout << " el mensaje es [" << response.message << "]\n\n"<< strlen(message.c_str()) << message<<"\n";
+				
+				
 				str = r->unit;
-
-
 				strcpy_s(response.unit, sizeof(response.unit), r->unit);
-				//strcpy_s(response.unit, str.c_str());
 
 				str = r->user;
 				strcpy_s(response.user, sizeof(response.user), str.c_str());
-				//strcpy_s(response.user, str.c_str());
-
 
 				memcpy(buffer, &response, sizeof(response));
-				send(Info.client, buffer, (int)sizeof(buffer), 0);
+				send(socket, buffer, (int)sizeof(buffer), 0);
 				return 0;
 			}
 
+			auto & device = found->second;
+
 			char buffer[1024];
 			strcpy_s(response.message, sizeof(response.message), str.c_str());
-			//strcpy(response.message, str.c_str());
 
 			str = r->unit;
-
-
 			strcpy_s(response.unit, sizeof(response.unit), r->unit);
-			//strcpy_s(response.unit, str.c_str());
 
 			str = r->user;
 			strcpy_s(response.user, sizeof(response.user), str.c_str());
-			//strcpy_s(response.user, str.c_str());
+			
 
 
 			memcpy(buffer, &response, sizeof(response));
-			send(Info.client, buffer, (int)sizeof(buffer), 0);
-
-
-			send(mDevices[getUnitName(r->unitId)].socket, r->message, strlen(r->message), 0);
 			
-			std::cout << Color::_green() << "Sending: " << response.message 
+			send(socket, buffer, (int)sizeof(buffer), 0);
+			send(deviceSocket, r->message, strlen(r->message), 0);
+			
+			std::cout 
+				<< Color::_green() << "Sending: " << response.message 
 				<<  Color::_reset() << " to: "
-				<< mDevices[getUnitName(r->unitId)].device_id << " (" << r->unit << ")\n";
+				<< device.name << " (" << r->unit << ")\n";
 
 
-
-			time_t rawtime;
-			struct tm* timeinfo;
-
-
-			time(&rawtime);
-			timeinfo = localtime(&rawtime);
 
 			
-			/*
-			DBEvent event;
-			event.unitId = r->unitId;
-			event.eventId = 209;
-			strftime(event.dateTime, sizeof(event.dateTime), "%F %T", timeinfo);
-			strcpy(event.title, r->command);
-			strcpy(event.user, r->user);
-			strcpy_s(event.info, sizeof(r->message), r->message);
-			//strcpy(event.info, "");
-			db->insertEvent(&event);
-			*/
-			/*
-			std::cout << "Header: " << response.header << std::endl;
-			std::cout << "Message: " << response.message << std::endl;
-			std::cout << "UnitId: " << response.unitId << std::endl;
-			std::cout << "Mode: " << response.mode << std::endl;
-			std::cout << "User: " << response.user << std::endl;
-			std::cout << "Unit: " << response.unit << std::endl;
-			*/
 
 
 			return 0;
@@ -363,17 +370,28 @@ namespace GT {
 			db->getInfoPending(r->id, &infoPending);
 
 			std::cout << "Pending Id " << infoPending.command << std::endl;
-			send(mDevices[getUnitName(infoPending.unitId)].socket, infoPending.command.c_str(), strlen(infoPending.command.c_str()), 0);
+
+			SOCKET deviceSocket = getSocket(r->unitId);
+
+			auto found = clients.find(deviceSocket);
+			if (found != clients.end()) {
+				send(deviceSocket, infoPending.command.c_str(), strlen(infoPending.command.c_str()), 0);
+			}
+			
 		}
 		if (header->header == 10100) {
 			RCommand* r = (RCommand*)Info.buffer;
 
-			//std::cout << " W " << mDevices[getUnitName(r->unitId)].device_id << std::endl;
+			SOCKET deviceSocket = getSocket(r->unitId);
 
-			if (mDevices[getUnitName(r->unitId)].socket <= 0) {
-				//std::cout << " E R R O R \n";
+			auto found = clients.find(deviceSocket);
+			if (found == clients.end()) {
 				return 0;
 			}
+
+			auto & device = found->second;
+
+			
 
 			RCommand response;
 			response.header = 10021;
@@ -399,14 +417,14 @@ namespace GT {
 
 
 			memcpy(buffer, &response, sizeof(response));
-			send(Info.client, buffer, (int)sizeof(buffer), 0);
+			send(socket, buffer, (int)sizeof(buffer), 0);
 
 
 			//send(mDevices[getUnitName(r->unitId)].socket, r->message, strlen(r->message), 0);
 
 			std::cout << Color::_green() << "Sending: " << response.message
 				<< Color::_reset() << " to: "
-				<< mDevices[getUnitName(r->unitId)].device_id << " (" << r->unit << ")\n";
+				<< device.name << " (" << r->unit << ")\n";
 			/*
 			std::cout << "Header: " << response.header << std::endl;
 			std::cout << "Message: " << response.message << std::endl;
@@ -416,9 +434,15 @@ namespace GT {
 			std::cout << "Unit: " << response.unit << std::endl;
 			*/
 
-			int value = disconect(mDevices[getUnitName(r->unitId)].socket);
+			int value = disconect(device.socket);
 
 			if (value > 0) {
+				std::cout << "DESCONECTING TO: " << device.socket << "\n";
+
+				closeClient(device.socket);
+
+
+				/*
 				SOCKET oldSocket = mDevices[getUnitName(r->unitId)].socket;
 				mDevices[getUnitName(r->unitId)].socket = 0;
 				mDevices[getUnitName(r->unitId)].type = 0;
@@ -436,30 +460,14 @@ namespace GT {
 				strcpy_s(event.info, sizeof(r->message), r->message);
 				//strcpy(event.info, "");
 				db->insertEvent(&event);
+				*/
 			}
 			return 0;
 
 		}
 
 
-		if (header->header == 10010) {
-			CMDMsg* msg = (CMDMsg*)Info.buffer;
-			cout << "type msg: " << msg->type << endl;
-			cout << "Unit ID: " << msg->unitId << endl;
-			if (msg->type == 1 || msg->type == 2) {
-				command = db->createCommand(msg, msg->unitId, msg->cmdId);
-			}
-			if (msg->type == 3) {
-				command = db->loadCommand(msg, msg->cmdId);
-			}
-			if (mDevices[msg->deviceName].type == 2) {
-				cout << "Sending command!!!" << endl;
-			} else {
-				cout << "Unit disconected!!!" << endl;
-			}
-			send(Info.client, command.c_str(), strlen(command.c_str()), 0);
-		}
-		//printf("header: %d\n", header->header);
+		
 
 
 		return header->type;
@@ -471,7 +479,7 @@ namespace GT {
 		
 		std::cout << "ON CLOSE ID: "<< client  <<" \n";
 
-		clients[client].device_id;
+		clients[client].name;
 		RCommand resp;
 		resp.unitId = clients[client].id;
 		resp.header = 0;
@@ -484,8 +492,8 @@ namespace GT {
 		resp.type = 6;
 		resp.typeMessage = ClientMsg::Disconnecting;
 		strcpy(resp.message, "DISCONNECTED");
-		strcpy(resp.unit, clients[client].device_id);
-		strcpy(resp.user, clients[client].device_id);
+		strcpy(resp.unit, clients[client].name);
+		strcpy(resp.user, clients[client].name);
 		strcpy(resp.name, getClientName(clients[client].id).c_str());
 
 		time_t rawtime;
@@ -517,7 +525,7 @@ namespace GT {
 		broadcast(&resp);
 		//std::cout << "closing Client: " << client << " size:" << clients.size() << " \n";
 		clients.erase(client);
-		rClients.erase(client);
+		//rClients.erase(client);
 		//std::cout << "closing Client: " << client << " size:" << clients.size() << " \n";
 		m.unlock();
 	}
@@ -526,87 +534,21 @@ namespace GT {
 		
 		closeClient(Info.client);
 
-		return;
-
-		clients[Info.client].device_id;
-		RCommand resp;
-		resp.unitId = clients[Info.client].id;
-		resp.header = 0;
-		resp.commandId = 0;
-		resp.id = 0;
-		resp.index = 0;
-		resp.level = 0;
-		
-		resp.mode = 0;
-		resp.type = 6;
-		resp.typeMessage = ClientMsg::Disconnecting;
-		strcpy(resp.message, "DISCONNECTED");
-		strcpy(resp.unit, clients[Info.client].device_id);
-		strcpy(resp.user, clients[Info.client].device_id);
-		strcpy(resp.name, getClientName(clients[Info.client].id).c_str());
-
-		time_t rawtime;
-		struct tm* timeinfo;
-
-
-		time(&rawtime);
-		timeinfo = localtime(&rawtime);
-
-		strftime(resp.date, sizeof(resp.date), "%F %T", timeinfo);
-
-		//strcpy(info.date, "0000-00-00 00:00:00");
-		//strcpy(info.date, "");
-		
-		//db->saveResponse(&resp, "DISCONNECTED");
-		
-		if (resp.unitId > 0) {
-			db->setClientStatus(resp.unitId, 0);
-
-			DBEvent event;
-			event.unitId = clients[Info.client].id;
-			strftime(event.dateTime, sizeof(event.dateTime), "%F %T", timeinfo);
-			event.eventId = 202;
-			strcpy(event.title, "disconnected");
-			strcpy(event.info, "");
-			db->insertEvent(&event);
-		}
-		
-		broadcast(&resp);
-		clients.erase(Info.client);
-		rClients.erase(Info.client);
-		
-
-
-
-		
 	}
 	
 	bool Server::isSyncMsg(ConnInfo Info) {
+		SOCKET socket = Info.client;
+		auto found = clients.find(socket);
+
+		if (found == clients.end()) {
+			return false;
+		}
+
+		auto &client = found->second;
 
 		double timeInSeconds = 0;
 		clock_t endTime = clock();
-		/*
-		for (std::map<SOCKET, GTClient>::iterator it = clients.begin(); it != clients.end(); ++it) {
-			timeInSeconds = (double(endTime - it->second.clock) / CLOCKS_PER_SEC);
-			//if (it->second.type != 2) {
-			printf("%10d", it->second.header);
-			printf("%18s", it->second.address);
-
-			printf("%12s", it->second.name);
-			printf("%6d", it->second.header);
-			printf("%10.3f", timeInSeconds);
-			printf("%8d", it->second.socket);
-			printf("%8d", it->second.version_id);
-			printf("%6d\n", it->second.type);
-			//}
-
-
-		}
-		*/
-
-
-		//double diffClock = (double(Info.clock) - double(mClock)) / CLOCKS_PER_SEC;
-		//cout << "clock " << diffClock << endl;
+		
 
 		SyncMsg* sync_msg = (SyncMsg*)Info.buffer;
 
@@ -615,73 +557,51 @@ namespace GT {
 		//std::cout << "clock: "<< Info.clock  << " chrono " << (double(Info.clock-mClock) / CLOCKS_PER_SEC) << endl;
 		
 		//clients[Info.client].clock = Info.clock;
-		clients[Info.client].header = sync_msg->Keep_Alive_Header;
+		//clients[Info.client].header = sync_msg->Keep_Alive_Header;
 		
 		
 		
 		if (db->isVersion(sync_msg->Keep_Alive_Header)) {
-
+			
 			//std::cout << "synchronization " << std::endl;
 			//printf(ANSI_COLOR_CYAN "---> verification of sync (%lu)..(%d).\n" ANSI_COLOR_RESET, sync_msg->Keep_Alive_Device_ID, sync_msg->Keep_Alive_Header);
 			//puts(sync_msg->Keep_Alive_Device_ID));
 
 			sprintf(name, "%lu", sync_msg->Keep_Alive_Device_ID);
 			//printf("\nasync %d\n", sync_msg->Keep_Alive_Device_ID);
-			std::cout << "Info.client " << Info.client << "  name: " << name << "\n\n";
-			if (mDevices.find(name) != mDevices.end()) {
+			std::cout << "socket: " << socket << "  name: " << name << "\n\n";
+			SOCKET oldSocket = getSocket(name);
 
-				if (mDevices[name].socket != Info.client) {
-					SOCKET oldSocket = mDevices[name].socket;
-					mDevices[name].type = 0;
-					mDevices[name].socket = 0;
-					mDevices[name].version_id = 0;
-					clients.erase(oldSocket);
-					mDevices.erase(name);
-					
-				}
-				//std::cout << "Existe name "<< name << "     - info " << mDevices[name].socket << " vs. " << Info.client << "\n\n";
+			if (oldSocket != 0 && oldSocket != socket) {
+				clients.erase(oldSocket);
 			}
-			
-			
-			mDevices[name] = clients[Info.client];
 
 
 			time_t rawtime;
 			struct tm* timeinfo;
 
-
 			time(&rawtime);
 			timeinfo = localtime(&rawtime);
-
 			
-
-			if (mDevices[name].type != 2) {
-				//std::cout << "Validating version_id " << mDevices[name].version_id << "\n\n";
+			
+			if (client.type != 2) {
 				
-				
-				clients[Info.client].type = 2;
-				clients[Info.client].status = 1;
-				
-
-				mDevices[name].type = 2;
-				strcpy(mDevices[name].device_id, (const char*)name);
-				strcpy_s(mDevices[name].name, sizeof(mDevices[name].name), (const char*)name);
+				client.type = 2;
+				//clients[socket].type = 2;
+				client.status = 1;
+				strcpy_s(client.name, sizeof(client.name), (const char*)name);
 
 				InfoClient cInfo = db->getInfoClient(name);
-				mDevices[name].id = cInfo.unit_id;
-				mDevices[name].version_id = cInfo.version_id;
+				client.id = cInfo.unit_id;
+				client.formatId = cInfo.format_id;
 
-				db->setClientStatus(mDevices[name].id, 1);
+				//mDevices[name].version_id = cInfo.version_id;
 
-				clients[Info.client].id = cInfo.unit_id;
-				clients[Info.client].version_id = cInfo.version_id;
-				strcpy(clients[Info.client].device_id, (const char*)name);
-				strcpy_s(clients[Info.client].name, sizeof(clients[Info.client].name), (const char*)name);
+				db->setClientStatus(client.id, 1);
 
 
-
-				setUnitName(cInfo.unit_id, name);
-				setClientName(cInfo.unit_id, cInfo.name);
+				setUnitName(client.id, name);
+				setClientName(client.id, cInfo.name);
 
 				RCommand info;
 				info.header = 0;
@@ -717,13 +637,13 @@ namespace GT {
 				broadcast(&info);
 				time(&info.time);
 
-				cout << "Unit " << cInfo.unit_id << ", name: "<< name << " is connected " << endl;
+				cout << "Unit " << client.id << ", name: "<< name << " is connected " << endl;
 			} else {
 
-				db->setClientStatus(mDevices[name].id, 1);
+				db->setClientStatus(client.id, 1);
 
 				DBEvent event;
-				event.unitId = mDevices[name].id;
+				event.unitId = client.id;
 				strftime(event.dateTime, sizeof(event.dateTime), "%F %T", timeinfo);
 				event.eventId = 203;
 				strcpy(event.title, "synch");
@@ -735,11 +655,14 @@ namespace GT {
 
 			
 			
+			Server::isAlive();
 
 			//db->saveEvent("88", 4);
 			//printf(ANSI_COLOR_RED "SYNC MESSAGGE FROM: (%s) %d, version: %d \n" ANSI_COLOR_RESET, name, mDevices[name].id, mDevices[name].version_id);
-			std::cout << Color::_red() << "Sync from: " << Color::_reset() << name << std::endl;
-			send(Info.client, Info.buffer, Info.valread, 0);// return the sycm message
+			std::cout << Color::_cyan() << "Synchronization from: " << Color::_reset() << name << std::endl;
+			
+			// return the sycm message
+			send(socket, Info.buffer, Info.valread, 0);
 
 			//const char* buf = "$WP+VER=0000,?";
 			//send(Info.client, buf, strlen(buf), 0);
@@ -766,32 +689,7 @@ namespace GT {
 		//printf("id. %s \n", cmd->id);
 		//printf("message. %s \n", cmd->message);
 
-		if (cmd->token == 9) {
-			DeviceMSG * m2 = (DeviceMSG*) cmd->message;
-			//m2->id[sizeof(m2->id)] = '\0';
-			//printf("m2 id. %d: %s \n", sizeof(m2->id), m2->id);
-			//printf("m2 id. %d: %s \n", sizeof(m2->message), m2->message);
-
-			if (mDevices.count(m2->id)>0) {
-				//printf("si es igual.\n");
-				send(mDevices[m2->id].socket, m2->message, strlen(m2->message), 0);
-			}
-				
-			for (std::map<string, GTClient>::iterator it = mDevices.begin(); it != mDevices.end(); it++) {
-				if (m2->id == it->first.c_str()) {
-					//printf("si es igual.\n");
-				}
-
-					
-				//printf("there are a client..%s..\n", it->first.c_str() );
-					
-					
-			}
-
-
-
-		}
-
+		
 
 		switch (cmd->token) {
 		case '*':
@@ -821,6 +719,15 @@ namespace GT {
 	}
 
 	bool Server::deviceMessage(ConnInfo Info) {
+		SOCKET socket = Info.client;
+		auto found = clients.find(socket);
+
+		if (found == clients.end()) {
+			return false;
+		}
+
+		
+		auto& client = found->second;
 
 		//printf(ANSI_COLOR_MAGENTA "esto es un device message\n");
 
@@ -876,7 +783,7 @@ namespace GT {
 
 					unitResponse.header = 0;
 
-					db->getIndexCommand(clients[Info.client].device_id, &rCommand, &unitResponse);
+					db->getIndexCommand(client.name, &rCommand, &unitResponse);
 
 					//std::cout << " el TAG es " << rCommand.tag << "\n\n";
 					if (rCommand.tag == "+2") {
@@ -892,7 +799,7 @@ namespace GT {
 					//std::cout << " ---- Command Id " << unitResponse.commandId << std::endl;
 					//std::cout << " ---- Index " << unitResponse.index << std::endl;
 
-					db->infoCommand(clients[Info.client].device_id, &rCommand, &unitResponse);
+					db->infoCommand(client.name, &rCommand, &unitResponse);
 					
 					time_t now;
 					time(&now);
@@ -920,12 +827,12 @@ namespace GT {
 					db->insertEvent(&event);
 
 
-					db->getPending(clients[Info.client].device_id, &rCommand, &unitResponse);
+					db->getPending(client.name, &rCommand, &unitResponse);
 
 
 					if (unitResponse.type == 2) {
 						
-						db->deviceConfig(clients[Info.client].device_id, &rCommand);
+						db->deviceConfig(client.name, &rCommand);
 					}
 					
 					//db->evalPending(clients[Info.client].device_id, &rCommand, unitResponse.type);
@@ -938,11 +845,11 @@ namespace GT {
 					//cout << "es un track" << endl;
 					//cout << Color::_cyan() << "Saving Track" << Color::_reset()  << endl;
 					//cout << ANSI_COLOR_CYAN "Saving Track: " << mClients[unit_id].device_id << endl;
-					if (db->saveTrack(clients[Info.client].device_id, to.c_str())) {
+					if (db->saveTrack(client.id, client.formatId, to.c_str())) {
 						cout << Color::_cyan() << "Saving Track from: " << Color::_reset() << getUnitName(clients[Info.client].id)   << endl;
 
 						//std::cout << " MY Tracking " << to.c_str() << "\n\n";
-						webcar->insertTrack(clients[Info.client].device_id, to.c_str());
+						webcar->insertTrack(clients[Info.client].name, to.c_str());
 						//cout << Color::_cyan() << "--- Track: " << Color::_reset() << to.c_str() << endl;
 					}
 					
@@ -963,8 +870,11 @@ namespace GT {
 
 		memcpy(buffer, &(*response), sizeof(RCommand));
 		
-		for (std::map<SOCKET, RClient>::iterator it = rClients.begin(); it != rClients.end(); ++it) {
-			send(it->second.socket, buffer, (int)sizeof(buffer), 0);
+		for (std::map<SOCKET, GTClient2>::iterator it = clients.begin(); it != clients.end(); ++it) {
+			if (it->second.type == 1) {
+				send(it->second.socket, buffer, (int)sizeof(buffer), 0);
+			}
+			
 		}
 		
 		memset(&buffer, 0, sizeof(buffer));//clear the buffer
@@ -987,6 +897,28 @@ namespace GT {
 		mClientName[unitId] = name;
 	}
 
+	SOCKET Server::getSocket(int id) {
+		
+		for (std::map<SOCKET, GTClient2>::iterator it = clients.begin(); it != clients.end(); ++it) {
+			
+			if (it->second.id == id) {
+				return it->first;
+			}
+		}
+		return 0;
+	}
+
+	SOCKET Server::getSocket(std::string name) {
+		std::string name2 = "";
+		for (std::map<SOCKET, GTClient2>::iterator it = clients.begin(); it != clients.end(); ++it) {
+			name2 == it->second.name;
+			if (name == name2) {
+				return it->first;
+			}
+		}
+		return 0;
+	}
+
 	void Server::isAlive() {
 		//m2.lock();
 		double timeInSeconds = 0;
@@ -994,8 +926,14 @@ namespace GT {
 		clock_t endTime = clock();
 		printf("\n/**********Clients List **********/\n");
 		int n = 0;
-		for (std::map<SOCKET, GTClient>::iterator it = clients.begin(); it != clients.end(); ++it) {
-			n++;
+		int i = 0;
+		for (std::map<SOCKET, GTClient2>::iterator it = clients.begin(); it != clients.end(); ++it) {
+			
+			if (it->second.type == 2) {
+				i++;
+				n = i;
+			}
+			
 			timeInSeconds = (double(endTime - it->second.clock) / CLOCKS_PER_SEC);
 			delta = (double(endTime - it->second.lastClock) / CLOCKS_PER_SEC);
 			 
@@ -1003,44 +941,46 @@ namespace GT {
 
 			if (it->second.type == 0) {
 				printf(ANSI_COLOR_YELLOW);
+				n = 0;
 			}
 			if (it->second.type == 1) {
 				printf(ANSI_COLOR_CYAN);
+				n = 0;
 			}
 			
 			printf("%3d", n);
-			printf("%6d", it->first);
+			printf("%6d", (int)it->first);
 			printf("%18s", it->second.address);
 			printf("%12s", it->second.name);
 			//printf("%6d", it->second.header);
 			printf("%12.3f", timeInSeconds);
 			printf("%12.3f", delta);
 			printf("%8d", int(it->second.socket));
-			printf("%8d", it->second.version_id);
+			printf("%8d", it->second.formatId);
 			printf("%6d\n", it->second.type);
 
-			if (it->second.type == 0 && timeInSeconds > 60) {
+			if (it->second.type == 0 && timeInSeconds > (double)waitTime) {
 				printf("%50s\n", "-- DISCONECTING TO UNKNOWN");
 				//printf("%10d", it->second.header);
 				printf("%3d", n);
-				printf("%6d", it->first);
+				printf("%6d", (int)it->first);
 				printf("%18s", it->second.address);
 				printf("%12s", it->second.name);
 				//printf("%6d", it->second.header);
 				printf("%12.3f", timeInSeconds);
 				printf("%12.3f", delta);
 				printf("%8d", int(it->second.socket));
-				printf("%8d", it->second.version_id);
+				printf("%8d", it->second.formatId);
 				printf("%6d\n", it->second.type);
 				disconect(it->first);
 				clients.erase(it->first);
-				rClients.erase(it->first);
+				
 			}
 
 			if (it->second.type == 2 && delta > (double)keepAliveTime) {
 				printf("%50s\n", "-- DISCONECTING TO DEVICE");
 				printf("%3d", n);
-				printf("%6d", it->first);
+				printf("%6d", (int)it->first);
 				//printf("%10d", it->second.header);
 				printf("%18s", it->second.address);
 				printf("%12s", it->second.name);
@@ -1048,11 +988,11 @@ namespace GT {
 				printf("%12.3f", timeInSeconds);
 				printf("%12.3f", delta);
 				printf("%8d", int(it->second.socket));
-				printf("%8d", it->second.version_id);
+				printf("%8d", it->second.formatId);
 				printf("%6d\n", it->second.type);
 				disconect(it->first);
 				clients.erase(it->first);
-				rClients.erase(it->first);
+				
 				//closeClient(it->first);
 			}
 

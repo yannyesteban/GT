@@ -111,7 +111,7 @@ namespace GT {
 		void printFormats();
 
 		bool saveTrack(const char* unit_id, int id, int version, const char* buffer);
-		bool saveTrack(const char* unit_id, const char* buffer);
+		bool saveTrack(int unitId, int formatId, const char* buffer);
 		bool saveTrack2(const char* unit_id, const char* buffer);
 
 		bool saveEvent(const char* unit_id, int type_id);

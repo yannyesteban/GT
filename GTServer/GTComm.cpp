@@ -24,7 +24,7 @@ void GT::GTComm::start()
         auto infoConfig = getConfig(pp);
 
 
-        std::cout << "K --App " << infoConfig.appname << "\n\n";
+        std::cout << "App " << infoConfig.appname << "\n\n";
        
         
         tasks.push_back(new std::thread(runServer, &infoConfig));
@@ -80,6 +80,7 @@ GT::AppConfig getConfig(rapidjson::Value& d)
     info.debug = d["debug"].GetBool();
     info.show_cache = d["show_cache"].GetBool();
     info.keep_alive = d["keep_alive"].GetInt();
+    info.waitTime = d["wait_time"].GetInt();
 
     info.db.host = d["db"]["host"].GetString();
     info.db.port = d["db"]["port"].GetString();
