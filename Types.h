@@ -36,6 +36,7 @@ namespace GT {
 		bool show_cache;
 		int keep_alive;
 		int waitTime;
+		int status;
 		InfoDB db;
 	};
 

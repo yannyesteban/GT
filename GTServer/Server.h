@@ -92,6 +92,7 @@ namespace GT {
 		void broadcast(RCommand * response);
 		void isAlive();
 		void closeClient(SOCKET client);
+		void deleteClient(SOCKET client);
 		int keepAliveTime = 90;
 		int waitTime = 30;
 		

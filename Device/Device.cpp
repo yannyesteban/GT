@@ -118,9 +118,9 @@ bool GT::Device::beginTasks() {
 
 		//break;
 		
-		if (d == 20) {
+		if (clientId == 3 && d == 40) {
 			std::cout << "STOP \n\n";
-			//stop();
+			stop();
 		}
 
 	}

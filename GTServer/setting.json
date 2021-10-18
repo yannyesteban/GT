@@ -28,7 +28,8 @@
       "port": 3341,
       "show_cache": false,
       "version": "1.0.0.1",
-      "keep_alive": 100
+      "keep_alive": 40,
+      "status": 0
     },
     {
       "appname": "SERVER: 3317",
@@ -44,7 +45,8 @@
       "port": 3317,
       "show_cache": false,
       "version": "1.0.0.1",
-      "keep_alive": 100
+      "keep_alive": 40,
+      "status": 1
     }
   ]
 }

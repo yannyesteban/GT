@@ -6,7 +6,7 @@ using namespace std;
 namespace GT {
 	std::mutex m;
 	std::mutex m2;
-
+	std::mutex m3;
 
 	
 	void runTimer() {
@@ -32,9 +32,9 @@ namespace GT {
 		while (true) {
 			
 			std::this_thread::sleep_for(std::chrono::seconds(10));
-			m.lock();
+			m2.lock();
 			s->isAlive();
-			m.unlock();
+			m2.unlock();
 		}
 
 	}
@@ -437,10 +437,10 @@ namespace GT {
 			int value = disconect(device.socket);
 
 			if (value > 0) {
-				std::cout << "DESCONECTING TO: " << device.socket << "\n";
-
+				std::cout << "DISCONECTING TO: " << device.socket << "\n";
+				//m.lock();
 				closeClient(device.socket);
-
+				//m.unlock();
 
 				/*
 				SOCKET oldSocket = mDevices[getUnitName(r->unitId)].socket;
@@ -474,11 +474,16 @@ namespace GT {
 	}
 	
 	void Server::closeClient(SOCKET client) {
-		m.lock();
-		
-		
-		std::cout << "ON CLOSE ID: "<< client  <<" \n";
 
+		disconect(client);
+		
+		deleteClient(client);
+		
+	}
+	void Server::deleteClient(SOCKET client) {
+
+		std::cout << "ON CLOSE ID: " << client << " \n";
+		m.lock();
 		clients[client].name;
 		RCommand resp;
 		resp.unitId = clients[client].id;
@@ -521,18 +526,20 @@ namespace GT {
 			strcpy(event.info, "");
 			db->insertEvent(&event);
 		}
-
-		broadcast(&resp);
-		//std::cout << "closing Client: " << client << " size:" << clients.size() << " \n";
 		clients.erase(client);
+		broadcast(&resp);
+		m.unlock();
+		//std::cout << "closing Client: " << client << " size:" << clients.size() << " \n";
+		
 		//rClients.erase(client);
 		//std::cout << "closing Client: " << client << " size:" << clients.size() << " \n";
-		m.unlock();
+		
 	}
-
 	void Server::onClose(ConnInfo Info) {
 		
-		closeClient(Info.client);
+		
+		deleteClient(Info.client);
+		
 
 	}
 	
@@ -848,8 +855,8 @@ namespace GT {
 					if (db->saveTrack(client.id, client.formatId, to.c_str())) {
 						cout << Color::_cyan() << "Saving Track from: " << Color::_reset() << getUnitName(clients[Info.client].id)   << endl;
 
-						//std::cout << " MY Tracking " << to.c_str() << "\n\n";
-						webcar->insertTrack(clients[Info.client].name, to.c_str());
+						std::cout << "ERROR REVISAR WC MY Tracking " << to.c_str() << "\n\n";
+						//webcar->insertTrack(clients[Info.client].name, to.c_str());
 						//cout << Color::_cyan() << "--- Track: " << Color::_reset() << to.c_str() << endl;
 					}
 					
@@ -924,10 +931,12 @@ namespace GT {
 		double timeInSeconds = 0;
 		double delta = 0;
 		clock_t endTime = clock();
-		printf("\n/**********Clients List **********/\n");
+		printf("\n/**********Clients List **********/\n SIZE %d\n", clients.size());
 		int n = 0;
 		int i = 0;
-		for (std::map<SOCKET, GTClient2>::iterator it = clients.begin(); it != clients.end(); ++it) {
+		
+		std::map<SOCKET, GTClient2> cli = clients;
+		for (std::map<SOCKET, GTClient2>::iterator it = cli.begin(); it != cli.end(); ++it) {
 			
 			if (it->second.type == 2) {
 				i++;
@@ -943,6 +952,7 @@ namespace GT {
 				printf(ANSI_COLOR_YELLOW);
 				n = 0;
 			}
+			
 			if (it->second.type == 1) {
 				printf(ANSI_COLOR_CYAN);
 				n = 0;
@@ -958,7 +968,7 @@ namespace GT {
 			printf("%8d", int(it->second.socket));
 			printf("%8d", it->second.formatId);
 			printf("%6d\n", it->second.type);
-
+			
 			if (it->second.type == 0 && timeInSeconds > (double)waitTime) {
 				printf("%50s\n", "-- DISCONECTING TO UNKNOWN");
 				//printf("%10d", it->second.header);
@@ -972,8 +982,9 @@ namespace GT {
 				printf("%8d", int(it->second.socket));
 				printf("%8d", it->second.formatId);
 				printf("%6d\n", it->second.type);
-				disconect(it->first);
-				clients.erase(it->first);
+				//disconect(it->first);
+				//clients.erase(it->first);
+				closeClient(it->first);
 				
 			}
 
@@ -990,9 +1001,9 @@ namespace GT {
 				printf("%8d", int(it->second.socket));
 				printf("%8d", it->second.formatId);
 				printf("%6d\n", it->second.type);
-				disconect(it->first);
-				clients.erase(it->first);
-				
+				//disconect(it->first);
+				//clients.erase(it->first);
+				closeClient(it->first);
 				//closeClient(it->first);
 			}
 

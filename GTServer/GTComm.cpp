@@ -23,21 +23,24 @@ void GT::GTComm::start()
         rapidjson::Value& pp = d["servers"][i];
         auto infoConfig = getConfig(pp);
 
-
-        std::cout << "App " << infoConfig.appname << "\n\n";
-       
         
-        tasks.push_back(new std::thread(runServer, &infoConfig));
-        Sleep(100);
+        std::cout << "App " << infoConfig.appname << " STATUS: " << infoConfig.status << "\n\n";
+       
+        if (infoConfig.status == 1) {
+            tasks.push_back(new std::thread(runServer, &infoConfig));
+            Sleep(100);
+        }
+        
+        
 
     }
-    std::cout << "...Bye" << "\n";
+    //std::cout << "...Bye" << "\n";
     for (std::vector<std::thread*>::iterator it = tasks.begin(); it != tasks.end(); ++it) {
         (*it)->join();
     }
     
     
-    std::cout << "...Bye 2" << "\n";
+    //std::cout << "...Bye 2" << "\n";
     
 }
 
@@ -81,6 +84,7 @@ GT::AppConfig getConfig(rapidjson::Value& d)
     info.show_cache = d["show_cache"].GetBool();
     info.keep_alive = d["keep_alive"].GetInt();
     info.waitTime = d["wait_time"].GetInt();
+    info.status = d["status"].GetInt();
 
     info.db.host = d["db"]["host"].GetString();
     info.db.port = d["db"]["port"].GetString();

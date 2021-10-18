@@ -76,6 +76,7 @@ namespace GT {
 			FD_SET(master, &readfds);//add master socket to fd set
 			memset(buffer, 0, lenBuffer);//clear the buffer
 			//add child sockets to fd set
+			
 			for (i = 0; i < maxClients; i++) {
 				s = clients[i];
 				if (s > 0) {
@@ -83,13 +84,14 @@ namespace GT {
 				}
 			}
 			//wait for an activity on any of the sockets, timeout is NULL , so wait indefinitely
-		
+			
 			activity = select(0, &readfds, NULL, NULL, NULL);
 			
 			if (activity == SOCKET_ERROR) {
 				printf("select call failed with error code : %d", WSAGetLastError());
 				exit(EXIT_FAILURE);
 			}
+			
 			//If something happened on the master socket , then its an incoming connection
 			if (FD_ISSET(master, &readfds)) {
 				if ((tSocket = accept(master, (struct sockaddr*) & address, (int*)&addrlen)) < 0) {
@@ -97,7 +99,7 @@ namespace GT {
 					perror("accept");
 					exit(EXIT_FAILURE);
 				}
-			
+				
 				//inform user of socket number - used in send and receive commands
 				//printf("New connection , socket fd is %d , ip is : %s , port : %d (?)\n", new_socket, inet_ntoa(address.sin_addr), ntohs(address.sin_port));
 				//add new socket to array of sockets
@@ -132,6 +134,7 @@ namespace GT {
 				s = clients[i];
 				//if client presend in read sockets             
 				if (FD_ISSET(s, &readfds)) {
+					
 					//get details of the client
 					getpeername(s, (struct sockaddr*) & address, (int*)&addrlen);
 
@@ -163,7 +166,9 @@ namespace GT {
 							onClose(Info);
 						} else {
 							//printf("buffer %s", buffer);
-							printf("\nrecv failed with error code: [ %d ]\n", error_code);
+							//closesocket(s);
+							//clients[i] = 0;
+							printf("\nrecv failed with error code: [ %d ], SOCKET: %d\n", error_code, (int)s);
 						}
 						//CallClientError(master, s, buffer, valread, i, WSAGetLastError());
 						
