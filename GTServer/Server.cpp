@@ -855,8 +855,8 @@ namespace GT {
 					if (db->saveTrack(client.id, client.formatId, to.c_str())) {
 						cout << Color::_cyan() << "Saving Track from: " << Color::_reset() << getUnitName(clients[Info.client].id)   << endl;
 
-						std::cout << "ERROR REVISAR WC MY Tracking " << to.c_str() << "\n\n";
-						//webcar->insertTrack(clients[Info.client].name, to.c_str());
+						//std::cout << "ERROR REVISAR WC MY Tracking " << to.c_str() << "\n\n";
+						webcar->insertTrack(clients[Info.client].name, to.c_str());
 						//cout << Color::_cyan() << "--- Track: " << Color::_reset() << to.c_str() << endl;
 					}
 					
