@@ -154,7 +154,7 @@ namespace GT {
 			clients.erase(client);
 		}
 
-		std::cout << Color::_green() << "\nNew Client: Id = " << Info.client << Color::_reset() << std::endl;
+		std::cout << Color::_green() << "\nNew Client: Id = " << Info.client << Color::_reset() << "\n";
 
 		
 		clients.insert({
@@ -524,7 +524,7 @@ namespace GT {
 			event.eventId = 202;
 			strcpy(event.title, "disconnected");
 			strcpy(event.info, "");
-			db->insertEvent(&event);
+			insertEvent(&event);
 		}
 		clients.erase(client);
 		broadcast(&resp);
@@ -576,7 +576,7 @@ namespace GT {
 
 			sprintf(name, "%lu", sync_msg->Keep_Alive_Device_ID);
 			//printf("\nasync %d\n", sync_msg->Keep_Alive_Device_ID);
-			std::cout << "socket: " << socket << "  name: " << name << "\n\n";
+			//std::cout << "socket: " << socket << "  name: " << name << "\n\n";
 			SOCKET oldSocket = getSocket(name);
 
 			if (oldSocket != 0 && oldSocket != socket) {
@@ -604,7 +604,7 @@ namespace GT {
 
 				//mDevices[name].version_id = cInfo.version_id;
 
-				db->setClientStatus(client.id, 1);
+				setClientStatus(client.id, 1);
 
 
 				setUnitName(client.id, name);
@@ -639,7 +639,7 @@ namespace GT {
 				event.eventId = 201;
 				strcpy(event.title, "CONNECTED");
 				strcpy(event.info, "");
-				db->insertEvent(&event);
+				insertEvent(&event);
 
 				broadcast(&info);
 				time(&info.time);
@@ -647,7 +647,7 @@ namespace GT {
 				cout << "Unit " << client.id << ", name: "<< name << " is connected " << endl;
 			} else {
 
-				db->setClientStatus(client.id, 1);
+				setClientStatus(client.id, 1);
 
 				DBEvent event;
 				event.unitId = client.id;
@@ -655,7 +655,7 @@ namespace GT {
 				event.eventId = 203;
 				strcpy(event.title, "synch");
 				strcpy(event.info, "");
-				db->insertEvent(&event);
+				insertEvent(&event);
 				//mDevices[name].clock = clock();
 				//cout << "Algo Raro aqui!!!" << endl;
 			}
@@ -831,10 +831,10 @@ namespace GT {
 					strcpy(event.user, unitResponse.user);
 					strcpy_s(event.info, sizeof(event.info), to.c_str());
 
-					db->insertEvent(&event);
+					insertEvent(&event);
 
 
-					db->getPending(client.name, &rCommand, &unitResponse);
+					//db->getPending(client.name, &rCommand, &unitResponse);
 
 
 					if (unitResponse.type == 2) {
@@ -917,6 +917,20 @@ namespace GT {
 		return 0;
 	}
 
+	bool Server::insertEvent(DBEvent* infoEvent)
+	{
+		db->insertEvent(infoEvent);
+		return true;
+	}
+
+	bool Server::setClientStatus(unsigned int unitId, unsigned int status)
+	{
+		m3.lock();
+		db->setClientStatus(unitId, status);
+		m3.unlock();
+		return true;
+	}
+
 	SOCKET Server::getSocket(std::string name) {
 		std::string name2 = "";
 		for (std::map<SOCKET, GTClient2>::iterator it = clients.begin(); it != clients.end(); ++it) {
@@ -933,7 +947,7 @@ namespace GT {
 		double timeInSeconds = 0;
 		double delta = 0;
 		clock_t endTime = clock();
-		printf("\n/**********Clients List **********/\n SIZE %d\n", clients.size());
+		printf("\n/**********Clients List **********/\n");
 		int n = 0;
 		int i = 0;
 		
@@ -961,7 +975,7 @@ namespace GT {
 			}
 			
 			printf("%3d", n);
-			printf("%6d", (int)it->first);
+			printf("%6d", it->second.id);
 			printf("%18s", it->second.address);
 			printf("%12s", it->second.name);
 			//printf("%6d", it->second.header);
@@ -975,7 +989,7 @@ namespace GT {
 				printf("%50s\n", "-- DISCONECTING TO UNKNOWN");
 				//printf("%10d", it->second.header);
 				printf("%3d", n);
-				printf("%6d", (int)it->first);
+				printf("%6d", it->second.id);
 				printf("%18s", it->second.address);
 				printf("%12s", it->second.name);
 				//printf("%6d", it->second.header);
@@ -993,7 +1007,7 @@ namespace GT {
 			if (it->second.type == 2 && delta > (double)keepAliveTime) {
 				printf("%50s\n", "-- DISCONECTING TO DEVICE");
 				printf("%3d", n);
-				printf("%6d", (int)it->first);
+				printf("%6d", it->second.id);
 				//printf("%10d", it->second.header);
 				printf("%18s", it->second.address);
 				printf("%12s", it->second.name);
@@ -1012,7 +1026,8 @@ namespace GT {
 			printf(ANSI_COLOR_RESET);
 
 		}
-
+		
+		printf("/*********************************/\n");
 		//m2.unlock();
 	}
 

@@ -1629,7 +1629,7 @@ namespace GT {
 					R"(UPDATE unit SET conn_status=?, conn_date = CASE ? WHEN 1 THEN now() ELSE conn_date END WHERE id=?)");
 			}
 
-			std::cout << "CAMBIANDO el status de " << unitId << " a " << status << "\n\n";
+			//std::cout << "CAMBIANDO el status de " << unitId << " a " << status << "\n\n";
 			
 			stmtUpdateClientStatus->setInt(1, status);
 			stmtUpdateClientStatus->setInt(2, status);

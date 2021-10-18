@@ -120,6 +120,9 @@ namespace GT {
 		WC::Webcar * webcar;
 		SOCKET getSocket(int id);
 		SOCKET getSocket(std::string name);
+
+		bool insertEvent(DBEvent* infoEvent);
+		bool setClientStatus(unsigned int unitId, unsigned int status);
 		
 		//RCommand unitResponse;
 	};
