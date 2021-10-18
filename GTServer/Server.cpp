@@ -32,9 +32,9 @@ namespace GT {
 		while (true) {
 			
 			std::this_thread::sleep_for(std::chrono::seconds(10));
-			m2.lock();
+			//m2.lock();
 			s->isAlive();
-			m2.unlock();
+			//m2.unlock();
 		}
 
 	}
@@ -852,6 +852,7 @@ namespace GT {
 					//cout << "es un track" << endl;
 					//cout << Color::_cyan() << "Saving Track" << Color::_reset()  << endl;
 					//cout << ANSI_COLOR_CYAN "Saving Track: " << mClients[unit_id].device_id << endl;
+					m.lock();
 					if (db->saveTrack(client.id, client.formatId, to.c_str())) {
 						cout << Color::_cyan() << "Saving Track from: " << Color::_reset() << getUnitName(clients[Info.client].id)   << endl;
 
@@ -859,6 +860,7 @@ namespace GT {
 						webcar->insertTrack(clients[Info.client].name, to.c_str());
 						//cout << Color::_cyan() << "--- Track: " << Color::_reset() << to.c_str() << endl;
 					}
+					m.unlock();
 					
 				}
 				
