@@ -56,6 +56,7 @@ namespace GT {
 		virtual void onClose(ConnInfo Info)=0;
 
 		void startListen();
+		void listSocket();
 	private:
 		WSADATA wsa = {};
 		SOCKET master = 0;

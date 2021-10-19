@@ -230,4 +230,16 @@ namespace GT {
 		WSACleanup();
 
 	}
+	void Socket::listSocket()
+	{
+		int i;
+		int n = 0;
+		for (i = 0; i < maxClients; i++) {
+
+			if (clients[i] != 0) {
+				printf("%d .- sokect %d : %d\n", n++, i, (int)clients[i]);
+			}
+
+		}
+	}
 }

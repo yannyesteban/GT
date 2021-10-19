@@ -251,10 +251,19 @@ namespace GT {
 		/* message from Websocket Server == 10001 */
 
 		if (header->header == 10001) {
+			RequestConnection* r = (RequestConnection*)Info.buffer;
+
+			SOCKET oldSocket = getSocket(r->name);
+
+			if (oldSocket != 0 && oldSocket != socket) {
+				std::cout << "oldSocket: " << oldSocket << "  new is : " << socket << "\n\n";
+				disconect(oldSocket);
+				clients.erase(oldSocket);
+			}
 
 			std::string str;
 
-			RequestConnection* r = (RequestConnection*)Info.buffer;
+			
 			webclient.type = 1;
 			strcpy_s(webclient.name, sizeof(webclient.name), r->name);
 			strcpy_s(webclient.user, sizeof(webclient.user), r->user);
@@ -580,9 +589,10 @@ namespace GT {
 			SOCKET oldSocket = getSocket(name);
 
 			if (oldSocket != 0 && oldSocket != socket) {
+				std::cout << "oldSocket: " << oldSocket << "  new is : " << socket << "\n\n";
+				disconect(oldSocket);
 				clients.erase(oldSocket);
 			}
-
 
 			time_t rawtime;
 			struct tm* timeinfo;
@@ -934,10 +944,12 @@ namespace GT {
 	}
 
 	SOCKET Server::getSocket(std::string name) {
-		std::string name2 = "";
+		
 		for (std::map<SOCKET, GTClient2>::iterator it = clients.begin(); it != clients.end(); ++it) {
-			name2 == it->second.name;
-			if (name == name2) {
+			//std::cout << "1. is same " << name << " vs " << it->second.name << "\n";
+	
+			if (name == it->second.name) {
+				//std::cout << "2.same\n";
 				return it->first;
 			}
 		}
@@ -1030,6 +1042,7 @@ namespace GT {
 		}
 		
 		printf("/*********************************/\n");
+		listSocket();
 		//m2.unlock();
 	}
 
