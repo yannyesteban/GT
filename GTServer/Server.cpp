@@ -492,7 +492,7 @@ namespace GT {
 	void Server::deleteClient(SOCKET client) {
 
 		std::cout << "ON CLOSE ID: " << client << " \n";
-		m.lock();
+		
 		clients[client].name;
 		RCommand resp;
 		resp.unitId = clients[client].id;
@@ -535,6 +535,7 @@ namespace GT {
 			strcpy(event.info, "");
 			insertEvent(&event);
 		}
+		m.lock();
 		clients.erase(client);
 		broadcast(&resp);
 		m.unlock();
@@ -929,9 +930,9 @@ namespace GT {
 
 	bool Server::insertEvent(DBEvent* infoEvent)
 	{
-		m4.lock();
+		m3.lock();
 		db->insertEvent(infoEvent);
-		m4.unlock();
+		m3.unlock();
 		return true;
 	}
 
