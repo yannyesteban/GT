@@ -7,7 +7,7 @@ namespace GT {
 	std::mutex m;
 	std::mutex m2;
 	std::mutex m3;
-
+	std::mutex m4;
 	
 	void runTimer() {
 		setlocale(LC_CTYPE, "Spanish");
@@ -525,7 +525,7 @@ namespace GT {
 		//db->saveResponse(&resp, "DISCONNECTED");
 
 		if (resp.unitId > 0) {
-			db->setClientStatus(resp.unitId, 0);
+			setClientStatus(resp.unitId, 0);
 
 			DBEvent event;
 			event.unitId = clients[client].id;
@@ -929,9 +929,9 @@ namespace GT {
 
 	bool Server::insertEvent(DBEvent* infoEvent)
 	{
-		m3.lock();
+		m4.lock();
 		db->insertEvent(infoEvent);
-		m3.unlock();
+		m4.unlock();
 		return true;
 	}
 
