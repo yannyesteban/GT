@@ -516,7 +516,7 @@ namespace GT {
 		//db->saveResponse(&resp, "DISCONNECTED");
 
 		if (resp.unitId > 0) {
-			db->setClientStatus(resp.unitId, 0);
+			setClientStatus(resp.unitId, 0);
 
 			DBEvent event;
 			event.unitId = clients[client].id;
