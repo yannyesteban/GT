@@ -230,7 +230,7 @@ namespace GT {
 
 	Server::~Server() {
 
-		db->initStatus();
+		//db->initStatus();
 	}
 	
 	unsigned short Server::getHeader(ConnInfo Info) {
@@ -447,29 +447,9 @@ namespace GT {
 
 			if (value > 0) {
 				std::cout << "DISCONECTING TO: " << device.socket << "\n";
-				//m.lock();
-				closeClient(device.socket);
-				//m.unlock();
-
-				/*
-				SOCKET oldSocket = mDevices[getUnitName(r->unitId)].socket;
-				mDevices[getUnitName(r->unitId)].socket = 0;
-				mDevices[getUnitName(r->unitId)].type = 0;
-				db->setClientStatus(r->unitId, 0);
-
-				mDevices.erase(getUnitName(r->unitId));
-				clients.erase(oldSocket); 
-
-				DBEvent event;
-				event.unitId = r->unitId;
-				event.eventId = 211;
 				
-				strcpy(event.title, "DISCONNECT");
-				strcpy(event.user, r->user);
-				strcpy_s(event.info, sizeof(r->message), r->message);
-				//strcpy(event.info, "");
-				db->insertEvent(&event);
-				*/
+				closeClient(device.socket);
+				
 			}
 			return 0;
 
@@ -578,13 +558,14 @@ namespace GT {
 		
 		
 		
-		if (db->isVersion(sync_msg->Keep_Alive_Header)) {
+		if (isVersion(sync_msg->Keep_Alive_Header)) {
 			
-			//std::cout << "synchronization " << std::endl;
+			
 			//printf(ANSI_COLOR_CYAN "---> verification of sync (%lu)..(%d).\n" ANSI_COLOR_RESET, sync_msg->Keep_Alive_Device_ID, sync_msg->Keep_Alive_Header);
 			//puts(sync_msg->Keep_Alive_Device_ID));
 
 			sprintf(name, "%lu", sync_msg->Keep_Alive_Device_ID);
+			//std::cout << "synchronization Name " << name << " SOCKET " << socket << std::endl;
 			//printf("\nasync %d\n", sync_msg->Keep_Alive_Device_ID);
 			//std::cout << "socket: " << socket << "  name: " << name << "\n\n";
 			SOCKET oldSocket = getSocket(name);
@@ -609,7 +590,7 @@ namespace GT {
 				client.status = 1;
 				strcpy_s(client.name, sizeof(client.name), (const char*)name);
 
-				InfoClient cInfo = db->getInfoClient(name);
+				InfoClient cInfo = getInfoClient(name);
 				client.id = cInfo.unit_id;
 				client.formatId = cInfo.format_id;
 
@@ -801,23 +782,23 @@ namespace GT {
 
 					unitResponse.header = 0;
 
-					db->getIndexCommand(client.name, &rCommand, &unitResponse);
+					getIndexCommand(client.name, &rCommand, &unitResponse);
 
 					//std::cout << " el TAG es " << rCommand.tag << "\n\n";
 					if (rCommand.tag == "+2") {
 						//std::cout << " el TAG es (x1)" << rCommand.tag << "\n\n";
-						unitResponse.index = db->updateCommand(unitResponse.unitId, unitResponse.commandId, unitResponse.index, 2, rCommand.params);
+						unitResponse.index = updateCommand(unitResponse.unitId, unitResponse.commandId, unitResponse.index, 2, rCommand.params);
 					}
 					else {
 						//std::cout << " el TAG es (x2)" << rCommand.tag << "\n\n";
-						unitResponse.index = db->updateCommand(unitResponse.unitId, unitResponse.commandId, unitResponse.index, 1, "");
+						unitResponse.index = updateCommand(unitResponse.unitId, unitResponse.commandId, unitResponse.index, 1, "");
 					}
 					
 
 					//std::cout << " ---- Command Id " << unitResponse.commandId << std::endl;
 					//std::cout << " ---- Index " << unitResponse.index << std::endl;
 
-					db->infoCommand(client.name, &rCommand, &unitResponse);
+					infoCommand(client.name, &rCommand, &unitResponse);
 					
 					time_t now;
 					time(&now);
@@ -863,15 +844,15 @@ namespace GT {
 					//cout << "es un track" << endl;
 					//cout << Color::_cyan() << "Saving Track" << Color::_reset()  << endl;
 					//cout << ANSI_COLOR_CYAN "Saving Track: " << mClients[unit_id].device_id << endl;
-					m.lock();
-					if (db->saveTrack(client.id, client.formatId, to.c_str())) {
+					
+					if (saveTrack(client.id, client.formatId, to.c_str())) {
 						cout << Color::_yellow() << "Saving Track from: " << Color::_reset() << getUnitName(clients[Info.client].id)   << endl;
 
 						//std::cout << "ERROR REVISAR WC MY Tracking " << to.c_str() << "\n\n";
 						webcar->insertTrack(clients[Info.client].name, to.c_str());
 						//cout << Color::_cyan() << "--- Track: " << Color::_reset() << to.c_str() << endl;
 					}
-					m.unlock();
+					
 					
 				}
 				
@@ -927,20 +908,61 @@ namespace GT {
 		}
 		return 0;
 	}
+	bool Server::saveTrack(int unitId, int formatId, const char* buffer) {
+		m2.lock();
+		bool result = db->saveTrack(unitId, formatId, buffer);
+		m2.unlock();
 
+		return result;
+		
+	}
+	bool Server::isVersion(int value)
+	{
+		m2.lock();
+		bool result = db->isVersion(value);
+		m2.unlock();
+		return result;
+	}
+	InfoClient Server::getInfoClient(string name)
+	{
+		m2.lock();
+		InfoClient cInfo = db->getInfoClient(name);
+		m2.unlock();
+		return cInfo;
+	}
+	int Server::updateCommand(int unitId, int commandId, int index, int mode, std::string params)
+	{
+		m2.lock();
+		int result = db->updateCommand(unitId, commandId, index, mode, params);
+		m2.unlock();
+
+		return result;
+	}
+	void Server::getIndexCommand(const char* unit_id, CommandResult* commandResult, RCommand* info)
+	{
+		m2.lock();
+		db->getIndexCommand(unit_id, commandResult, info);
+		m2.unlock();
+	}
+	void Server::infoCommand(const char* unit_id, CommandResult* commandResult, RCommand* info)
+	{
+		m2.lock();
+		db->infoCommand(unit_id, commandResult, info);
+		m2.unlock();
+	}
 	bool Server::insertEvent(DBEvent* infoEvent)
 	{
-		m3.lock();
+		m2.lock();
 		db->insertEvent(infoEvent);
-		m3.unlock();
+		m2.unlock();
 		return true;
 	}
 
 	bool Server::setClientStatus(unsigned int unitId, unsigned int status)
 	{
-		m3.lock();
+		m2.lock();
 		db->setClientStatus(unitId, status);
-		m3.unlock();
+		m2.unlock();
 		return true;
 	}
 

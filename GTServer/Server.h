@@ -123,7 +123,12 @@ namespace GT {
 
 		bool insertEvent(DBEvent* infoEvent);
 		bool setClientStatus(unsigned int unitId, unsigned int status);
-		
+		bool saveTrack(int unitId, int formatId, const char* buffer);
+		bool isVersion(int value);
+		InfoClient getInfoClient(string id);
+		int updateCommand(int unitId, int commandId, int index, int mode, std::string params);
+		void getIndexCommand(const char* unit_id, CommandResult* commandResult, RCommand* info);
+		void infoCommand(const char* unit_id, CommandResult* commandResult, RCommand* info);
 		//RCommand unitResponse;
 	};
 
