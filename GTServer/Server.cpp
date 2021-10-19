@@ -1043,7 +1043,7 @@ namespace GT {
 		}
 		
 		printf("/*********************************/\n");
-		listSocket();
+		//listSocket();
 		//m2.unlock();
 	}
 
