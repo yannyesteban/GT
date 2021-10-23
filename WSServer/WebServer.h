@@ -71,12 +71,19 @@ namespace GT {
 		void sendToDevice(SOCKET server, GT::RCommand * request);
 
 		int sendToServers(char * buffer, int len);
+
+
+		
+
 	private:
 		DB* db;
 		
 		HANDLE hClientThread;
 		DWORD dwThreadId;
 		std::map<SOCKET, WebClient> clients;
+
+		std::string loadCommand(int unitId, int commandId, int index, int mode, std::string& role);
+		bool insertEvent(DBEvent* infoEvent);
 		
 	};
 }

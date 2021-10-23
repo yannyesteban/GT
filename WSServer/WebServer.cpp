@@ -4,6 +4,7 @@ using namespace rapidjson;
 using namespace std;
 
 std::mutex m2;
+std::mutex m3;
 std::mutex m1;
 
 namespace GT {
@@ -65,66 +66,26 @@ namespace GT {
             rapidjson::Value& pp = d["hubs"][i];
             HubConfig infoConfig = getHugConfig(pp);
             mConfig[infoConfig.name] = infoConfig;
-            //std::cout << "App: " << infoConfig.name << ", ";
-            //std::cout << "Port:" << infoConfig.port << "\n";
-
-            //tasks.push_back(new std::thread(runHub, &infoConfig, this));
-            //Sleep(100);
-
         }
+
         std::vector<std::thread*> tasks;
+
         for (std::map<std::string, HubConfig>::iterator it = mConfig.begin(); it != mConfig.end(); ++it) {
             std::cout << "App: " << it->second.name << ", ";
             std::cout << "Port:" << it->second.port << "\n";
             tasks.push_back(new std::thread(runHub, &it->second, this));
         }
 
-        /*
-        for (rapidjson::SizeType i = 0; i < a.Size(); i++) {
-            rapidjson::Value& pp = d["hubs"][i];
-            HubConfig infoConfig = getHugConfig(pp);
-            
-            std::cout << "App: " << infoConfig.name << ", ";
-            std::cout << "Port:" << infoConfig.port << "\n";
-
-            tasks.push_back(new std::thread(runHub, &infoConfig, this));
-            //Sleep(100);
-
-        }
-        */
+        
         start();
+
         for (std::vector<std::thread*>::iterator it = tasks.begin(); it != tasks.end(); ++it) {
             (*it)->join();
         }
 
-        return;
+        
 
-        std::thread* first = new std::thread(runTimer);
-
-        //auto appInfo = GT::Config::load("config.json");
-        this->configInit = GT::JsonConfig::load("wsserver.json");
-
-        auto appInfo = this->configInit;// GT::JsonConfig::load("wsserver.json");
-        //this->configInit = &appInfo;
-        cout << "APP: ** " <<appInfo.db.name << endl;
-        cout << "Hub port: " << appInfo.hub.port << endl;
-        //config = pConfig;
-        // pConfig.db.debug = pConfig.debug;
-        //db = new DB(appInfo.db);
-        //db->connect();
-
-
-        info.port = configInit.port;
-        info.maxClients = configInit.max_clients;
-
-
-        hClientThread = CreateThread(
-            NULL,
-            0,
-            (LPTHREAD_START_ROUTINE)mainhub,
-            this,
-            0,
-            &dwThreadId);
+        
        
 	}
 
@@ -324,7 +285,7 @@ namespace GT {
             to_string(tag), params, type);
             */
         string role = "";
-        std::string strCommand = db->loadCommand(unitId, commandId, index, mode, role);
+        std::string strCommand = loadCommand(unitId, commandId, index, mode, role);
 
         strcpy(r.message, strCommand.c_str());
         strcpy(r.command, role.c_str());
@@ -352,7 +313,7 @@ namespace GT {
         strcpy(event.user, r.user);
         strcpy_s(event.info, sizeof(r.message), r.message);
         //strcpy(event.info, "");
-        db->insertEvent(&event);
+        insertEvent(&event);
 
         sendToServers(buffer2, (int)sizeof(buffer2));
         //send(Info.client, "yanny", strlen("yanny"), 0);
@@ -484,6 +445,24 @@ namespace GT {
         return 0;
     }
 
+    std::string WebServer::loadCommand(int unitId, int commandId, int index, int mode, std::string& role)
+    {
+        m2.lock();
+        std::string strCommand = db->loadCommand(unitId, commandId, index, mode, role);
+        m2.unlock();
+        return strCommand;
+    }
+
+    bool WebServer::insertEvent(DBEvent* infoEvent)
+    {
+        
+        m2.lock();
+        db->insertEvent(infoEvent);
+        m2.unlock();
+        return true;
+       
+    }
+
     
     
     
@@ -601,11 +580,7 @@ namespace GT {
             return;
         }
 
-        int cmdIndex = 0;// document["cmdIndex"].GetInt();
-        //string msgName = document["name"].GetString();
-        //std::cout << "msgType " << msgType << endl;
-        //std::cout << "cmdIndex " << cmdIndex << endl;
-        unsigned short type = 0;
+        
 
         if (msgType == "connect") {
             /*
@@ -624,7 +599,7 @@ namespace GT {
             
             
 
-            type = 1;
+            
             //cout << "connecting: " << clients[Info.client].name << endl;
 
             //cout << "Name: " << name << endl;
@@ -641,195 +616,7 @@ namespace GT {
             return;
         }
 
-        const Value& values = document["comdValues"].GetArray();
-        std::list<string> params;
-
-        //assert(attributes.IsArray()); // attributes is an array
-        //for (rapidjson::Value::ConstValueIterator itr = values.Begin(); itr != values.End(); ++itr) {
-        //    const rapidjson::Value& attribute = *itr;
-        //    assert(attribute.IsObject()); // each attribute is an object
-        //    for (rapidjson::Value::ConstMemberIterator itr2 = attribute.MemberBegin(); itr2 != attribute.MemberEnd(); ++itr2) {
-        //        //std::cout << itr2->name.GetString() << " : " << std::endl;
-        //        std::cout << itr2->name.GetString() << " : " << itr2->value.GetString() << std::endl;
-        //    }
-        //}
-
-
-        for (SizeType i = 0; i < values.Size(); i++) {
-           // std::cout << "         hooolaaaaaaaaa " << std::endl;
-            params.push_back(values[i].GetString());
-            std::cout << " Array " << i << " es " << values[i].GetString() << std::endl;
-        }
-
-        for (std::list<std::string>::iterator it = params.begin() ; it != params.end(); ++it) {
-            //std::cout << " Array \t" << *it <<  std::endl;
-        }
         
-        //cout << values[0].GetString() << endl;
-
-
-
-        int header = 10020;
-        if (msgType == "SET") {
-            type = 1;
-            //cout << "configuración" << endl;
-        }
-
-        if (msgType == "GET") {
-            type = 2;
-            //cout << "recuperación" << endl;
-        }
-
-        if (msgType == "RC") {
-            type = 10;
-            header = 10100;
-            //cout << "reconnection" << endl;
-        }
-
-        if (msgType == "h") {
-            type = 3;
-            //cout << "history" << endl;
-        }
-
-        if (msgType == "rr") {
-            type = 4;
-            //cout << "send pending" << endl;
-            
-            GT::RCommand rc;
-            rc.header = 10300;
-            rc.id = document["id"].GetInt();
-
-            char buffer2[1024];
-            memcpy(buffer2, &rc, sizeof(rc));
-            //send(s, buffer2, (int)sizeof(buffer2), 0);
-            sendToServers(buffer2, (int)sizeof(buffer2));
-            return;
-        }
-
-        //std::cout << "Type: " << type << std::endl;
-       
-       
-        
-        /*
-        const Value& v(int[]);
-        v. = document["comdValues"].GetArray();
-        StringBuffer bf2;
-        PrettyWriter<StringBuffer> writer2(bf2);
-        v.Accept(writer2);
-        const char* json = bf2.GetString();
-        */
-
-        StringBuffer bf;
-        PrettyWriter<StringBuffer> writer(bf);
-        document.Accept(writer);
-
-        //std::cout << "-----------A: "<< bf.GetString() << std::endl;
-
-
-        //printf("%s\n", document["comdValues"].GetString());
-
-
-
-        const Value& a = document["comdValues"].GetArray();
-        assert(a.IsArray());
-        
-        
-        StringBuffer bf2;
-        Writer<StringBuffer> writer2(bf2);
-        a.Accept(writer2);
-
-
-
-        const char* json = bf2.GetString();
-
-        //std::cout << " ********** B: " << bf2.GetString() << std::endl;
-
-
-       
-
-        
-        GT::RCommand r = {
-            //10020,
-            header,
-            type,
-            Info.client,
-            "",
-            "",
-            "",
-            "",//name
-            (int)document["unitId"].GetInt(),
-            document["commandId"].GetInt(),
-            document["mode"].GetInt(),
-            "",// date
-            (unsigned short)document["level"].GetInt(),
-            0,//index
-            ClientMsg::Request,
-            0,// time
-            0,// Delay
-            cmdIndex
-        };
-
-
-        strcpy(r.user, document["user"].GetString());
-
-        //unsigned int tag = db->getTag(document["unitId"].GetInt(), document["commandId"].GetInt(), type);
-        //r.index = tag;
-        /*std::string str = db->createCommand(
-            (unsigned int)document["unitId"].GetInt(),
-            (unsigned short)document["commandId"].GetInt(),
-            to_string(tag), params, type);
-            */
-        std::string str = db->createCommand(&r, params);
-
-        strcpy(r.message, str.c_str());
-        //cout << endl << "Unidad" <<  r.unit << endl << "COMANDO " << str << endl << endl;
-       
-        //db->addPending(document["unitId"].GetInt(), document["commandId"].GetInt(), tag, str, "pepe", type, (unsigned short)document["level"].GetInt());
-        db->addPending(&r);
-        
-        strcpy(r.message, str.c_str());
-        char buffer2[1024];
-        memcpy(buffer2, &r, sizeof(r));
-        //send(s, buffer2, (int)sizeof(buffer2), 0);
-        sendToServers(buffer2, (int)sizeof(buffer2));
-        //send(Info.client, "yanny", strlen("yanny"), 0);
-
-        char buffer[DEFAULT_BUFLEN];
-        size_t size = 0;
-        
-        RCommand response;
-        response.unitId = r.unitId;
-        response.commandId = r.commandId;
-
-        //char message[100] = "Receiving ";
-        //strcat_s(message, sizeof(message), r.message);
-        strcpy_s(response.message, sizeof(response.message), r.message);
-        strcpy_s(response.user, sizeof(response.user), r.user);
-        strcpy_s(response.name, sizeof(response.name), r.unit);
-        strcpy_s(response.unit, sizeof(response.unit), "Sending...");
-        //strcpy_s(response., sizeof(response.name), r.unit);
-
-        time_t rawtime;
-        struct tm* timeinfo;
-
-
-        time(&rawtime);
-        timeinfo = localtime(&rawtime);
-
-        strftime(response.date, sizeof(response.date), "%F %T", timeinfo);
-
-
-
-        response.unitId = r.unitId;
-        jsonResponse(Info.client, &response);
-        /*
-
-        encodeMessage((char*)"websocket 2021", buffer, size);
-
-        printf("%s(%d)\n", Info.buffer, size);
-
-        send(Info.client, buffer, (int)size, 0);
-    */
 
 
     }
@@ -858,11 +645,11 @@ void CallReceive(void * app, char* buffer, size_t size) {
     //cout << "Buffer ..." << x->message << endl;
     GT::WebServer* WS = (GT::WebServer*)app;
 
-    m2.lock();
+    m3.lock();
     if (WS->getHeader(buffer) == 0) {
         cout << "ERROR" << endl;
     }
-    m2.unlock();
+    m3.unlock();
 
     
     
