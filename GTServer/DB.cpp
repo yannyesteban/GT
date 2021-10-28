@@ -1816,7 +1816,7 @@ namespace GT {
 
 					INSERT INTO event (`unit_id`, `date_time`, `event_id`, `mode`, `info`, `status`,`title`,`user`)
 	
-					SELECT ?, null, ue.event_id, ue.mode, ?, 0, ?, ?
+					SELECT ?, null, ue.event_id, ue.mode, ?, 0, COALESCE (ue.name, ?), ?
 					FROM unit_event as ue
 					WHERE (unit_id = ? OR unit_id IS NULL) AND ue.event_id = ? AND ue.mode > 0
     
