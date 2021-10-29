@@ -551,6 +551,7 @@ namespace GT {
 
 		char name[12];
 		//cout << " Syncro: "<< sync_msg->Keep_Alive_Header << endl << Info.buffer << endl;
+		printf(name, "%lu", sync_msg->Keep_Alive_Device_ID);
 		//std::cout << "clock: "<< Info.clock  << " chrono " << (double(Info.clock-mClock) / CLOCKS_PER_SEC) << endl;
 		
 		//clients[Info.client].clock = Info.clock;
