@@ -67,7 +67,7 @@ namespace GT {
 		int nHubs = 0;
 
 		void sendCommand(int unitId, int commandId, int index, int mode);
-		void sendToDevice(ConnInfo Info, int unitId, int commandId, int index, int mode);
+		void sendToDevice(ConnInfo Info, int unitId, int commandId, int index, int mode, std::string user);
 		void sendToDevice(SOCKET server, GT::RCommand * request);
 
 		int sendToServers(char * buffer, int len);

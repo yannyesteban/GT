@@ -250,7 +250,7 @@ namespace GT {
         //std::cout << "......" << db->loadCommand(unitId, commandId, index, mode) << std::endl;
     }
 
-    void WebServer::sendToDevice(ConnInfo Info, int unitId, int commandId, int index, int mode) {
+    void WebServer::sendToDevice(ConnInfo Info, int unitId, int commandId, int index, int mode, std::string user) {
         //SOCKET s = hub->getHost();
 
         GT::RCommand r = {
@@ -289,6 +289,7 @@ namespace GT {
 
         strcpy(r.message, strCommand.c_str());
         strcpy(r.command, role.c_str());
+        strcpy(r.user, user.c_str());
         
         cout << endl << "Unit Id: " << unitId << ", Command " << strCommand << endl << endl;
 
@@ -536,7 +537,12 @@ namespace GT {
                 int commandId = document["commandId"].GetInt();
                 int index = document["index"].GetInt();
                 int mode = document["mode"].GetInt();
-                sendToDevice(Info, unitId, commandId, index, mode);
+                std::string user = "";
+                if (document.HasMember("user")) {
+                    user = document["user"].GetString();
+                }
+                
+                sendToDevice(Info, unitId, commandId, index, mode, user);
             }
                 //sendCommand(unitId, commandId, index, mode);
             return;
