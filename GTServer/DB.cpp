@@ -689,7 +689,7 @@ namespace GT {
 	/* SI*/
 	bool DB::saveTrack(int unitId, int formatId, const char* buffer) {
 		
-		std::string track(buffer);
+		
 
 		//buffer = "2012000413,20190717161915,-66.845906,10.500806,1,279,983.0,4,2,0.0,1,12.27,0.01,0,0,0,1";
 
@@ -732,7 +732,8 @@ namespace GT {
 				if (value == "" && (mTrackingField[it->c_str()].type == 1 || mTrackingField[it->c_str()].type == 3)) {
 					error = 1;
 					std::cout << "UnitId: " << unitId << " FormatId " << formatId << "n: "<< n << "\nError in Track, pos: " << pos << "   value:" << value << endl;
-					std::cout << "tracking: " << track << "\n";
+					//std::string track(buffer);
+					//std::cout << "tracking: " << track << "\n";
 					return false;
 				}
 				stmtInsertTracking->setString(pos, value.c_str());
