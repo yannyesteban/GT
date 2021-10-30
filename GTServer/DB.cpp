@@ -731,7 +731,8 @@ namespace GT {
 				int pos = mTrackingField[it->c_str()].pos;
 				if (value == "" && (mTrackingField[it->c_str()].type == 1 || mTrackingField[it->c_str()].type == 3)) {
 					error = 1;
-					std::cout << "Error in Track, pos: " << pos << "   value:" << value << endl;
+					std::cout << "UnitId: " << unitId << " FormatId " << formatId << "n: "<< n << "\nError in Track, pos: " << pos << "   value:" << value << endl;
+					
 					return false;
 				}
 				stmtInsertTracking->setString(pos, value.c_str());
