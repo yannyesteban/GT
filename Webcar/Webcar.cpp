@@ -747,7 +747,7 @@ namespace WC {
 
 			stmtTrack->setInt(1, codequipo);
 			for (auto itr = cPos.begin(); itr != cPos.end(); ++itr) {
-				cout << itr->first << "\t ============= " << itr->second << '\n';
+				//cout << itr->first << "\t ============= " << itr->second << '\n';
 				if (itr->second == 3) {
 					stmtTrack->setString(itr->second, "2000-01-01 00:00:00");
 					continue;
@@ -772,7 +772,7 @@ namespace WC {
 					value = values.at(i).c_str();
 				}
 
-				std::cout << "Field: " << field << " value " << value << "\n";
+				//std::cout << "Field: " << field << " value " << value << "\n";
 
 				trackParams[field] = value;
 
@@ -785,7 +785,10 @@ namespace WC {
 					}
 					value = "0";
 				}
-				stmtTrack->setString(pos, value);
+				if (pos >= 0 && pos <= 18) {
+					stmtTrack->setString(pos, value);
+				}
+				
 
 			}
 			if (error) {
