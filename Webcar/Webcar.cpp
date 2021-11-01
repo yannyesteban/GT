@@ -785,7 +785,7 @@ namespace WC {
 					}
 					value = "0";
 				}
-				if (pos >= 0 && pos <= 18) {
+				if (pos >= 0 && pos < 18) {
 					stmtTrack->setString(pos, value);
 				}
 				
