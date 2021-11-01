@@ -797,7 +797,7 @@ namespace WC {
 			}
 
 			stmtTrack->execute();
-			
+			std::cout << "saving WEBCAR tracking from: " << codequipo << "\n";
 			int trackId = 0;
 			sql::ResultSet* result = nullptr;
 			if (stmtLastId->execute()) {
