@@ -740,7 +740,7 @@ namespace WC {
 		std::string ver = "";
 
 
-		//std::cout << "Track " << track << "\nCODEQUIPO " << codequipo << "\n";
+		std::cout << "Track " << track << "\nCODEQUIPO " << codequipo << "\n";
 		try {
 			bool error = false;
 			
