@@ -786,7 +786,7 @@ namespace WC {
 					value = "0";
 				}
 				if (pos >= 2 && pos <= 18) {
-					std::cout << "parameter position " << pos << " value: " << value << "\n";
+					//std::cout << "parameter position " << pos << " value: " << value << "\n";
 					stmtTrack->setString(pos, value);
 				}
 				
@@ -819,7 +819,7 @@ namespace WC {
 			//cout << "WEBCAR ERR: SQLException\n" ;
 			
 			cout << endl << endl << "WEBCAR ERR: SQLException in " << __FILE__;
-			cout << track << endl;
+			//cout << track << endl;
 			cout << endl << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
 			cout << endl << "WEBCAR ERR: " << e.what();
 			cout << endl << " (MySQL error code: " << e.getErrorCode();
