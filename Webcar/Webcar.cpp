@@ -781,12 +781,9 @@ namespace WC {
 				if (value == "") {
 					if (name == "longitud" || name == "latitud") {
 						error = true;
-						continue;
+						//continue;
 					}
-					else {
-						value = "0";
-					}
-					
+					value = "0";
 				}
 				stmtTrack->setString(pos, value);
 
