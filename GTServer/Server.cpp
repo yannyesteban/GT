@@ -751,7 +751,7 @@ namespace GT {
 			while (std::getline(ss, to)) {//, '\n'
 				//std::cout << "My Command " << to.c_str() << std::endl;
 				//std::cout << to.c_str() << "\n\n";
-				webcar->insertTrack(clients[Info.client].name, to.c_str());
+				
 				Tool::getCommand(result, len, to.c_str());
 				
 				nLine++;
@@ -846,6 +846,8 @@ namespace GT {
 					//cout << Color::_cyan() << "Saving Track" << Color::_reset()  << endl;
 					//cout << ANSI_COLOR_CYAN "Saving Track: " << mClients[unit_id].device_id << endl;
 					
+					webcar->insertTrack(clients[Info.client].name, to.c_str());
+
 					if (saveTrack(client.id, client.formatId, to.c_str())) {
 						cout << Color::_yellow() << "Saving Track from: " << Color::_reset() << getUnitName(clients[Info.client].id)   << endl;
 
@@ -854,6 +856,7 @@ namespace GT {
 						//cout << Color::_cyan() << "--- Track: " << Color::_reset() << to.c_str() << endl;
 					}
 					
+
 					
 				}
 				
