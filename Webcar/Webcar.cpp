@@ -786,6 +786,7 @@ namespace WC {
 					value = "0";
 				}
 				if (pos >= 0 && pos < 18) {
+					std::cout << "parameter position " << pos << " value: " << value << "\n";
 					stmtTrack->setString(pos, value);
 				}
 				
