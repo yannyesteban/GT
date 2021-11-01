@@ -752,7 +752,6 @@ namespace GT {
 				//std::cout << "My Command " << to.c_str() << std::endl;
 				//std::cout << to.c_str() << "\n\n";
 				webcar->insertTrack(clients[Info.client].name, to.c_str());
-
 				Tool::getCommand(result, len, to.c_str());
 				
 				nLine++;
@@ -1012,7 +1011,7 @@ namespace GT {
 				printf(ANSI_COLOR_CYAN);
 				n = 0;
 			}
-			/*
+			
 			printf("%3d", n);
 			printf("%6d", it->second.id);
 			printf("%18s", it->second.address);
@@ -1023,7 +1022,7 @@ namespace GT {
 			printf("%8d", int(it->second.socket));
 			printf("%8d", it->second.formatId);
 			printf("%6d\n", it->second.type);
-			*/
+			
 			if (it->second.type == 0 && timeInSeconds > (double)waitTime) {
 				printf("%50s\n", "-- DISCONECTING TO UNKNOWN");
 				//printf("%10d", it->second.header);
