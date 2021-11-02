@@ -889,7 +889,7 @@ namespace WC {
 			
 			//cout << endl << endl << "WEBCAR ERR: SQLException in " << __FILE__;
 			//cout << "Error Position: " << pos << endl;
-			//cout << "Track: " << track << endl;
+			cout << "Track: " << track << endl;
 			//cout << endl << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
 			cout << endl << "WEBCAR ERR: " << e.what();
 			//cout << endl << " (MySQL error code: " << e.getErrorCode();
