@@ -829,12 +829,12 @@ namespace WC {
 					value = values.at(i).c_str();
 				}
 
-				//std::cout << "Field: " << field << " value " << value << "\n";
+				
 
 				trackParams[field] = value;
 
 				pos = cPos[field];
-
+				std::cout << "Field: " << field << " value " << value << " pos: " << pos <<"\n";
 				if (value == "") {
 					if (name == "longitud" || name == "latitud" || name == "id_equipo" || name == "fecha_hora") {
 						error = true;
