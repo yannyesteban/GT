@@ -791,75 +791,68 @@ namespace WC {
 		std::vector<string> values = split(track.c_str(), ',');
 		std::vector<string> names = info.params;
 		
+		
 		int nameSize = names.size();
 		int valueSize = values.size();
 		
 		std::string ver = "";
+		std::string field = "";
+		std::string value = "";
 
+		std::map<std::string, std::string> prm;
+		for (int i = 0; i < nameSize; i++) {
+			field = names.at(i).c_str();
+			value = "0";
+
+			if (i< values.size()) {
+				value = values.at(i).c_str();
+				
+			}
+
+			prm[field] = value;
+			trackParams[field] = value;
+		}
+		/*
+		for (std::map<std::string, std::string>::iterator it = prm.begin(); it != prm.end(); ++it) {
+
+			printf("%8s", it->first.c_str());
+			printf("%8s\n", it->second.c_str());
+			
+
+		}
+		*/
+		
 
 		//std::cout << "Track " << track << "\nCODEQUIPO " << codequipo << "\n";
 		int pos = 0;
 		try {
 			bool error = false;
 			
-
+			std::string sValue = "";
 			stmtTrack->setInt(1, codequipo);
+			
 			for (auto itr = cPos.begin(); itr != cPos.end(); ++itr) {
-				//cout << itr->first << "\t ============= " << itr->second << '\n';
-				if (itr->second == 3) {
-					stmtTrack->setString(itr->second, "2000-01-01 00:00:00");
-					continue;
+				auto found = prm.find(itr->first.c_str());
+				pos = itr->second;
+				if (found != prm.end()) {
+					sValue = found->second.c_str();
+					//std::cout << " POS: " << pos <<" value:" << sValue << "\n";
+					if (sValue == "0" && (pos == 3 || pos == 4 || pos == 5)) {
+						error = true;
+						//std::cout << " errrrrrrrrrrrrrr\n";
+						continue;
+					}
+					stmtTrack->setString(itr->second, found->second.c_str());
+				}else {
+					
+					stmtTrack->setString(itr->second, "0");
 				}
-				stmtTrack->setString(itr->second, "0");
 
+				
 			}
 			
-			std::string field = "";
-			std::string value = "";
-			for (int i = 0; i < nameSize; i++) {
-				field = names.at(i).c_str();
-				if (i >= valueSize) {
-					if (field == "fecha_hora") {
-						value = "2000-01-01 00:00:00";
-						//std::cout << " error en fecha hora \n\n\n\n\n";
-					} else {
-						value = "0";
-					}
-					
-				} else {
-					value = values.at(i).c_str();
-				}
-				if (value == "") {
-					value = "0";
-				}
-				
-
-				trackParams[field] = value;
-
-				pos = cPos[field];
-
-				if (pos == 0) {
-					continue;
-				}
-				//std::cout << "Field: " << field << " value " << value << " pos: " << pos <<"\n";
-				if (value == "0") {
-					if (field == "longitud" || field == "latitud" || field == "id_equipo" || field == "fecha_hora") {
-						//std::cout << " error en " << field << " value " << value << "\n";
-						error = true;
-				
-					}
-					
-				}
-				if (error) {
-					continue;
-				}
-				if (pos >= 2 && pos <= 18) {
-					//std::cout << "parameter position " << pos << " value: " << value << "\n";
-					stmtTrack->setString(pos, value);
-				}
-				
-
-			}
+			
+			
 			if (error) {
 				std::cout << "WEBCAR error: " << codequipo << "\n";
 				return;
@@ -884,19 +877,20 @@ namespace WC {
 
 
 		} catch (sql::SQLException& e) {
-
+			if (e.getErrorCode() == 1062) {
+				cout << "WEBCAR ERR: DUPLICATE\n";
+			}else {
+				cout << endl << " (MySQL error code: " << e.getErrorCode();
+			}
 			//cout << "WEBCAR ERR: SQLException\n" ;
 			
 			//cout << endl << endl << "WEBCAR ERR: SQLException in " << __FILE__;
 			//cout << "Error Position: " << pos << endl;
-			cout << "Track: " << track << endl;
+			//cout << "Track: " << track << endl;
 			//cout << endl << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-			cout << endl << "WEBCAR ERR: " << e.what();
-			//cout << endl << " (MySQL error code: " << e.getErrorCode();
-			if (e.getErrorCode() == 0) {
-				//stmtTrack = nullptr;
-				//int c = getchar();
-			}
+			//cout << endl << "WEBCAR ERR: " << e.what();
+			
+			
 			//cout << ", SQLState: " << e.getSQLState().c_str() << " )" << endl;
 
 		}
