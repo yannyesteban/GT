@@ -2110,7 +2110,7 @@ namespace GT {
 			return 0;
 		}
 
-		//std::cout << "index: " << index << " params: " << params << "\n";
+		std::cout << "index: " << index << " params: " << params << "\n";
 		try {
 			if (stmtUpdateCommand == nullptr) {
 				stmtUpdateCommand = cn->prepareStatement(
@@ -2147,16 +2147,14 @@ namespace GT {
 			//cout << ANSI_COLOR_MAGENTA "Update: values " << values << endl;
 
 			
-			if (mode == 1) {
-				stmtUpdateCommand->setString(1, "");
-			} else {
-				stmtUpdateCommand->setString(1, values.c_str());
-			}
 
+			stmtUpdateCommand->setString(1, values.c_str());
 			
 			stmtUpdateCommand->setInt(2, unitId);
 			stmtUpdateCommand->setInt(3, commandId);
 			stmtUpdateCommand->setInt(4, index);
+			
+
 
 			stmtUpdateCommand->execute();
 

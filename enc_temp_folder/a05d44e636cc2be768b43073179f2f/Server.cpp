@@ -750,7 +750,7 @@ namespace GT {
 		if (Info.buffer != NULL) {
 			while (std::getline(ss, to)) {//, '\n'
 				//to = "$ok:SETEVT=100,0,zzzxx,,,0,1,,,,,,,,0,0,,,,,,";
-				//std::cout << "My Command " << to.c_str() << std::endl;
+				std::cout << "My Command " << to.c_str() << std::endl;
 				//std::cout << to.c_str() << "\n\n";
 				
 				Tool::getCommand(result, len, to.c_str());
