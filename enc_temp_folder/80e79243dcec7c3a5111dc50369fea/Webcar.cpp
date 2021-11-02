@@ -888,7 +888,7 @@ namespace WC {
 			cout << endl << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
 			cout << endl << "WEBCAR ERR: " << e.what();
 			cout << endl << " (MySQL error code: " << e.getErrorCode();
-			if (e.getErrorCode() == 0) {
+			if (e.getErrorCode() >= 0) {
 				stmtTrack = nullptr;
 			}
 			//cout << ", SQLState: " << e.getSQLState().c_str() << " )" << endl;

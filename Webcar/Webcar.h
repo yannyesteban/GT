@@ -192,7 +192,7 @@ namespace WC {
 		void insertTrack(std::string name, std::string track);
 		AppConfig config;
 	private:
-		
+		void reconnect();
 		rapidjson::Document json;
 		AppConfig loadConfig(const char* path);
 
