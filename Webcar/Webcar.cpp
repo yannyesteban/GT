@@ -895,7 +895,7 @@ namespace WC {
 			cout << endl << " (MySQL error code: " << e.getErrorCode();
 			if (e.getErrorCode() == 0) {
 				stmtTrack = nullptr;
-				int c = getchar();
+				//int c = getchar();
 			}
 			//cout << ", SQLState: " << e.getSQLState().c_str() << " )" << endl;
 
