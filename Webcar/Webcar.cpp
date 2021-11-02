@@ -741,7 +741,8 @@ namespace WC {
 	}
 
 	void Webcar::insertTrack(std::string name, std::string track) {
-
+		//track = "2012000581,20020319154431,-66.858390,10.247223,8,169,327.0,12,2,22419.6,1,14.69,0.01,8,0,19,0,,,,4.190";
+		//track = "2012000581,,,,,,";
 		if (stmtTrack == nullptr) {
 			cPos["id_equipo"] = 2;
 			cPos["fecha_hora"] = 3;
@@ -828,7 +829,9 @@ namespace WC {
 				} else {
 					value = values.at(i).c_str();
 				}
-
+				if (value == "") {
+					value = "0";
+				}
 				
 
 				trackParams[field] = value;
@@ -838,20 +841,17 @@ namespace WC {
 				if (pos == 0) {
 					continue;
 				}
-				std::cout << "Field: " << field << " value " << value << " pos: " << pos <<"\n";
-				if (value == "") {
-					if (name == "longitud" || name == "latitud" || name == "id_equipo" || name == "fecha_hora") {
-						error = true;
-						//continue;
-					}
-					value = "0";
-				}
+				//std::cout << "Field: " << field << " value " << value << " pos: " << pos <<"\n";
 				if (value == "0") {
-					if (name == "longitud" || name == "latitud" || name == "id_equipo" || name == "fecha_hora") {
+					if (field == "longitud" || field == "latitud" || field == "id_equipo" || field == "fecha_hora") {
+						//std::cout << " error en " << field << " value " << value << "\n";
 						error = true;
-						//continue;
+				
 					}
-					value = "0";
+					
+				}
+				if (error) {
+					continue;
 				}
 				if (pos >= 2 && pos <= 18) {
 					//std::cout << "parameter position " << pos << " value: " << value << "\n";
@@ -888,13 +888,13 @@ namespace WC {
 			//cout << "WEBCAR ERR: SQLException\n" ;
 			
 			//cout << endl << endl << "WEBCAR ERR: SQLException in " << __FILE__;
-			cout << "Error Position: " << pos << endl;
-			cout << "Track: " << track << endl;
-			cout << endl << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+			//cout << "Error Position: " << pos << endl;
+			//cout << "Track: " << track << endl;
+			//cout << endl << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
 			cout << endl << "WEBCAR ERR: " << e.what();
-			cout << endl << " (MySQL error code: " << e.getErrorCode();
+			//cout << endl << " (MySQL error code: " << e.getErrorCode();
 			if (e.getErrorCode() == 0) {
-				stmtTrack = nullptr;
+				//stmtTrack = nullptr;
 				//int c = getchar();
 			}
 			//cout << ", SQLState: " << e.getSQLState().c_str() << " )" << endl;
