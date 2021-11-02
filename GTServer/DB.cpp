@@ -1668,6 +1668,8 @@ namespace GT {
 		}
 	}
 
+	
+
 	bool DB::getPendingCommand(std::vector<GT::PendingCommand>* pending, std::vector<std::string> units) {
 		if (!connect()) {
 			return false;

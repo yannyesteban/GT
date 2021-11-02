@@ -155,6 +155,8 @@ namespace GT {
 		void commandValue(std::string & params, std::string & value);
 		void setStatusToDisconneted(unsigned int unitId);
 
+		
+
 	private:
 		bool debug;
 		InfoDB info;

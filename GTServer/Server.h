@@ -129,6 +129,7 @@ namespace GT {
 		int updateCommand(int unitId, int commandId, int index, int mode, std::string params);
 		void getIndexCommand(const char* unit_id, CommandResult* commandResult, RCommand* info);
 		void infoCommand(const char* unit_id, CommandResult* commandResult, RCommand* info);
+		void insertTrack(std::string name, std::string track);
 		//RCommand unitResponse;
 	};
 

@@ -847,7 +847,7 @@ namespace GT {
 					//cout << Color::_cyan() << "Saving Track" << Color::_reset()  << endl;
 					//cout << ANSI_COLOR_CYAN "Saving Track: " << mClients[unit_id].device_id << endl;
 					
-					webcar->insertTrack(clients[Info.client].name, to.c_str());
+					insertTrack(clients[Info.client].name, to.c_str());
 
 					if (saveTrack(client.id, client.formatId, to.c_str())) {
 						cout << Color::_yellow() << "Saving Track from: " << Color::_reset() << getUnitName(clients[Info.client].id)   << endl;
@@ -954,6 +954,13 @@ namespace GT {
 		m2.lock();
 		db->infoCommand(unit_id, commandResult, info);
 		m2.unlock();
+	}
+	void Server::insertTrack(std::string name, std::string track)
+	{
+		m2.lock();
+		webcar->insertTrack(name, track.c_str());
+		m2.unlock();
+		return;
 	}
 	bool Server::insertEvent(DBEvent* infoEvent)
 	{
