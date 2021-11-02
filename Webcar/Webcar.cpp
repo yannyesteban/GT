@@ -77,6 +77,19 @@ std::vector<std::string> explode(std::string const& s, char delim) {
 
 	return result;
 }
+
+std::vector<std::string> split(const std::string& s, char delim) {
+	vector<std::string> result;
+	std::stringstream ss(s);
+	std::string item;
+
+	while (getline(ss, item, delim)) {
+		result.push_back(item);
+	}
+
+	return result;
+}
+
 namespace WC {
 	Webcar::Webcar(InfoDB pInfo) :
 		path(""),
@@ -731,7 +744,12 @@ namespace WC {
 		
 		InfoDevice info = getInfoDevice(name);
 		int codequipo = info.codequipo;
-		std::vector<string> values = getItem(track.c_str());
+
+		if (codequipo == 0) {
+			return;
+		}
+		//std::vector<string> values = getItem(track.c_str());
+		std::vector<string> values = split(track.c_str(), ',');
 		std::vector<string> names = info.params;
 		
 		int nameSize = names.size();
@@ -779,7 +797,14 @@ namespace WC {
 				pos = cPos[field];
 
 				if (value == "") {
-					if (name == "longitud" || name == "latitud") {
+					if (name == "longitud" || name == "latitud" || name == "id_equipo" || name == "fecha_hora") {
+						error = true;
+						//continue;
+					}
+					value = "0";
+				}
+				if (value == "0") {
+					if (name == "longitud" || name == "latitud" || name == "id_equipo" || name == "fecha_hora") {
 						error = true;
 						//continue;
 					}
@@ -793,6 +818,7 @@ namespace WC {
 
 			}
 			if (error) {
+				std::cout << "WEBCAR error: " << codequipo << "\n";
 				return;
 			}
 
@@ -818,8 +844,8 @@ namespace WC {
 
 			//cout << "WEBCAR ERR: SQLException\n" ;
 			
-			cout << endl << endl << "WEBCAR ERR: SQLException in " << __FILE__;
-			cout << track << endl;
+			//cout << endl << endl << "WEBCAR ERR: SQLException in " << __FILE__;
+			//cout << track << endl;
 			cout << endl << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
 			cout << endl << "WEBCAR ERR: " << e.what();
 			cout << endl << " (MySQL error code: " << e.getErrorCode();

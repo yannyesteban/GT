@@ -19,6 +19,7 @@ std::string toBinR(int n);
 std::vector<std::string> explode(std::string const& s, char delim);
 std::vector<std::string> getItem(const char* buffer);
 std::string alphaNumeric(std::string ss);
+std::vector<std::string> split(const std::string& s, char delim);
 namespace WC {
 	struct InfoDB {
 
