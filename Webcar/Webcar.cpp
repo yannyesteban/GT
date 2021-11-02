@@ -834,6 +834,10 @@ namespace WC {
 				trackParams[field] = value;
 
 				pos = cPos[field];
+
+				if (pos == 0) {
+					continue;
+				}
 				std::cout << "Field: " << field << " value " << value << " pos: " << pos <<"\n";
 				if (value == "") {
 					if (name == "longitud" || name == "latitud" || name == "id_equipo" || name == "fecha_hora") {
