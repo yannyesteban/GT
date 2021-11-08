@@ -29,7 +29,7 @@ int main()
     */
     system("cls");
     Color::set(4);
-    std::cout << "GT Device v1.0 (2020)!\n";
+    std::cout << "GT Device v1.1 (2020)!\n";
     Color::set(0);
     std::cout << "Hello World!\n";
 
