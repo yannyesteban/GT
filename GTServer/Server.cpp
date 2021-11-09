@@ -681,7 +681,7 @@ namespace GT {
 	
 	bool Server::evalMessage(ConnInfo Info, const char* message) {
 		
-		//printf("evalMessage: %s\n", message);
+		printf("evalMessage: %s\n", message);
 
 		Command* cmd = (Command*)message;
 
