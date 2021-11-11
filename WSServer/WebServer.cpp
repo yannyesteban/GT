@@ -6,6 +6,7 @@ using namespace std;
 std::mutex m2;
 std::mutex m3;
 std::mutex m1;
+std::mutex m4;
 
 namespace GT {
 
@@ -470,6 +471,7 @@ namespace GT {
     /* Message from web app */
     void WebServer::onMessage(ConnInfo Info) {
 
+        m4.lock();
 
         Document f;
         f.SetObject();
@@ -506,6 +508,7 @@ namespace GT {
         if (!document.IsObject()) {
             
             //printf("Connecting !\n");
+            m4.unlock();
             return;
         }
 
@@ -545,6 +548,7 @@ namespace GT {
                 sendToDevice(Info, unitId, commandId, index, mode, user);
             }
                 //sendCommand(unitId, commandId, index, mode);
+            m4.unlock();
             return;
         }
 
@@ -583,6 +587,7 @@ namespace GT {
                 sendToDevice(hub->getHost(), &r);
             }
             //sendCommand(unitId, commandId, index, mode);
+            m4.unlock();
             return;
         }
 
@@ -619,10 +624,11 @@ namespace GT {
             //printf("%s(%d)\n", Info.buffer, size);
 
             send(Info.client, buffer, (int)size, 0);
+            m4.unlock();
             return;
         }
 
-        
+        m4.unlock();
 
 
     }
