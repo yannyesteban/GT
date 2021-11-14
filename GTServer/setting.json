@@ -28,7 +28,8 @@
       "port": 3341,
       "show_cache": false,
       "version": "1.0.0.1",
-      "keep_alive": 40,
+      "keep_alive": 240,
+      "wait_time": 60,
       "status": 0
     },
     {
@@ -45,7 +46,8 @@
       "port": 3317,
       "show_cache": false,
       "version": "1.0.0.1",
-      "keep_alive": 40,
+      "keep_alive": 240,
+      "wait_time": 600,
       "status": 1
     }
   ]

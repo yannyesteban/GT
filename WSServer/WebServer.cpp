@@ -7,6 +7,7 @@ std::mutex m2;
 std::mutex m3;
 std::mutex m1;
 std::mutex m4;
+std::mutex m5;
 
 namespace GT {
 
@@ -253,7 +254,7 @@ namespace GT {
 
     void WebServer::sendToDevice(ConnInfo Info, int unitId, int commandId, int index, int mode, std::string user) {
         //SOCKET s = hub->getHost();
-
+        m5.lock();
         GT::RCommand r = {
             //10020,
             10020,
@@ -348,6 +349,7 @@ namespace GT {
 
         response.unitId = r.unitId;
         jsonResponse(Info.client, &response);
+        m5.unlock();
         /*
 
         encodeMessage((char*)"websocket 2021", buffer, size);

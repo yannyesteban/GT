@@ -19,9 +19,34 @@ template <class Container>
 void split1(const std::string& str, Container& cont);
 template <class Container>
 void split2(const std::string& str, Container& cont, char delim = ' ');
+
+char* GenerateCheckSum(char* buf, long bufLen)
+{
+	static char tmpBuf[4];
+	long idx;
+	unsigned int cks;
+
+	for (idx = 0L, cks = 0; idx < bufLen; cks += (unsigned int)buf[idx++]);
+	sprintf(tmpBuf, "%03d", (unsigned int)(cks % 256));
+	return(tmpBuf);
+}
+
+int getCheckSum(char* buf, long bufLen) {
+	static char tmpBuf[4];
+	long idx;
+	unsigned int cks;
+
+	for (idx = 0L, cks = 0; idx < bufLen; cks += (unsigned int)buf[idx++]);
+	//sprintf(tmpBuf, "%03d", (unsigned int)(cks % 256));
+	return(cks % 256);
+}
+
 int main()
 {
    
+
+	std::string str = "jose augusto";
+	std::cout << " checksum " << str.size() << "..." << getCheckSum((char*)str.c_str(), str.size());
 	std::vector<std::string> result;
 	std::smatch m;
 	std::string ss("\xFA\xF8\xE7\x03\xB1yanny nunez,4.5,-8.369898,esteban");

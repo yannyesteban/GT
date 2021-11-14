@@ -3,6 +3,28 @@
 
 using namespace rapidjson;
 using namespace std;
+
+char* GenerateCheckSum(char* buf, long bufLen)
+{
+	static char tmpBuf[4];
+	long idx;
+	unsigned int cks;
+
+	for (idx = 0L, cks = 0; idx < bufLen; cks += (unsigned int)buf[idx++]);
+	sprintf(tmpBuf, "%02X", (unsigned int)(cks % 256));
+	return(tmpBuf);
+}
+
+int getCheckSum(char* buf, long bufLen) {
+	static char tmpBuf[4];
+	long idx;
+	unsigned int cks;
+
+	for (idx = 0L, cks = 0; idx < bufLen; cks += (unsigned int)buf[idx++]);
+	//sprintf(tmpBuf, "%03d", (unsigned int)(cks % 256));
+	return(cks % 256);
+}
+
 namespace GT {
 	std::mutex m;
 	std::mutex m2;
@@ -714,7 +736,15 @@ namespace GT {
 			break;
 
 		}
+		return false;
+		send(Info.client, Info.buffer, Info.valread, 0);
+		static char a = 'A';
+		std::string command = "$$"+std::to_string(a++)+"23,861157040200913,122,59";
 
+		
+		std::string x = command + GenerateCheckSum((char*)command.c_str(), command.size());
+		send(Info.client, x.c_str(), x.size(), 0);
+		std::cout << "END COMMAND " << x << "\n\n";
 		return false;
 	}
 
@@ -1035,7 +1065,7 @@ namespace GT {
 			printf("%6d\n", it->second.type);
 			
 			if (it->second.type == 0 && timeInSeconds > (double)waitTime) {
-				printf("%50s\n", "-- DISCONECTING TO UNKNOWN");
+				printf("%50s\n", "-- DISCONECTING TO UNKNOWN && waitTime: %d", waitTime);
 				//printf("%10d", it->second.header);
 				printf("%3d", n);
 				printf("%6d", it->second.id);
