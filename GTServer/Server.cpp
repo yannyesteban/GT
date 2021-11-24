@@ -216,7 +216,7 @@ namespace GT {
 			return;
 		}
 		*/
-		//printf("recibiendo: %i, tag: %s, buffer: %s\n", Info.client,Info.tag, Info.buffer);
+		printf("recibiendo: %i, tag: %s, buffer: %s\n", Info.client,Info.tag, Info.buffer);
 		/*
 		SyncMsg xx = {
 			63738,
@@ -736,15 +736,61 @@ namespace GT {
 			break;
 
 		}
-		return false;
-		send(Info.client, Info.buffer, Info.valread, 0);
-		static char a = 'A';
-		std::string command = "$$"+std::to_string(a++)+"23,861157040200913,122,59";
+		
+		static int band = 0;
+		if (band > 5) {
+			return false;
+		}
+		band++;
+		char buf[200];
 
 		
-		std::string x = command + GenerateCheckSum((char*)command.c_str(), command.size());
-		send(Info.client, x.c_str(), x.size(), 0);
-		std::cout << "END COMMAND " << x << "\n\n";
+
+		send(Info.client, Info.buffer, Info.valread, 0);
+		static char packNo = 58+10;
+		int packLength = 0;
+		std::string id = "861157040200913";
+		std::string commandCode = "123";
+		std::string commandData = "66";
+		int checkSum = 0;
+		
+		std::string cmd1 = "," + id + "," + commandCode + "," + commandData;
+		packLength = cmd1.size();
+
+		std::string command = "$$" + std::string (1, packNo %256) + std::to_string(packLength) + cmd1;
+
+		printf("command: %s\n", command.c_str());
+			//std::to_string(a++)+;
+		packNo++;
+
+		if (packNo == 126) {
+			packNo = 58;
+		}
+		char tmpBuf[4];
+		char buffer[1024];
+
+
+		printf("%p", buffer);
+
+		memcpy(buffer, command.c_str(), command.size());
+		int check = (unsigned int)getCheckSum((char*)command.c_str(), command.size());
+		
+		sprintf(tmpBuf, "%02X\r\n", check);
+		
+
+		memcpy(buffer+ command.size(), tmpBuf, 4);
+		memcpy(buffer + command.size()+4, "\0", 1);
+
+		//std::string x = std::string(buffer);
+
+		
+		
+		
+
+		send(Info.client, buffer, command.size() + 4, 0);
+
+		//send(Info.client, "yanny\0", 6, 0);
+		std::cout << "END COMMAND " << buffer << "\n\n";
 		return false;
 	}
 

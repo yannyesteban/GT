@@ -44,9 +44,36 @@ int getCheckSum(char* buf, long bufLen) {
 int main()
 {
    
+	
+	
 
 	std::string str = "jose augusto";
-	std::cout << " checksum " << str.size() << "..." << getCheckSum((char*)str.c_str(), str.size());
+
+	std::cout << " check 1 " << GenerateCheckSum((char*)str.c_str(), str.size()) << "\n";
+	std::cout << " checksum 2" << str.size() << "..." << getCheckSum((char*)str.c_str(), str.size());
+	int check = getCheckSum((char*)str.c_str(), str.size());
+	
+
+	int* c;
+	char tmpBuf[200];
+	c = &check;
+	char buffer[256]="esteban";
+	std::cout << strlen(buffer) << "\n  ";
+	memcpy(buffer + 1, tmpBuf, 3);
+	printf("%p\n", buffer);
+	printf("%s\n", tmpBuf);
+	
+	//printf("%s\n %d %x", buffer, check, c[0]);
+
+
+	int q = 0;
+
+	printf("%p\n", buffer);
+	return 0;
+
+
+
+	
 	std::vector<std::string> result;
 	std::smatch m;
 	std::string ss("\xFA\xF8\xE7\x03\xB1yanny nunez,4.5,-8.369898,esteban");
@@ -170,3 +197,4 @@ void split2(const std::string& str, Container& cont, char delim ) {
 //   4. Use la ventana Lista de errores para ver los errores
 //   5. Vaya a Proyecto > Agregar nuevo elemento para crear nuevos archivos de código, o a Proyecto > Agregar elemento existente para agregar archivos de código existentes al proyecto
 //   6. En el futuro, para volver a abrir este proyecto, vaya a Archivo > Abrir > Proyecto y seleccione el archivo .sln
+
