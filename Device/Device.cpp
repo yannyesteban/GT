@@ -69,6 +69,9 @@ void GT::Device::trackingTask() {
 	mMutex.lock();
 	std::cout << " BEGIN ID : " << beginId << "\n\n";
 	std::string cmd = db->loadTracking(unitId, &beginId, format);
+
+	cmd = "&&G142,861157040200913,000,0,,211124115656,V,10.502798,-66.848701,0,0.0,0,0,0,0,734|2|02CE|002A2101,21,00000038,02,00,04B6|01A2|0000|0000,1,020000,,7D";
+
 	mMutex.unlock();
 	std::cout << "Send: " << "Clien ID: " << clientId << ", " << std::endl;
 	send(getHost(), cmd.c_str(), cmd.size(), 0);

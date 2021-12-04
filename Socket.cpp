@@ -72,6 +72,7 @@ namespace GT {
 		}
 		
 		while (TRUE) {
+			puts("ONE STAGE");
 			FD_ZERO(&readfds);//clear the socket fd set
 			FD_SET(master, &readfds);//add master socket to fd set
 			memset(buffer, 0, lenBuffer);//clear the buffer
@@ -128,7 +129,7 @@ namespace GT {
 					}
 				}
 			}
-
+			puts("TWO STAGE");
 			//else its some IO operation on some other socket :)
 			for (i = 0; i < maxClients; i++) {
 				s = clients[i];
@@ -224,6 +225,8 @@ namespace GT {
 					}
 				}
 			}
+
+			puts("TREE STAGE");
 		}
 		//CloseHandle(hClientThread);
 		closesocket(s);
