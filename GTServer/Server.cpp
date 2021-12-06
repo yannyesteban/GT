@@ -234,6 +234,9 @@ namespace GT {
 			return;
 		}
 
+		if (isSyncMsg2(Info)) {
+			std::cout << " ES UN istartek\n\n";
+		}
 
 		IdHeader* h = getMsgHeader(Info.buffer);
 		//printf("\nHeader %d, Type %d\n", h->header, h->type);
@@ -242,12 +245,13 @@ namespace GT {
 		//printf("Info.client %d, type: %d\n", Info.client, clients[Info.client].type);
 
 		if (clients[Info.client].type == 2) {
+			std::cout << " HOLA \n\n";
 			//printf("Info.Device %s, %d, version: %d\n", clients[Info.client].device_id, clients[Info.client].id, clients[Info.client].version_id);
 			deviceMessage(Info);
 
 			//return;
 		}
-		evalMessage(Info, Info.buffer);
+		//evalMessage(Info, Info.buffer);
 	}
 
 	Server::~Server() {
@@ -563,15 +567,14 @@ namespace GT {
 			return false;
 		}
 
-		auto &client = found->second;
+		
 
-		double timeInSeconds = 0;
-		clock_t endTime = clock();
+		
 		
 
 		SyncMsg* sync_msg = (SyncMsg*)Info.buffer;
 
-		char name[12];
+		
 		//cout << " Syncro: "<< sync_msg->Keep_Alive_Header << endl << Info.buffer << endl;
 		//printf("NEW ID?? %lu socket(%d) H(%d)\n", sync_msg->Keep_Alive_Device_ID, Info.client, sync_msg->Keep_Alive_Header);
 		//std::cout << "clock: "<< Info.clock  << " chrono " << (double(Info.clock-mClock) / CLOCKS_PER_SEC) << endl;
@@ -582,7 +585,10 @@ namespace GT {
 		
 		
 		if (isVersion(sync_msg->Keep_Alive_Header)) {
-			
+			auto& client = found->second;
+			double timeInSeconds = 0;
+			clock_t endTime = clock();
+			char name[12];
 			
 			//printf(ANSI_COLOR_CYAN "---> verification of sync (%lu)..(%d).\n" ANSI_COLOR_RESET, sync_msg->Keep_Alive_Device_ID, sync_msg->Keep_Alive_Header);
 			//puts(sync_msg->Keep_Alive_Device_ID));
@@ -696,6 +702,176 @@ namespace GT {
 		return false;
 	}
 
+	bool Server::isSyncMsg2(ConnInfo Info) {
+		SOCKET socket = Info.client;
+		auto found = clients.find(socket);
+
+		if (found == clients.end()) {
+			return false;
+		}
+
+		std::list<string> li = IStartek.getTrackingList(Info.buffer);
+
+		for (std::list<string>::iterator it = li.begin(); it != li.end(); it++) {
+
+			//printf("%12d", it->first);
+			//printf("%16s\n", it->c_str());
+		}
+
+
+		std::map<std::string, std::string> map = IStartek.getEventData(Info.buffer);
+
+		for (std::map<std::string, std::string>::iterator it = map.begin(); it != map.end(); ++it) {
+			printf("%12s", it->first.c_str());
+			printf("%16s\n", it->second.c_str());
+		
+		}
+
+		std::cout << " EL BUFFER ES " << Info.buffer << "\n";
+
+
+		iStartekHeader* sync_msg = (iStartekHeader*)Info.buffer;
+
+		std::string header = "";
+
+		header += sync_msg->token[0];
+		header += sync_msg->token[1];
+		//sync_msg->token[2] = '\0';
+
+		
+
+		//cout << " Syncro: "<< sync_msg->Keep_Alive_Header << endl << Info.buffer << endl;
+		//printf("NEW ID?? %lu socket(%d) H(%d)\n", sync_msg->Keep_Alive_Device_ID, Info.client, sync_msg->Keep_Alive_Header);
+		//std::cout << "clock: "<< Info.clock  << " chrono " << (double(Info.clock-mClock) / CLOCKS_PER_SEC) << endl;
+
+		//clients[Info.client].clock = Info.clock;
+		//clients[Info.client].header = sync_msg->Keep_Alive_Header;
+		std::cout << " Header 1 " << header << "\n";
+		if (header == "&&") {
+			std::cout << " Header 2 " << header << "\n";
+		}
+		
+
+		if (header == "&&") {
+			auto& client = found->second;
+			double timeInSeconds = 0;
+			clock_t endTime = clock();
+			char name[12];
+
+			//printf(ANSI_COLOR_CYAN "---> verification of sync (%lu)..(%d).\n" ANSI_COLOR_RESET, sync_msg->Keep_Alive_Device_ID, sync_msg->Keep_Alive_Header);
+			//puts(sync_msg->Keep_Alive_Device_ID));
+
+			//sprintf(name, "%lu", "2012000413");
+			sprintf(name, "%s", "2012000413");
+			//std::cout << "synchronization Name " << name << " SOCKET " << socket << std::endl;
+			//printf("\nasync %d\n", sync_msg->Keep_Alive_Device_ID);
+			//std::cout << "socket: " << socket << "  name: " << name << "\n\n";
+			SOCKET oldSocket = getSocket(name);
+
+			if (oldSocket != 0 && oldSocket != socket) {
+				std::cout << "oldSocket: " << oldSocket << "  new is : " << socket << "\n\n";
+				disconect(oldSocket);
+				clients.erase(oldSocket);
+			}
+
+			time_t rawtime;
+			struct tm* timeinfo;
+
+			time(&rawtime);
+			timeinfo = localtime(&rawtime);
+
+
+			if (client.type != 2) {
+				puts("yanny......... type != 2\n\n");
+				client.type = 2;
+				//clients[socket].type = 2;
+				client.status = 1;
+				strcpy_s(client.name, sizeof(client.name), (const char*)name);
+
+				InfoClient cInfo = getInfoClient(name);
+				client.id = cInfo.unit_id;
+				client.formatId = cInfo.format_id;
+
+				//mDevices[name].version_id = cInfo.version_id;
+
+				setClientStatus(client.id, 1);
+
+
+				setUnitName(client.id, name);
+				setClientName(client.id, cInfo.name);
+
+				RCommand info;
+				info.header = 0;
+				info.commandId = 0;
+				info.id = 0;
+				info.index = 0;
+				info.level = 0;
+				strcpy(info.message, "CONNECTING");
+				info.mode = 0;
+				info.type = 5;
+				info.typeMessage = ClientMsg::Connecting;
+				strcpy(info.unit, name);
+				strcpy(info.user, name);
+				strcpy(info.name, cInfo.name);
+
+				strftime(info.date, sizeof(info.date), "%F %T", timeinfo);
+
+				//strcpy(info.date, "0000-00-00 00:00:00");
+				//strcpy(info.date, "");
+				info.unitId = cInfo.unit_id;
+
+				//db->setClientStatus(info.unitId, 1, info.date);
+				//db->saveResponse(&info, "CONNECTED");
+
+				DBEvent event;
+				event.unitId = info.unitId;
+				strftime(event.dateTime, sizeof(event.dateTime), "%F %T", timeinfo);
+				event.eventId = 201;
+				strcpy(event.title, "CONNECTED");
+				strcpy(event.info, "");
+				insertEvent(&event);
+
+				broadcast(&info);
+				time(&info.time);
+
+				cout << "Unit " << client.id << ", name: " << name << " is connected " << endl;
+			}
+			else {
+
+				setClientStatus(client.id, 1);
+
+				DBEvent event;
+				event.unitId = client.id;
+				strftime(event.dateTime, sizeof(event.dateTime), "%F %T", timeinfo);
+				event.eventId = 203;
+				strcpy(event.title, "synch");
+				strcpy(event.info, "");
+				insertEvent(&event);
+				//mDevices[name].clock = clock();
+				//cout << "Algo Raro aqui!!!" << endl;
+			}
+
+
+
+
+
+			//db->saveEvent("88", 4);
+			//printf(ANSI_COLOR_RED "SYNC MESSAGGE FROM: (%s) %d, version: %d \n" ANSI_COLOR_RESET, name, mDevices[name].id, mDevices[name].version_id);
+			std::cout << Color::_cyan() << "Synchronization from: " << Color::_reset() << name << std::endl;
+
+			// return the sycm message
+			send(socket, Info.buffer, Info.valread, 0);
+
+			//const char* buf = "$WP+VER=0000,?";
+			//send(Info.client, buf, strlen(buf), 0);
+			return true;
+		}
+
+
+		//cout << " rechazando un synch" << endl;
+		return false;
+	}
+
 	IdHeader * Server::getMsgHeader(const char* msg) {
 		IdHeader * header = (IdHeader*)msg;
 		return header;
@@ -795,6 +971,9 @@ namespace GT {
 	}
 
 	bool Server::deviceMessage(ConnInfo Info) {
+
+		
+
 		SOCKET socket = Info.client;
 		auto found = clients.find(socket);
 
@@ -821,7 +1000,8 @@ namespace GT {
 		std::string result[50];
 		int len;
 		int nLine = 0;
-		//std::cout << "My Buffer " << Info.buffer << " \n\nEND BUFFER" << std::endl;
+		printf("puntero %p\n", Info.buffer);
+		std::cout << "My Buffer " << Info.buffer << " \n\nEND BUFFER" << std::endl;
 		//std::cout << "My String " << s2 << " \n\nEND BUFFER" << std::endl;
 		if (Info.buffer != NULL) {
 			while (std::getline(ss, to)) {//, '\n'
@@ -829,6 +1009,8 @@ namespace GT {
 				//std::cout << "My Command " << to.c_str() << std::endl;
 				//std::cout << to.c_str() << "\n\n";
 				
+				std::cout << " tracking " << to.c_str() << "\n\n";
+
 				Tool::getCommand(result, len, to.c_str());
 				
 				nLine++;

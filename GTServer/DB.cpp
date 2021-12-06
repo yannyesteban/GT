@@ -1823,7 +1823,7 @@ namespace GT {
 					SELECT ?, null, ue.event_id, ue.mode, ?, 0, COALESCE (ue.name, ?), ?
 					FROM unit_event as ue
 					WHERE (unit_id = ? OR unit_id IS NULL) AND ue.event_id = ? AND ue.mode > 0
-    
+	
 					ORDER BY ue.unit_id DESC
 					LIMIT 1;
 				

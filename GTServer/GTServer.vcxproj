@@ -159,6 +159,7 @@
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="DB.cpp" />
     <ClCompile Include="GTComm.cpp" />
+    <ClCompile Include="iStartek.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Server.cpp" />
     <ClCompile Include="Tool.cpp" />
@@ -167,6 +168,7 @@
     <ClInclude Include="Config.h" />
     <ClInclude Include="DB.h" />
     <ClInclude Include="GTComm.h" />
+    <ClInclude Include="iStartek.h" />
     <ClInclude Include="Server.h" />
     <ClInclude Include="Tool.h" />
   </ItemGroup>

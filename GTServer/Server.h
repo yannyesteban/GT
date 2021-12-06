@@ -14,6 +14,9 @@
 #include "rapidjson/filereadstream.h"
 #include "Webcar.h"
 #include <iomanip> // para la fecha
+
+#include "iStartek.h"
+
 namespace GT {
 	
 
@@ -81,6 +84,7 @@ namespace GT {
 
 		
 		bool isSyncMsg(ConnInfo Info);
+		bool isSyncMsg2(ConnInfo Info);
 		unsigned short getHeader(ConnInfo Info);
 
 		IdHeader * getMsgHeader(const char * msg);
@@ -95,7 +99,7 @@ namespace GT {
 		void deleteClient(SOCKET client);
 		int keepAliveTime = 90;
 		int waitTime = 30;
-		
+		iStartek IStartek;
 	private:
 		bool debug;
 		
