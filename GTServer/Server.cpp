@@ -727,7 +727,7 @@ namespace GT {
 		
 		}
 
-		std::cout << " EL BUFFER ES " << Info.buffer << "\n";
+		std::cout << " EL BUFFER ES.. " << Info.buffer << "\n";
 
 
 		iStartekHeader* sync_msg = (iStartekHeader*)Info.buffer;
