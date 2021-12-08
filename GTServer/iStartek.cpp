@@ -76,7 +76,7 @@ std::string GT::iStartek::getTracking(const std::string s)
 std::list<std::string> GT::iStartek::getTrackingList(const std::string s)
 {
 	
-	std::cout << "getTrackingList\n\n";
+	//std::cout << "getTrackingList\n\n";
 	std::list<std::string> list1 = Tool::split3(s.c_str(), ',');
 	return list1;
 }
@@ -122,8 +122,8 @@ std::map<std::string, std::string> GT::iStartek::getEventData(const std::string 
 	int i = 0;
 	for (std::list<string>::iterator it = li.begin(); it != li.end(); it++) {
 		map[params.at(i).c_str()] = it->c_str();
-		printf("%12s", params.at(i).c_str());
-		printf("%16s\n", it->c_str());
+		//printf("%12s", params.at(i).c_str());
+		//printf("%16s\n", it->c_str());
 		i++;
 	}
 	return map;

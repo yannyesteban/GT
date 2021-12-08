@@ -216,7 +216,7 @@ namespace GT {
 			return;
 		}
 		*/
-		printf("recibiendo: %i, tag: %s, buffer: %s\n", Info.client,Info.tag, Info.buffer);
+		//printf("recibiendo: %i, tag: %s, buffer: %s\n", Info.client,Info.tag, Info.buffer);
 		/*
 		SyncMsg xx = {
 			63738,
@@ -721,16 +721,11 @@ namespace GT {
 
 		std::list<string> li = IStartek.getTrackingList(Info.buffer);
 
-		for (std::list<string>::iterator it = li.begin(); it != li.end(); it++) {
-
-			//printf("%12d", it->first);
-			//printf("%16s\n", it->c_str());
-		}
-
+		
 
 		
 
-		std::cout << " EL BUFFER ES.. " << Info.buffer << "\n";
+		//std::cout << " EL BUFFER ES.. " << Info.buffer << "\n";
 
 
 		iStartekHeader* sync_msg = (iStartekHeader*)Info.buffer;
@@ -750,9 +745,7 @@ namespace GT {
 		//clients[Info.client].clock = Info.clock;
 		//clients[Info.client].header = sync_msg->Keep_Alive_Header;
 		//std::cout << " Header 1 " << header << "\n";
-		if (header == "&&") {
-			std::cout << " Header 2 " << header << "\n";
-		}
+		
 		
 
 		if (header == "&&") {
@@ -1163,8 +1156,8 @@ namespace GT {
 		std::string result[50];
 		int len;
 		int nLine = 0;
-		printf("puntero %p\n", Info.buffer);
-		std::cout << "My Buffer " << Info.buffer << " \n\nEND BUFFER" << std::endl;
+		//printf("puntero %p\n", Info.buffer);
+		//std::cout << "My Buffer " << Info.buffer << " \n\nEND BUFFER" << std::endl;
 		//std::cout << "My String " << s2 << " \n\nEND BUFFER" << std::endl;
 
 		std::string message = "";
@@ -1177,17 +1170,18 @@ namespace GT {
 				//std::cout << "My Command " << to.c_str() << std::endl;
 				//std::cout << to.c_str() << "\n\n";
 				std::map<std::string, std::string> map = IStartek.getEventData(message.c_str());
-
+				/*
 				for (std::map<std::string, std::string>::iterator it = map.begin(); it != map.end(); ++it) {
 					printf("%12s", it->first.c_str());
 					printf("%16s\n", it->second.c_str());
 
 				}
-				std::cout << " tracking " << message.c_str() << "\n\n";
+				*/
+				//std::cout << " tracking " << message.c_str() << "\n\n";
 				
 				std::string ccc = IStartek.getTracking(message.c_str());
 
-				std::cout << " tracking " << ccc << "\n\n";
+				//std::cout << " tracking " << ccc << "\n\n";
 				message = ccc;
 				Tool::getCommand(result, len, message.c_str());
 

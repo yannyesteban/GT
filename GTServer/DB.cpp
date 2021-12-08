@@ -1311,7 +1311,7 @@ namespace GT {
 
 	std::string DB::loadCommand(int unitId, int commandId, int index, int mode, std::string & role) {
 
-		std::cout << " unitId: " << unitId << " commandId: " << commandId << " index: " << index << " mode: " << mode << " role: " << role << "\n\n";
+		//std::cout << " unitId: " << unitId << " commandId: " << commandId << " index: " << index << " mode: " << mode << " role: " << role << "\n\n";
 		if (!connect()) {
 			return "";
 		}
@@ -1417,7 +1417,7 @@ namespace GT {
 
 						std::string commandTemp = "$$" + std::string(1, packNo % 256) + std::to_string(packLength) + cmd1;
 
-						printf("commandTemp: %s\n", commandTemp.c_str());
+						//printf("commandTemp: %s\n", commandTemp.c_str());
 						//std::to_string(a++)+;
 						packNo++;
 
@@ -1428,7 +1428,7 @@ namespace GT {
 						char buffer[1024];
 
 
-						printf("%p", buffer);
+						//printf("%p", buffer);
 
 						memcpy(buffer, commandTemp.c_str(), commandTemp.size());
 						int check = (unsigned int)Tool::getCheckSum((char*)commandTemp.c_str(), commandTemp.size());
@@ -1448,7 +1448,7 @@ namespace GT {
 						//send(Info.client, buffer, command.size() + 4, 0);
 
 						//send(Info.client, "yanny\0", 6, 0);
-						std::cout << "END COMMAND " << command << "\n\n";
+						//std::cout << "END COMMAND " << command << "\n\n";
 					}
 					else {
 						if (modeCommand == 2) {
