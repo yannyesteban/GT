@@ -54,21 +54,7 @@ int main()
 	int check = getCheckSum((char*)str.c_str(), str.size());
 	
 
-	int* c;
-	char tmpBuf[200];
-	c = &check;
-	char buffer[256]="esteban";
-	std::cout << strlen(buffer) << "\n  ";
-	memcpy(buffer + 1, tmpBuf, 3);
-	printf("%p\n", buffer);
-	printf("%s\n", tmpBuf);
 	
-	//printf("%s\n %d %x", buffer, check, c[0]);
-
-
-	int q = 0;
-
-	printf("%p\n", buffer);
 	return 0;
 
 
