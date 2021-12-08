@@ -1000,8 +1000,8 @@ namespace GT {
 		std::string result[50];
 		int len;
 		int nLine = 0;
-		printf("puntero %p\n", Info.buffer);
-		std::cout << "My Buffer " << Info.buffer << " \n\nEND BUFFER" << std::endl;
+		//printf("puntero %p\n", Info.buffer);
+		//std::cout << "My Buffer " << Info.buffer << " \n\nEND BUFFER" << std::endl;
 		//std::cout << "My String " << s2 << " \n\nEND BUFFER" << std::endl;
 		if (Info.buffer != NULL) {
 			while (std::getline(ss, to)) {//, '\n'
@@ -1009,7 +1009,7 @@ namespace GT {
 				//std::cout << "My Command " << to.c_str() << std::endl;
 				//std::cout << to.c_str() << "\n\n";
 				
-				std::cout << " tracking " << to.c_str() << "\n\n";
+				//std::cout << " tracking " << to.c_str() << "\n\n";
 
 				Tool::getCommand(result, len, to.c_str());
 				
