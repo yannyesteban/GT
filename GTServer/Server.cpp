@@ -245,13 +245,22 @@ namespace GT {
 		//printf("Info.client %d, type: %d\n", Info.client, clients[Info.client].type);
 
 		if (clients[Info.client].type == 2) {
-			std::cout << " HOLA \n\n";
+			//std::cout << " HOLA \n\n";
 			//printf("Info.Device %s, %d, version: %d\n", clients[Info.client].device_id, clients[Info.client].id, clients[Info.client].version_id);
-			deviceMessage(Info);
+			
+			if (IStartek.isMe(Info)) {
+				deviceMessage2(Info);
+			}
+			else {
+				deviceMessage(Info);
+			}
+
+			
 
 			//return;
 		}
-		//evalMessage(Info, Info.buffer);
+		return;
+		evalMessage(Info, Info.buffer);
 	}
 
 	Server::~Server() {
@@ -719,13 +728,7 @@ namespace GT {
 		}
 
 
-		std::map<std::string, std::string> map = IStartek.getEventData(Info.buffer);
-
-		for (std::map<std::string, std::string>::iterator it = map.begin(); it != map.end(); ++it) {
-			printf("%12s", it->first.c_str());
-			printf("%16s\n", it->second.c_str());
 		
-		}
 
 		std::cout << " EL BUFFER ES.. " << Info.buffer << "\n";
 
@@ -746,13 +749,17 @@ namespace GT {
 
 		//clients[Info.client].clock = Info.clock;
 		//clients[Info.client].header = sync_msg->Keep_Alive_Header;
-		std::cout << " Header 1 " << header << "\n";
+		//std::cout << " Header 1 " << header << "\n";
 		if (header == "&&") {
 			std::cout << " Header 2 " << header << "\n";
 		}
 		
 
 		if (header == "&&") {
+
+			auto map = IStartek.getEventData(Info.buffer);
+
+			//std::cout << " ID " << map["ID"].c_str() << "\n";
 			auto& client = found->second;
 			double timeInSeconds = 0;
 			clock_t endTime = clock();
@@ -762,7 +769,7 @@ namespace GT {
 			//puts(sync_msg->Keep_Alive_Device_ID));
 
 			//sprintf(name, "%lu", "2012000413");
-			sprintf(name, "%s", "2012000413");
+			sprintf(name, "%s", map["ID"].c_str());
 			//std::cout << "synchronization Name " << name << " SOCKET " << socket << std::endl;
 			//printf("\nasync %d\n", sync_msg->Keep_Alive_Device_ID);
 			//std::cout << "socket: " << socket << "  name: " << name << "\n\n";
@@ -782,7 +789,7 @@ namespace GT {
 
 
 			if (client.type != 2) {
-				puts("yanny......... type != 2\n\n");
+				//puts("yanny......... type != 2\n\n");
 				client.type = 2;
 				//clients[socket].type = 2;
 				client.status = 1;
@@ -926,8 +933,8 @@ namespace GT {
 		static char packNo = 58+10;
 		int packLength = 0;
 		std::string id = "861157040200913";
-		std::string commandCode = "123";
-		std::string commandData = "66";
+		std::string commandCode = "110";
+		std::string commandData = "2024000100";
 		int checkSum = 0;
 		
 		std::string cmd1 = "," + id + "," + commandCode + "," + commandData;
@@ -1125,6 +1132,177 @@ namespace GT {
 		return false;
 	}
 	
+
+	bool Server::deviceMessage2(ConnInfo Info) {
+
+
+
+		SOCKET socket = Info.client;
+		auto found = clients.find(socket);
+
+		if (found == clients.end()) {
+			return false;
+		}
+
+
+		auto& client = found->second;
+
+		//printf(ANSI_COLOR_MAGENTA "esto es un device message\n");
+
+
+		//std::string string = (char*)message;
+		std::stringstream ss((char*)Info.buffer);
+
+
+		//std::string s2(Tool::alphaNumeric(Info.buffer));
+
+
+		std::string to;
+		int i = 0;
+
+		std::string result[50];
+		int len;
+		int nLine = 0;
+		printf("puntero %p\n", Info.buffer);
+		std::cout << "My Buffer " << Info.buffer << " \n\nEND BUFFER" << std::endl;
+		//std::cout << "My String " << s2 << " \n\nEND BUFFER" << std::endl;
+
+		std::string message = "";
+
+		if (Info.buffer != NULL) {
+			while (std::getline(ss, to)) {//, '\n'
+				message = to;
+
+				//to = "$ok:SETEVT=100,0,zzzxx,,,0,1,,,,,,,,0,0,,,,,,";
+				//std::cout << "My Command " << to.c_str() << std::endl;
+				//std::cout << to.c_str() << "\n\n";
+				std::map<std::string, std::string> map = IStartek.getEventData(message.c_str());
+
+				for (std::map<std::string, std::string>::iterator it = map.begin(); it != map.end(); ++it) {
+					printf("%12s", it->first.c_str());
+					printf("%16s\n", it->second.c_str());
+
+				}
+				std::cout << " tracking " << message.c_str() << "\n\n";
+				
+				std::string ccc = IStartek.getTracking(message.c_str());
+
+				std::cout << " tracking " << ccc << "\n\n";
+				message = ccc;
+				Tool::getCommand(result, len, message.c_str());
+
+				nLine++;
+
+
+				//printf(ANSI_COLOR_CYAN "linea: %d\n", nLine);
+
+
+				if (len > 0) {
+					/*
+					std::cout << Color::_yellow() << "Receiving From: " << Color::_reset()
+						<< clients[Info.client].device_id << Color::_green() << " Message: " << Color::_yellow() << to.c_str() << std::endl;
+						*/
+
+
+						//cout << "es un COMANDO de " << clients[Info.client].device_id <<  endl;
+						//cout << "la longitud del resultado es " << len << endl;
+					CommandResult  rCommand = {
+						result[2],
+						result[3],
+						result[4],
+						result[5]
+
+					};
+
+					//RCommand response;
+
+					RCommand unitResponse;
+
+					unitResponse.header = 0;
+
+					getIndexCommand(client.name, &rCommand, &unitResponse);
+					//std::cout << " client.name: " << client.name << "\n\n";
+					//std::cout << " el TAG es " << rCommand.tag << "\n\n";
+					if (rCommand.tag == "+2") {
+						//std::cout << " el TAG es (x1)" << rCommand.tag << "\n\n";
+						unitResponse.index = updateCommand(unitResponse.unitId, unitResponse.commandId, unitResponse.index, 2, rCommand.params);
+					}
+					else {
+						//std::cout << " el TAG es (x2)" << rCommand.tag << "\n\n";
+						unitResponse.index = updateCommand(unitResponse.unitId, unitResponse.commandId, unitResponse.index, 1, rCommand.params);
+					}
+
+
+					//std::cout << " ---- Command Id " << unitResponse.commandId << std::endl;
+					//std::cout << " ---- Index " << unitResponse.index << std::endl;
+
+					infoCommand(client.name, &rCommand, &unitResponse);
+
+					time_t now;
+					time(&now);
+
+
+					unitResponse.delay = difftime(now, unitResponse.time);
+					//std::cout << Color::_magenta() << " delay Time: " << unitResponse.delay << Color::_reset() << std::endl;
+
+
+					//db->saveResponse(&unitResponse, to.c_str());
+
+					//time_t rawtime;
+					struct tm* timeinfo;
+					time(&now);
+					timeinfo = localtime(&now);
+
+					DBEvent event;
+					event.unitId = unitResponse.unitId;
+					event.eventId = 210;
+					strftime(event.dateTime, sizeof(event.dateTime), "%F %T", timeinfo);
+					strcpy(event.title, unitResponse.command);
+					strcpy(event.user, unitResponse.user);
+					strcpy_s(event.info, sizeof(event.info), to.c_str());
+
+					insertEvent(&event);
+
+
+					//db->getPending(client.name, &rCommand, &unitResponse);
+
+
+					if (unitResponse.type == 2) {
+
+						db->deviceConfig(client.name, &rCommand);
+					}
+
+					//db->evalPending(clients[Info.client].device_id, &rCommand, unitResponse.type);
+					//strcpy_s(response.message, strlen(response.message)+1, to.c_str());
+					strcpy(unitResponse.message, to.c_str());
+					strcpy(unitResponse.name, getClientName(unitResponse.unitId).c_str());
+					unitResponse.typeMessage = ClientMsg::CommandResponse;
+					broadcast(&unitResponse);
+				}
+				else {
+					//cout << "es un track" << endl;
+					//cout << Color::_cyan() << "Saving Track" << Color::_reset()  << endl;
+					//cout << ANSI_COLOR_CYAN "Saving Track: " << mClients[unit_id].device_id << endl;
+
+					insertTrack(clients[Info.client].name, message.c_str());
+
+					if (saveTrack(client.id, client.formatId, message.c_str())) {
+						cout << Color::_yellow() << "Saving Track from: " << Color::_reset() << getUnitName(clients[Info.client].id) << endl;
+
+						//std::cout << "ERROR REVISAR WC MY Tracking " << to.c_str() << "\n\n";
+
+						//cout << Color::_cyan() << "--- Track: " << Color::_reset() << to.c_str() << endl;
+					}
+
+
+
+				}
+
+			}
+		}
+
+		return false;
+	}
 	void Server::broadcast(RCommand * response) {
 		//cout << endl << "***** *** Entrando a un Broadcast; " << rClients.size() << endl;
 		

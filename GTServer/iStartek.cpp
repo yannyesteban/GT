@@ -1,14 +1,76 @@
-#include "iStartek.h"
+
 #include "Tool.h"
+#include "iStartek.h"
+
+
 
 bool GT::iStartek::isSynch(ConnInfo Info)
 {
 	return false;
 }
 
+bool  GT::iStartek::isMe(ConnInfo Info) {
+	iStartekHeader* sync_msg = (iStartekHeader*)Info.buffer;
+
+	std::string header = "";
+
+	header += sync_msg->token[0];
+	header += sync_msg->token[1];
+	if (header == "&&") {
+		return true;
+	}
+	return false;
+}
+
 std::string GT::iStartek::getTracking(ConnInfo Info)
 {
 	return std::string();
+}
+
+std::string GT::iStartek::getTracking(const std::string s)
+{
+	std::vector<std::string> params = {
+		"ID",
+		"dateTime",
+		"longitude",
+		"latitude",
+		"speed",
+		"heading",
+		"altitude",
+		"satellites",
+		"almCode",
+		"mileage",
+		"in-sta",
+		"voltage_level_i1",
+		"voltage_level_i2",
+		"out-sta",
+
+		"pulse_i3",
+		"pulse_i4",
+		"rtc"
+
+	};
+	
+	std::map<std::string, std::string> map = getEventData(s);
+	std::string str = "";
+
+	for (std::vector<std::string>::iterator it = params.begin(); it != params.end(); ++it) {
+		if (str != "") {
+			if (map[*it] != "") {
+				str += "," + map[*it];
+			}
+			else {
+				str += ",0";
+			}
+			
+		}
+		else {
+			str = map[*it];
+		}
+
+	}
+
+	return str;
 }
 
 std::list<std::string> GT::iStartek::getTrackingList(const std::string s)

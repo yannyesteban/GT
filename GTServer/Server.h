@@ -92,6 +92,7 @@ namespace GT {
 
 		bool evalMessage(ConnInfo Info, const char* msg);
 		bool deviceMessage(ConnInfo Info);
+		bool deviceMessage2(ConnInfo Info);
 
 		void broadcast(RCommand * response);
 		void isAlive();

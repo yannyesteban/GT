@@ -1311,27 +1311,35 @@ namespace GT {
 
 	std::string DB::loadCommand(int unitId, int commandId, int index, int mode, std::string & role) {
 
-
+		std::cout << " unitId: " << unitId << " commandId: " << commandId << " index: " << index << " mode: " << mode << " role: " << role << "\n\n";
 		if (!connect()) {
 			return "";
 		}
 
+		std::string deviceName = "";
 		std::string params = "";
 		std::string command = "";
+		std::string commandName = "";
 		std::string password = "";
 		std::string value = "";
+		std::string protoMode = "";
+		unsigned short useTag = 0;
+		
 		int modeCommand = 0;
 
 		try {
 			if (stmtUnitCommand == nullptr) {
 			
 				stmtUnitCommand = cn->prepareStatement(
-					R"(SELECT 
+					R"(SELECT d.name as device_name,
 
 					CASE uc.mode WHEN 1 THEN uc.params WHEN 2 THEN uc.query END as params,
 					uc.mode, 
-					CONCAT(protocol_pre, command) as str_command, d.password,
-					COALESCE(r.role, c.command) as role
+					CONCAT(protocol_pre, command) as str_command,
+					CASE WHEN use_pass > 0 THEN d.password ELSE '' end as password,
+
+					command as command_name,
+					COALESCE(r.role, c.command) as role, use_pass, use_tag, v.token_ok as pro_mode
 
 					FROM unit_command as uc
 					INNER JOIN device_command as c ON c.id = uc.command_id
@@ -1356,18 +1364,20 @@ namespace GT {
 				result = stmtUnitCommand->getResultSet();
 
 				if (result->next()) {
+					deviceName = result->getString("device_name").c_str();
 					params = result->getString("params").c_str();
 					command = result->getString("str_command").c_str();
 					password = result->getString("password").c_str();
 					role = result->getString("role").c_str();
+
+					protoMode = result->getString("pro_mode").c_str();
+					commandName = result->getString("command_name").c_str();
 					modeCommand = result->getInt("mode");
-					if (modeCommand == 2) {
-						command += "+2";
-					}
-					command += "="+password;
+					useTag = (unsigned short)result->getInt("use_tag");
+
 					Document document;
 					document.Parse(params.c_str());
-
+					std::string paramList = "";
 					//std::cout << "Comando Puro \n\n\n" << params << "\n\n\n\n";
 					if (params != "") {
 						if (!document.IsObject()) {
@@ -1385,14 +1395,80 @@ namespace GT {
 							else {
 								value = i->value.GetString();
 							}
-							
-							command += "," + value;
+							if (paramList != "") {
+								paramList += "," + value;
+							}
+							else {
+								paramList = value;
+							}
+							//command += "," + value;
 						}
 					}
-					
-					if (modeCommand == 2) {
-						command += ",?";
+					if (protoMode == "istartek") {
+						static char packNo = 58 + 10;
+						int packLength = 0;
+						std::string id = deviceName;
+						std::string commandCode = commandName;
+						std::string commandData = paramList;
+						int checkSum = 0;
+
+						std::string cmd1 = "," + id + "," + commandCode + "," + commandData;
+						packLength = cmd1.size();
+
+						std::string commandTemp = "$$" + std::string(1, packNo % 256) + std::to_string(packLength) + cmd1;
+
+						printf("commandTemp: %s\n", commandTemp.c_str());
+						//std::to_string(a++)+;
+						packNo++;
+
+						if (packNo == 126) {
+							packNo = 58;
+						}
+						char tmpBuf[4];
+						char buffer[1024];
+
+
+						printf("%p", buffer);
+
+						memcpy(buffer, commandTemp.c_str(), commandTemp.size());
+						int check = (unsigned int)Tool::getCheckSum((char*)commandTemp.c_str(), commandTemp.size());
+
+						sprintf(tmpBuf, "%02X\r\n", check);
+
+
+						memcpy(buffer + commandTemp.size(), tmpBuf, 4);
+						memcpy(buffer + commandTemp.size() + 4, "\0", 1);
+
+						//std::string x = std::string(buffer);
+
+
+						command = buffer;
+
+
+						//send(Info.client, buffer, command.size() + 4, 0);
+
+						//send(Info.client, "yanny\0", 6, 0);
+						std::cout << "END COMMAND " << command << "\n\n";
 					}
+					else {
+						if (modeCommand == 2) {
+							command += "+2";
+						}
+						
+						command += "=";
+
+						if (password != "") {
+							command += password;
+						}
+						if (paramList != "") {
+							command += "," + paramList;
+						}
+						if (modeCommand == 2) {
+							command += ",?";
+						}
+					}
+
+					
 
 					
 				}

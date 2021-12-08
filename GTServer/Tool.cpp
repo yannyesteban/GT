@@ -9,6 +9,16 @@ using namespace std;
 
 namespace GT {
 
+	int Tool::getCheckSum(char* buf, long bufLen) {
+		static char tmpBuf[4];
+		long idx;
+		unsigned int cks;
+
+		for (idx = 0L, cks = 0; idx < bufLen; cks += (unsigned int)buf[idx++]);
+		//sprintf(tmpBuf, "%03d", (unsigned int)(cks % 256));
+		return(cks % 256);
+	}
+
 	std::string Tool::alphaNumeric(std::string ss) {
 
 		std::smatch m;

@@ -46,11 +46,7 @@ namespace GT {
 		unsigned long Keep_Alive_Device_ID;
 	} SyncMsg;
 
-	typedef struct {
-		char token[3];
-		unsigned short packLength;
-		
-	} iStartekHeader;
+	
 
 	struct ClientInfo{
 		unsigned int unitId;
