@@ -756,7 +756,7 @@ namespace GT {
 
 		if (header == "&&") {
 
-			auto map = IStartek.getEventData(Info.buffer);
+			auto map = IStartek.getResponse(Info.buffer);
 
 			//std::cout << " ID " << map["ID"].c_str() << "\n";
 			auto& client = found->second;
