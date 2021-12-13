@@ -852,7 +852,7 @@ namespace GT {
 				event.eventId = 203;
 				strcpy(event.title, "synch");
 				strcpy(event.info, "");
-				insertEvent(&event);
+				//insertEvent(&event);
 				//mDevices[name].clock = clock();
 				//cout << "Algo Raro aqui!!!" << endl;
 			}
