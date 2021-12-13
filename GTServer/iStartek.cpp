@@ -125,6 +125,10 @@ std::map<std::string, std::string> GT::iStartek::getEventData(const std::string 
 	
 	for (std::list<string>::iterator it = li.begin(); it != li.end(); it++) {
 
+		if (i >= params.size()) {
+			i++;
+			continue;
+		}
 		if (params.at(i) == "in-sta" || params.at(i) == "out-sta") {
 			
 			std::stringstream ss;
@@ -185,7 +189,10 @@ std::map<std::string, std::string> GT::iStartek::getResponse(const std::string s
 	std::string data = "";
 
 	for (std::list<string>::iterator it = li.begin(); it != li.end(); it++) {
-
+		if (i >= params.size()) {
+			i++;
+			continue;
+		}
 		if (i <= 2) {
 			map[params.at(i).c_str()] = it->c_str();
 		}
