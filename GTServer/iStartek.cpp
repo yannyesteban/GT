@@ -136,8 +136,8 @@ std::map<std::string, std::string> GT::iStartek::getEventData(const std::string 
 			map[params.at(i).c_str()] = it->c_str();
 		}
 		
-		printf("%12s", params.at(i).c_str());
-		printf("%16s\n", it->c_str());
+		//printf("%12s", params.at(i).c_str());
+		//printf("%16s\n", it->c_str());
 		
 		i++;
 	}

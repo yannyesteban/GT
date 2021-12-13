@@ -207,7 +207,7 @@ namespace GT {
 	}
 	
 	void Server::onMessage(ConnInfo Info) {
-		printf("recibiendo -> buffer: %s\n", Info.buffer);
+		//printf("recibiendo -> buffer: %s\n", Info.buffer);
 		
 		auto x = clients.find(Info.client);
 
