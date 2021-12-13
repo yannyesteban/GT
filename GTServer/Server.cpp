@@ -139,6 +139,12 @@ namespace GT {
 		*/
 		//config = pConfig;
 		
+		/*
+		std::string w[40];
+		int len;
+		Tool::getCommand(w, len, "$ok:fat32+xx1=yan,esteban");
+		*/
+
 		keepAliveTime = pConfig.keep_alive;
 		waitTime = pConfig.waitTime;
 		pConfig.db.debug = pConfig.debug;
@@ -201,7 +207,7 @@ namespace GT {
 	}
 	
 	void Server::onMessage(ConnInfo Info) {
-		
+		printf("recibiendo -> buffer: %s\n", Info.buffer);
 		
 		auto x = clients.find(Info.client);
 
@@ -719,7 +725,7 @@ namespace GT {
 			return false;
 		}
 
-		std::list<string> li = IStartek.getTrackingList(Info.buffer);
+		//std::map<string> li = IStartek.getResponse(Info.buffer);
 
 		
 
@@ -1128,8 +1134,6 @@ namespace GT {
 
 	bool Server::deviceMessage2(ConnInfo Info) {
 
-
-
 		SOCKET socket = Info.client;
 		auto found = clients.find(socket);
 
@@ -1137,18 +1141,14 @@ namespace GT {
 			return false;
 		}
 
-
 		auto& client = found->second;
 
 		//printf(ANSI_COLOR_MAGENTA "esto es un device message\n");
 
-
 		//std::string string = (char*)message;
 		std::stringstream ss((char*)Info.buffer);
 
-
 		//std::string s2(Tool::alphaNumeric(Info.buffer));
-
 
 		std::string to;
 		int i = 0;
@@ -1165,19 +1165,8 @@ namespace GT {
 		if (Info.buffer != NULL) {
 			while (std::getline(ss, to)) {//, '\n'
 				message = to;
-
-				//to = "$ok:SETEVT=100,0,zzzxx,,,0,1,,,,,,,,0,0,,,,,,";
-				//std::cout << "My Command " << to.c_str() << std::endl;
-				//std::cout << to.c_str() << "\n\n";
-				std::map<std::string, std::string> map = IStartek.getEventData(message.c_str());
-				/*
-				for (std::map<std::string, std::string>::iterator it = map.begin(); it != map.end(); ++it) {
-					printf("%12s", it->first.c_str());
-					printf("%16s\n", it->second.c_str());
-
-				}
-				*/
-				//std::cout << " tracking " << message.c_str() << "\n\n";
+				
+				std::map<std::string, std::string> map = IStartek.getResponse(message.c_str());
 				
 				std::string ccc = IStartek.getTracking(message.c_str());
 
@@ -1188,10 +1177,15 @@ namespace GT {
 				nLine++;
 
 
-				//printf(ANSI_COLOR_CYAN "linea: %d\n", nLine);
+				printf(ANSI_COLOR_CYAN "linea: %d\n", nLine);
+				if (map["cmd"] != "000" && map["cmd"] != "010" && map["cmd"] != "020") {
 
+				}
 
-				if (len > 0) {
+				if (map["cmd"] != "000" && map["cmd"] != "010" && map["cmd"] != "020") {
+
+					std::cout << Color::_yellow() << "map[data]: " << map["data"] << Color::_reset() << "\n";
+
 					/*
 					std::cout << Color::_yellow() << "Receiving From: " << Color::_reset()
 						<< clients[Info.client].device_id << Color::_green() << " Message: " << Color::_yellow() << to.c_str() << std::endl;
@@ -1201,10 +1195,10 @@ namespace GT {
 						//cout << "es un COMANDO de " << clients[Info.client].device_id <<  endl;
 						//cout << "la longitud del resultado es " << len << endl;
 					CommandResult  rCommand = {
-						result[2],
-						result[3],
-						result[4],
-						result[5]
+						"OK",
+						map["cmd"],
+						"",
+						map["data"]
 
 					};
 
