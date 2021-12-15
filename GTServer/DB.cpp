@@ -1411,8 +1411,14 @@ namespace GT {
 						std::string commandCode = commandName;
 						std::string commandData = paramList;
 						int checkSum = 0;
-
-						std::string cmd1 = "," + id + "," + commandCode + "," + commandData;
+						std::string cmd1 = "," + id + "," + commandCode;
+						if (commandData != "") {
+							std::string cmd1 = "," + id + "," + commandCode + "," + commandData;
+						}
+						else {
+							std::string cmd1 = "," + id + "," + commandCode;
+						}
+						//std::string cmd1 = "," + id + "," + commandCode + "," + commandData;
 						packLength = cmd1.size();
 
 						std::string commandTemp = "$$" + std::string(1, packNo % 256) + std::to_string(packLength) + cmd1;

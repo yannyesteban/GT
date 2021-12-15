@@ -44,7 +44,6 @@ std::string GT::iStartek::getTracking(const std::string s)
 		"voltage_level_i1",
 		"voltage_level_i2",
 		"out-sta",
-
 		"pulse_i3",
 		"pulse_i4",
 		"rtc"
