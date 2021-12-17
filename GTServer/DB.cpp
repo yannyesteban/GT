@@ -1411,12 +1411,12 @@ namespace GT {
 						std::string commandCode = commandName;
 						std::string commandData = paramList;
 						int checkSum = 0;
-						std::string cmd1 = "," + id + "," + commandCode;
+						std::string cmd1 = "";
 						if (commandData != "") {
-							std::string cmd1 = "," + id + "," + commandCode + "," + commandData;
+							cmd1 = "," + id + "," + commandCode + "," + commandData;
 						}
 						else {
-							std::string cmd1 = "," + id + "," + commandCode;
+							cmd1 = "," + id + "," + commandCode;
 						}
 						//std::string cmd1 = "," + id + "," + commandCode + "," + commandData;
 						packLength = cmd1.size();
