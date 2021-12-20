@@ -4,6 +4,14 @@
 #include <string>
 #include <map>
 
+
+#include "rapidjson/document.h"
+#include "rapidjson/prettywriter.h" // for stringify JSON
+#include "rapidjson/writer.h" // for stringify JSON
+#include "rapidjson/filereadstream.h"
+
+
+
 namespace GT {
 	typedef struct {
 		char token[3];
