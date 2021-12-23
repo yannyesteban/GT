@@ -2220,7 +2220,10 @@ namespace GT {
 			list = Tool::splitv(params.c_str(), ',');
 
 			if (index > 0 && index < list.size()) {
-				index = std::stoi(list[0]);
+				if (list[0] != "") {
+					index = std::stoi(list[0]);
+				}
+				
 			}
 
 			
