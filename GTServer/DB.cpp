@@ -1309,7 +1309,7 @@ namespace GT {
 		
 	}
 
-	std::string DB::loadCommand(int unitId, int commandId, int index, int mode, std::string & role) {
+	std::string DB::loadCommand(int unitId, int commandId, int index, int mode, std::string & role, int & roleId) {
 
 		//std::cout << " unitId: " << unitId << " commandId: " << commandId << " index: " << index << " mode: " << mode << " role: " << role << "\n\n";
 		if (!connect()) {
@@ -1331,7 +1331,7 @@ namespace GT {
 			if (stmtUnitCommand == nullptr) {
 			
 				stmtUnitCommand = cn->prepareStatement(
-					R"(SELECT d.name as device_name,
+					R"(SELECT d.name as device_name, r.id as roleId,
 
 					CASE uc.mode WHEN 1 THEN uc.params WHEN 2 THEN uc.query END as params,
 					uc.mode, 
@@ -1369,6 +1369,8 @@ namespace GT {
 					command = result->getString("str_command").c_str();
 					password = result->getString("password").c_str();
 					role = result->getString("role").c_str();
+
+					role = result->getInt("roleId");
 
 					protoMode = result->getString("pro_mode").c_str();
 					commandName = result->getString("command_name").c_str();
@@ -2107,6 +2109,7 @@ namespace GT {
 		sql::ResultSet* result = nullptr;
 
 
+		std::string type = "";
 
 		try {
 
@@ -2114,7 +2117,7 @@ namespace GT {
 				stmtIndexCommand = cn->prepareStatement(R"(SELECT r.*,
 				c.id as command_id,
 				CASE WHEN r.id IS NOT NULL THEN r.role ELSE c.command END as command, 
-				u.id as unit_id, IFNULL(w_index, 0) as indexed
+				u.id as unit_id, IFNULL(w_index, 0) as indexed, c.type
 
 
 				FROM unit as u
@@ -2137,7 +2140,7 @@ namespace GT {
 				result = stmtIndexCommand->getResultSet();
 
 				if (result->next()) {
-
+					type = result->getString("type").c_str();
 					//std::cout << " ---- 888 " << result->getInt("command_id") << std::endl;
 					info->header = (unsigned short)1;
 					//info->index = 0;
@@ -2158,8 +2161,13 @@ namespace GT {
 						*/
 					}
 
-
-					info->mode = 1;
+					if (type == "M") {
+						info->mode = 2;
+					}
+					else {
+						info->mode = 1;
+					}
+					//Sstd::cout << " type.c_str() " << type.c_str() << ", mode: " << info->mode << std::endl;
 					//info->type = (unsigned short)result->getInt("type");
 					//info->level = (unsigned short)result->getInt("level");
 					//info->mode = (unsigned short)result->getInt("mode");
@@ -2199,8 +2207,9 @@ namespace GT {
 			if (stmtUpdateCommand == nullptr) {
 				stmtUpdateCommand = cn->prepareStatement(
 					R"(UPDATE unit_command as uc
-				SET user = 'none', status = 3, uc.values = ?
-				WHERE unit_id = ? AND command_id = ? AND uc.index = ? )");
+					SET user = 'none', status = 3, uc.values = ?
+					WHERE unit_id = ? AND command_id = ? AND uc.index = ? 
+					)");
 			}
 
 			/*
@@ -2209,9 +2218,11 @@ namespace GT {
 				WHERE unit_id = %d AND command_id = %d AND uc.index = %d )", unitId, commandId, index);
 			*/
 			std::string values = "";
-			//cout << ANSI_COLOR_YELLOW "Update: params " << params << endl;
+			cout << ANSI_COLOR_YELLOW "Update: params " << params << endl;
 
 			commandValue(params, values);
+
+			cout << ANSI_COLOR_YELLOW "Update: values " << params << values;
 
 			std::vector<std::string> list;
 			int len;

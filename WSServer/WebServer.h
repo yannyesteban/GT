@@ -82,7 +82,7 @@ namespace GT {
 		DWORD dwThreadId;
 		std::map<SOCKET, WebClient> clients;
 
-		std::string loadCommand(int unitId, int commandId, int index, int mode, std::string& role);
+		std::string loadCommand(int unitId, int commandId, int index, int mode, std::string& role, int & roleId);
 		bool insertEvent(DBEvent* infoEvent);
 		
 	};

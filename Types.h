@@ -158,6 +158,7 @@ namespace GT {
 		double delay = 0;
 		unsigned short commandIndex = 0;
 		char command[20] = "";
+		int roleId = 0;
 	};
 
 	struct PendingCommand {

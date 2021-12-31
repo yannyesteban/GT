@@ -1169,7 +1169,7 @@ namespace GT {
 				std::map<std::string, std::string> map = IStartek.getResponse(message.c_str());
 				
 				
-				Tool::getCommand(result, len, message.c_str());
+				//Tool::getCommand(result, len, message.c_str());
 
 				nLine++;
 
@@ -1204,15 +1204,16 @@ namespace GT {
 					unitResponse.header = 0;
 
 					getIndexCommand(client.name, &rCommand, &unitResponse);
-					//std::cout << " client.name: " << client.name << "\n\n";
+					std::cout << " client.name: " << client.name << "\n\n";
 					//std::cout << " el TAG es " << rCommand.tag << "\n\n";
+
 					if (rCommand.tag == "+2") {
 						//std::cout << " el TAG es (x1)" << rCommand.tag << "\n\n";
 						unitResponse.index = updateCommand(unitResponse.unitId, unitResponse.commandId, unitResponse.index, 2, rCommand.params);
 					}
 					else {
 						//std::cout << " el TAG es (x2)" << rCommand.tag << "\n\n";
-						unitResponse.index = updateCommand(unitResponse.unitId, unitResponse.commandId, unitResponse.index, 1, rCommand.params);
+						unitResponse.index = updateCommand(unitResponse.unitId, unitResponse.commandId, unitResponse.index, unitResponse.mode, rCommand.params);
 					}
 
 

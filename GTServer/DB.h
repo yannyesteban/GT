@@ -124,7 +124,7 @@ namespace GT {
 		std::string createCommand(RCommand* request, std::list<string> params);
 
 		std::string loadCommand(CMDMsg* msg, unsigned int historyId);
-		std::string loadCommand(int unitId, int commandId, int index, int mode, string & role);
+		std::string loadCommand(int unitId, int commandId, int index, int mode, string & role, int & roleId);
 		InfoClient getInfoClient(string id);
 
 		void deviceConfig(const char* unit_id, CommandResult*  result);

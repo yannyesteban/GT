@@ -214,7 +214,7 @@ namespace GT {
 		json.AddMember("index", response->index, json.GetAllocator());
 		json.AddMember("delay", response->delay, json.GetAllocator());
 		json.AddMember("type", (int)response->typeMessage, json.GetAllocator());
-		
+		json.AddMember("roleId", response->roleId, json.GetAllocator());
 		//Value v;
 		//v.SetString(response->user, strlen(response->user), z.GetAllocator());
 		//z["user"].SetString(v);
@@ -273,7 +273,8 @@ namespace GT {
 			ClientMsg::Request,
 			0,// time
 			0,// Delay
-			index
+			index,
+			0
 		};
 
 
@@ -287,13 +288,14 @@ namespace GT {
 			to_string(tag), params, type);
 			*/
 		string role = "";
-		std::string strCommand = loadCommand(unitId, commandId, index, mode, role);
+		int roleId = 0;
+		std::string strCommand = loadCommand(unitId, commandId, index, mode, role, roleId);
 
 		strcpy(r.message, strCommand.c_str());
 		strcpy(r.command, role.c_str());
 		strcpy(r.user, user.c_str());
 		
-		cout << endl << "Unit Id: " << unitId << ", Command " << strCommand << endl << endl;
+		cout << endl << "Unit Id: " << unitId << ", Command " << r.command << endl << endl;
 
 		//db->addPending(document["unitId"].GetInt(), document["commandId"].GetInt(), tag, str, "pepe", type, (unsigned short)document["level"].GetInt());
 		
@@ -348,6 +350,7 @@ namespace GT {
 
 
 		response.unitId = r.unitId;
+		response.roleId = roleId;
 		jsonResponse(Info.client, &response);
 		m5.unlock();
 		/*
@@ -449,10 +452,10 @@ namespace GT {
 		return 0;
 	}
 
-	std::string WebServer::loadCommand(int unitId, int commandId, int index, int mode, std::string& role)
+	std::string WebServer::loadCommand(int unitId, int commandId, int index, int mode, std::string& role, int & roleId)
 	{
 		m2.lock();
-		std::string strCommand = db->loadCommand(unitId, commandId, index, mode, role);
+		std::string strCommand = db->loadCommand(unitId, commandId, index, mode, role, roleId);
 		m2.unlock();
 		return strCommand;
 	}

@@ -313,7 +313,7 @@ std::map<std::string, std::string> GT::iStartek::getResponse(const std::string s
 			map[params.at(i).c_str()] = it->c_str();
 		}
 		else {
-			data += "," + std::string(it->c_str());
+			data += ((data != "")?",":"") + std::string(it->c_str());
 		}
 		
 		//printf("%12s", params.at(i).c_str());
