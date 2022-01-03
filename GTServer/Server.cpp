@@ -1164,7 +1164,7 @@ namespace GT {
 
 		if (Info.buffer != NULL) {
 			while (std::getline(ss, to)) {//, '\n'
-				message = to;
+				message = to.substr(0, to.size() - 3);
 				
 				std::map<std::string, std::string> map = IStartek.getResponse(message.c_str());
 				
