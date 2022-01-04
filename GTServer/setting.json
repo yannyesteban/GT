@@ -15,7 +15,7 @@
   "keep_alive": 100,
   "servers": [
     {
-      "appname": "SERVER: 3341",
+      "appname": "SERVER: 3315",
       "db": {
         "host": "localhost",
         "name": "gt",
@@ -33,7 +33,7 @@
       "status": 0
     },
     {
-      "appname": "SERVER: 3312",
+      "appname": "SERVER: 3318",
       "db": {
         "host": "localhost",
         "name": "gt",
