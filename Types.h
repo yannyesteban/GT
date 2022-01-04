@@ -2,18 +2,7 @@
 #include <string>
 
 namespace GT {
-	enum class ClientMsg22 {
-		Nothing,
-		Connecting,
-		Disconnecting,
-		Message,
-		CommandResponse,
-		CommandError,
-		Error,
-		Request
 
-
-	};
 	enum class ClientMsg {
 		Nothing,
 		Connecting,
