@@ -201,8 +201,8 @@ namespace GT {
 			}
 		});
 			
-		strcpy_s(clients[Info.client].name, sizeof(clients[Info.client].name), "nameless");
-		strcpy_s(clients[Info.client].address, sizeof(clients[Info.client].address), Info.address);
+		strcpy_s(clients[Info.client].name, sizeof clients[Info.client].name, "nameless");
+		strcpy_s(clients[Info.client].address, sizeof clients[Info.client].address, Info.address);
 
 	}
 	
@@ -306,8 +306,8 @@ namespace GT {
 
 			
 			webclient.type = 1;
-			strcpy_s(webclient.name, sizeof(webclient.name), r->name);
-			strcpy_s(webclient.user, sizeof(webclient.user), r->user);
+			strcpy_s(webclient.name, sizeof webclient.name, r->name);
+			strcpy_s(webclient.user, sizeof webclient.user, r->user);
 			
 			std::cout << "Connecting WEB SOCKET " << r->name << std::endl;
 
@@ -368,14 +368,13 @@ namespace GT {
 				std::cout << "Sending message: " << str << " to Nothing\n\n";
 
 				char buffer[1024];
-				strcpy_s(response.message, sizeof(response.message), message.c_str());
-				
+				strcpy_s(response.message, sizeof response.message, message.c_str());
 				
 				str = r->unit;
-				strcpy_s(response.unit, sizeof(response.unit), r->unit);
+				strcpy_s(response.unit, sizeof response.unit, r->unit);
 
 				str = r->user;
-				strcpy_s(response.user, sizeof(response.user), str.c_str());
+				strcpy_s(response.user, sizeof response.user, str.c_str());
 
 				memcpy(buffer, &response, sizeof(response));
 				send(socket, buffer, (int)sizeof(buffer), 0);
@@ -385,13 +384,13 @@ namespace GT {
 			auto & device = found->second;
 
 			char buffer[1024];
-			strcpy_s(response.message, sizeof(response.message), str.c_str());
+			strcpy_s(response.message, sizeof response.message, str.c_str());
 
 			str = r->unit;
-			strcpy_s(response.unit, sizeof(response.unit), r->unit);
+			strcpy_s(response.unit, sizeof response.unit, r->unit);
 
 			str = r->user;
-			strcpy_s(response.user, sizeof(response.user), str.c_str());
+			strcpy_s(response.user, sizeof response.user, str.c_str());
 			
 
 
@@ -452,17 +451,17 @@ namespace GT {
 			response.level = r->level;
 			std::string str = r->message;
 			char buffer[1024];
-			strcpy_s(response.message, sizeof(response.message), str.c_str());
+			strcpy_s(response.message, sizeof response.message, str.c_str());
 			//strcpy(response.message, str.c_str());
 
 			str = r->unit;
 
 
-			strcpy_s(response.unit, sizeof(response.unit), r->unit);
+			strcpy_s(response.unit, sizeof response.unit, r->unit);
 			//strcpy_s(response.unit, str.c_str());
 
 			str = r->user;
-			strcpy_s(response.user, sizeof(response.user), str.c_str());
+			strcpy_s(response.user, sizeof response.user, str.c_str());
 			//strcpy_s(response.user, str.c_str());
 
 
@@ -526,10 +525,10 @@ namespace GT {
 		resp.mode = 0;
 		resp.type = 6;
 		resp.typeMessage = ClientMsg::Disconnecting;
-		strcpy(resp.message, "DISCONNECTED");
-		strcpy(resp.unit, clients[client].name);
-		strcpy(resp.user, clients[client].name);
-		strcpy(resp.name, getClientName(clients[client].id).c_str());
+		strcpy_s(resp.message, sizeof resp.message, "DISCONNECTED");
+		strcpy_s(resp.unit, sizeof resp.unit, clients[client].name);
+		strcpy_s(resp.user, sizeof resp.user, clients[client].name);
+		strcpy_s(resp.name, sizeof resp.name, getClientName(clients[client].id).c_str());
 
 		time_t rawtime;
 		struct tm* timeinfo;
@@ -552,8 +551,8 @@ namespace GT {
 			event.unitId = clients[client].id;
 			strftime(event.dateTime, sizeof(event.dateTime), "%F %T", timeinfo);
 			event.eventId = 202;
-			strcpy(event.title, "disconnected");
-			strcpy(event.info, "");
+			strcpy_s(event.title, sizeof event.title, "disconnected");
+			strcpy_s(event.info, sizeof event.info, "");
 			insertEvent(&event);
 		}
 		m.lock();
@@ -632,7 +631,7 @@ namespace GT {
 				client.type = 2;
 				//clients[socket].type = 2;
 				client.status = 1;
-				strcpy_s(client.name, sizeof(client.name), (const char*)name);
+				strcpy_s(client.name, sizeof client.name, (const char*)name);
 
 				InfoClient cInfo = getInfoClient(name);
 				client.id = cInfo.unit_id;
@@ -652,13 +651,13 @@ namespace GT {
 				info.id = 0;
 				info.index = 0;
 				info.level = 0;
-				strcpy(info.message, "CONNECTING");
+				strcpy_s(info.message, sizeof info.message, "CONNECTING");
 				info.mode = 0;
 				info.type = 5;
 				info.typeMessage = ClientMsg::Connecting;
-				strcpy(info.unit, name);
-				strcpy(info.user, name);
-				strcpy(info.name, cInfo.name);
+				strcpy_s(info.unit, sizeof info.unit, name);
+				strcpy_s(info.user, sizeof info.user, name);
+				strcpy_s(info.name, sizeof info.name, cInfo.name);
 
 				strftime(info.date, sizeof(info.date), "%F %T", timeinfo);
 
@@ -673,8 +672,8 @@ namespace GT {
 				event.unitId = info.unitId;
 				strftime(event.dateTime, sizeof(event.dateTime), "%F %T", timeinfo);
 				event.eventId = 201;
-				strcpy(event.title, "CONNECTED");
-				strcpy(event.info, "");
+				strcpy_s(event.title, sizeof event.title, "CONNECTED");
+				strcpy_s(event.info, sizeof event.info, "");
 				insertEvent(&event);
 
 				broadcast(&info);
@@ -689,8 +688,8 @@ namespace GT {
 				event.unitId = client.id;
 				strftime(event.dateTime, sizeof(event.dateTime), "%F %T", timeinfo);
 				event.eventId = 203;
-				strcpy(event.title, "synch");
-				strcpy(event.info, "");
+				strcpy_s(event.title, sizeof event.title, "synch");
+				strcpy_s(event.info, sizeof event.info, "");
 				insertEvent(&event);
 				//mDevices[name].clock = clock();
 				//cout << "Algo Raro aqui!!!" << endl;
@@ -792,7 +791,7 @@ namespace GT {
 				client.type = 2;
 				//clients[socket].type = 2;
 				client.status = 1;
-				strcpy_s(client.name, sizeof(client.name), (const char*)name);
+				strcpy_s(client.name, sizeof client.name, (const char*)name);
 
 				InfoClient cInfo = getInfoClient(name);
 				client.id = cInfo.unit_id;
@@ -812,13 +811,13 @@ namespace GT {
 				info.id = 0;
 				info.index = 0;
 				info.level = 0;
-				strcpy(info.message, "CONNECTING");
+				strcpy_s(info.message, sizeof info.message, "CONNECTING");
 				info.mode = 0;
 				info.type = 5;
 				info.typeMessage = ClientMsg::Connecting;
-				strcpy(info.unit, name);
-				strcpy(info.user, name);
-				strcpy(info.name, cInfo.name);
+				strcpy_s(info.unit, sizeof info.unit, name);
+				strcpy_s(info.user, sizeof info.user, name);
+				strcpy_s(info.name, sizeof info.name, cInfo.name);
 
 				strftime(info.date, sizeof(info.date), "%F %T", timeinfo);
 
@@ -833,8 +832,8 @@ namespace GT {
 				event.unitId = info.unitId;
 				strftime(event.dateTime, sizeof(event.dateTime), "%F %T", timeinfo);
 				event.eventId = 201;
-				strcpy(event.title, "CONNECTED");
-				strcpy(event.info, "");
+				strcpy_s(event.title, sizeof event.title,"CONNECTED");
+				strcpy_s(event.info, sizeof event.info, "");
 				insertEvent(&event);
 
 				broadcast(&info);
@@ -850,8 +849,8 @@ namespace GT {
 				event.unitId = client.id;
 				strftime(event.dateTime, sizeof(event.dateTime), "%F %T", timeinfo);
 				event.eventId = 203;
-				strcpy(event.title, "synch");
-				strcpy(event.info, "");
+				strcpy_s(event.title, sizeof event.title, "synch");
+				strcpy_s(event.info, sizeof event.info, "");
 				//insertEvent(&event);
 				//mDevices[name].clock = clock();
 				//cout << "Algo Raro aqui!!!" << endl;
@@ -1084,10 +1083,10 @@ namespace GT {
 					DBEvent event;
 					event.unitId = unitResponse.unitId;
 					event.eventId = 210;
-					strftime(event.dateTime, sizeof(event.dateTime), "%F %T", timeinfo);
-					strcpy(event.title, unitResponse.command);
-					strcpy(event.user, unitResponse.user);
-					strcpy_s(event.info, sizeof(event.info), to.c_str());
+					strftime(event.dateTime, sizeof event.dateTime, "%F %T", timeinfo);
+					strcpy_s(event.title, sizeof event.title, unitResponse.command);
+					strcpy_s(event.user, sizeof event.user, unitResponse.user);
+					strcpy_s(event.info, sizeof event.info, to.c_str());
 
 					insertEvent(&event);
 
@@ -1102,8 +1101,8 @@ namespace GT {
 					
 					//db->evalPending(clients[Info.client].device_id, &rCommand, unitResponse.type);
 					//strcpy_s(response.message, strlen(response.message)+1, to.c_str());
-					strcpy(unitResponse.message, to.c_str());
-					strcpy(unitResponse.name, getClientName(unitResponse.unitId).c_str());
+					strcpy_s(unitResponse.message, sizeof unitResponse.message, to.c_str());
+					strcpy_s(unitResponse.name, sizeof unitResponse.name, getClientName(unitResponse.unitId).c_str());
 					unitResponse.typeMessage = ClientMsg::CommandResponse;
 					broadcast(&unitResponse);
 				} else {
@@ -1240,10 +1239,10 @@ namespace GT {
 					DBEvent event;
 					event.unitId = unitResponse.unitId;
 					event.eventId = 210;
-					strftime(event.dateTime, sizeof(event.dateTime), "%F %T", timeinfo);
-					strcpy(event.title, unitResponse.command);
-					strcpy(event.user, unitResponse.user);
-					strcpy_s(event.info, sizeof(event.info), to.c_str());
+					strftime(event.dateTime, sizeof event.dateTime, "%F %T", timeinfo);
+					strcpy_s(event.title, sizeof event.title, unitResponse.command);
+					strcpy_s(event.user, sizeof event.user, unitResponse.user);
+					strcpy_s(event.info, sizeof event.info, to.c_str());
 
 					insertEvent(&event);
 
@@ -1258,8 +1257,8 @@ namespace GT {
 
 					//db->evalPending(clients[Info.client].device_id, &rCommand, unitResponse.type);
 					//strcpy_s(response.message, strlen(response.message)+1, to.c_str());
-					strcpy(unitResponse.message, to.c_str());
-					strcpy(unitResponse.name, getClientName(unitResponse.unitId).c_str());
+					strcpy_s(unitResponse.message, sizeof unitResponse.message,to.c_str());
+					strcpy_s(unitResponse.name, sizeof unitResponse.name, getClientName(unitResponse.unitId).c_str());
 					unitResponse.typeMessage = ClientMsg::CommandResponse;
 					broadcast(&unitResponse);
 				}

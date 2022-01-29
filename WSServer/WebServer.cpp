@@ -3,11 +3,11 @@
 using namespace rapidjson;
 using namespace std;
 
-std::mutex m2;
-std::mutex m3;
+//std::mutex m2;
+//std::mutex m3;
 std::mutex m1;
-std::mutex m4;
-std::mutex m5;
+//std::mutex m4;
+//std::mutex m5;
 
 namespace GT {
 
@@ -85,10 +85,6 @@ namespace GT {
 			(*it)->join();
 		}
 
-		
-
-		
-	   
 	}
 
 	void WebServer::onConnect(ConnInfo Info) {
@@ -253,8 +249,8 @@ namespace GT {
 	}
 
 	void WebServer::sendToDevice(ConnInfo Info, int unitId, int commandId, int index, int mode, std::string user) {
-		//SOCKET s = hub->getHost();
-		m5.lock();
+		
+
 		GT::RCommand r = {
 			//10020,
 			10020,
@@ -278,47 +274,33 @@ namespace GT {
 		};
 
 
-		//strcpy(r.user, document["user"].GetString());
-
-		//unsigned int tag = db->getTag(document["unitId"].GetInt(), document["commandId"].GetInt(), type);
-		//r.index = tag;
-		/*std::string str = db->createCommand(
-			(unsigned int)document["unitId"].GetInt(),
-			(unsigned short)document["commandId"].GetInt(),
-			to_string(tag), params, type);
-			*/
+		
 		string role = "";
 		int roleId = 0;
-		std::string strCommand = loadCommand(unitId, commandId, index, mode, role, roleId);
 
-		strcpy(r.message, strCommand.c_str());
-		strcpy(r.command, role.c_str());
-		strcpy(r.user, user.c_str());
+		printf("UnitId: %d, CommandId: %d, index: %d, mode: %d, role: %s, ", unitId, commandId, index, mode, role.c_str());
+		std::string strCommand = db->loadCommand(unitId, commandId, index, mode, role, roleId);
+
+
+		strcpy_s(r.message, sizeof r.message, strCommand.c_str());
+		strcpy_s(r.command, sizeof r.command, role.c_str());
+		strcpy_s(r.user, sizeof r.user, user.c_str());
+		printf("\ncommand: %s\n\n", strCommand.c_str());
 		
-		cout << endl << "Unit Id: " << unitId << ", Command " << r.command << endl << endl;
-
-		//db->addPending(document["unitId"].GetInt(), document["commandId"].GetInt(), tag, str, "pepe", type, (unsigned short)document["level"].GetInt());
 		
-		/* pause*/
-		//db->addPending(&r);
-
-		strcpy(r.message, strCommand.c_str());
 		char buffer2[1024];
 		memcpy(buffer2, &r, sizeof(r));
-		//send(s, buffer2, (int)sizeof(buffer2), 0);
-
-		//std::cout << "BUFFER 1: " << buffer2 << "\n\n";
 
 
 		DBEvent event;
 		event.unitId = unitId;
 		event.eventId = 209;
 		//strftime(event.dateTime, sizeof(event.dateTime), "%F %T", timeinfo);
-		strcpy(event.title, r.command);
-		strcpy(event.user, r.user);
+		strcpy_s(event.title, sizeof event.title, r.command);
+		strcpy_s(event.user, sizeof event.user, r.user);
 		strcpy_s(event.info, sizeof(r.message), r.message);
 		//strcpy(event.info, "");
-		insertEvent(&event);
+		db->insertEvent(&event);
 
 		sendToServers(buffer2, (int)sizeof(buffer2));
 		//send(Info.client, "yanny", strlen("yanny"), 0);
@@ -352,7 +334,7 @@ namespace GT {
 		response.unitId = r.unitId;
 		response.roleId = roleId;
 		jsonResponse(Info.client, &response);
-		m5.unlock();
+		//m5.unlock();
 		/*
 
 		encodeMessage((char*)"websocket 2021", buffer, size);
@@ -365,32 +347,15 @@ namespace GT {
 
 	void WebServer::sendToDevice(SOCKET server, GT::RCommand* request)
 	{
-		//SOCKET s = hub->getHost();
-
 		
-
-
-		//strcpy(r.user, document["user"].GetString());
-
-		//unsigned int tag = db->getTag(document["unitId"].GetInt(), document["commandId"].GetInt(), type);
-		//r.index = tag;
-		/*std::string str = db->createCommand(
-			(unsigned int)document["unitId"].GetInt(),
-			(unsigned short)document["commandId"].GetInt(),
-			to_string(tag), params, type);
-			*/
 		
 		
 		std::string msg = "disconecting";
-		strcpy(request->message, msg.c_str());
-		strcpy(request->command, msg.c_str());
+		strcpy_s(request->message, sizeof request->message, msg.c_str());
+		strcpy_s(request->command, sizeof request->command, msg.c_str());
 
 		cout << endl << "Unidad" << request->unitId << endl << "COMANDO " << msg << endl << endl;
 
-		//db->addPending(document["unitId"].GetInt(), document["commandId"].GetInt(), tag, str, "pepe", type, (unsigned short)document["level"].GetInt());
-
-		/* pause*/
-		//db->addPending(&r);
 
 		
 		char buffer2[1024];
@@ -454,18 +419,18 @@ namespace GT {
 
 	std::string WebServer::loadCommand(int unitId, int commandId, int index, int mode, std::string& role, int & roleId)
 	{
-		m2.lock();
+		//m2.lock();
 		std::string strCommand = db->loadCommand(unitId, commandId, index, mode, role, roleId);
-		m2.unlock();
+		//m2.unlock();
 		return strCommand;
 	}
 
 	bool WebServer::insertEvent(DBEvent* infoEvent)
 	{
 		
-		m2.lock();
+		//m2.lock();
 		db->insertEvent(infoEvent);
-		m2.unlock();
+		//m2.unlock();
 		return true;
 	   
 	}
@@ -476,7 +441,7 @@ namespace GT {
 	/* Message from web app */
 	void WebServer::onMessage(ConnInfo Info) {
 
-		m4.lock();
+		//m4.lock();
 
 		Document f;
 		f.SetObject();
@@ -513,7 +478,7 @@ namespace GT {
 		if (!document.IsObject()) {
 			
 			//printf("Connecting !\n");
-			m4.unlock();
+			//m4.unlock();
 			return;
 		}
 
@@ -553,7 +518,7 @@ namespace GT {
 				sendToDevice(Info, unitId, commandId, index, mode, user);
 			}
 				//sendCommand(unitId, commandId, index, mode);
-			m4.unlock();
+			//m4.unlock();
 			return;
 		}
 
@@ -592,7 +557,7 @@ namespace GT {
 				sendToDevice(hub->getHost(), &r);
 			}
 			//sendCommand(unitId, commandId, index, mode);
-			m4.unlock();
+			//m4.unlock();
 			return;
 		}
 
@@ -629,11 +594,11 @@ namespace GT {
 			//printf("%s(%d)\n", Info.buffer, size);
 
 			send(Info.client, buffer, (int)size, 0);
-			m4.unlock();
+			//m4.unlock();
 			return;
 		}
 
-		m4.unlock();
+		//m4.unlock();
 
 
 	}
@@ -658,15 +623,13 @@ void CallReceive(void * app, char* buffer, size_t size) {
 	GT::RCommand* x = (GT::RCommand*)buffer;
 
 
-	//cout << "TEST 1 Receiving ..."<< buffer << endl;
-	//cout << "Buffer ..." << x->message << endl;
+	cout << "Client Message" << endl;
+
 	GT::WebServer* WS = (GT::WebServer*)app;
 
-	m3.lock();
 	if (WS->getHeader(buffer) == 0) {
 		cout << "ERROR" << endl;
 	}
-	m3.unlock();
 
 	
 	
@@ -674,7 +637,7 @@ void CallReceive(void * app, char* buffer, size_t size) {
 
 void CallConection(GT::CSInfo Info) {
 
-   std::cout << " CallConection ****** " << Info.name << "....\n\n";
+	std::cout << " CallConection to Socket Server: " << Info.name << "\n\n";
 
 	GT::RequestConnection c = {
 		10001,
@@ -689,18 +652,12 @@ void CallConection(GT::CSInfo Info) {
 
 	};
 
-	strcpy_s(c.name, sizeof(c.name), (char *)Info.name);
-	
+	strcpy_s(c.name, sizeof(c.name), (char*)Info.name);
+
 	char buffer2[512];
 	memcpy(buffer2, &c, sizeof(c));
 	send(Info.master, buffer2, sizeof(buffer2), 0);
-	
-	std::cout << "TEST DEBUG VALUE " << Info.master << endl;
-	send(Info.master, "Barcelona vs Real Madrid", strlen("Barcelona vs Real Madrid"), 0);
-	send(Info.master, "Barcelona vs Real Madrid", strlen("Barcelona vs Real Madrid"), 0);
-	send(Info.master, "Barcelona vs Real Madrid", strlen("Barcelona vs Real Madrid"), 0);
-	send(Info.master, "Barcelona vs Real Madrid", strlen("Barcelona vs Real Madrid"), 0);
-	send(Info.master, "Barcelona vs Real Madrid", strlen("Barcelona vs Real Madrid"), 0);
+
 }
 
 BOOL __stdcall mainhub(LPVOID param) {
