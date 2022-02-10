@@ -53,6 +53,15 @@ namespace GT {
 				strcat_s(str_host, ":");
 				strcat_s(str_host, info.port);
 				
+				sql::ConnectOptionsMap cnProp;
+				cnProp["hostName"] = info.host;
+				cnProp["userName"] = info.user;
+				cnProp["password"] = info.pass;
+				cnProp["scheme"] = info.name;
+				cnProp["port"] = info.port;
+				cnProp["OPT_RECONNECT"] = info.port;
+
+
 				cn = driver->connect(str_host, info.user, info.pass);
 				connected = cn->isValid();
 				bool myTrue = true;

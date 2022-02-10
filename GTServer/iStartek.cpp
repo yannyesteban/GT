@@ -256,10 +256,10 @@ std::map<std::string, std::string> GT::iStartek::getEventData(const std::string 
 
 	std::cout << "JSON " << sb.GetString() << "\n\n";
 
-	std::cout << "BSI " << map["BSI"].c_str() << "\n\n";
+	//std::cout << "BSI " << map["BSI"].c_str() << "\n\n";
 	
-	std::cout << "bsi size " << bsi.size() << "\n\n";
-	std::cout << "XXX " << bsi[0] << "\n\n";
+	//std::cout << "bsi size " << bsi.size() << "\n\n";
+	//std::cout << "XXX " << bsi[0] << "\n\n";
 
 	return map;
 }
