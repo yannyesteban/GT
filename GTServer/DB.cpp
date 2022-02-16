@@ -346,9 +346,27 @@ namespace GT {
 		loadFormats();
 	}
 
-	
+	bool DB::isAlive() {
+
+
+		bool value = false;
+		if (cn) {
+			value = cn->isValid();
+
+		}
+		if (value) {
+			std::cout << "\n** Mysql is alive\n";
+		}
+		else {
+			std::cout << "\n** Mysql is Dead\n";
+		}
+		return value;
+
+		
+	}
 
 	bool DB::isValid() {
+		isAlive();
 		if (cn == NULL) {
 			return false;
 		}
@@ -360,35 +378,36 @@ namespace GT {
 	void DB::reset() {
 
 		
-		delete stmtLoadProtocols;
-		delete stmtLoadVersions;
+		stmtLoadProtocols = nullptr;
+		stmtLoadVersions = nullptr;
 
-		delete stmtCreateCommand;
-		delete stmtDelDeviceConfig;
-		delete stmtDeviceConfig;
-		delete stmtInsertDeviceConfig;
-		delete stmtGetPending;
-		delete stmtEvalPending;
-		delete stmtReadCommand;
-		delete stmtInfoCommand;
-		delete stmtSaveResponse;
-		delete stmtDeletePending;
-		delete stmtInsertPending;
-		delete stmtGetTag;
-		delete stmtInfoClient;
-		delete stmtUpdateClientStatus;
-		delete stmtPendingCommand;
-		delete stmtInsertTracking;
-		delete stmtEvent;
-		delete stmtTracking;
-		delete stmtGetInfoPending;
+		stmtCreateCommand = nullptr;
+		stmtDelDeviceConfig = nullptr;
+		stmtDeviceConfig = nullptr;
+		stmtInsertDeviceConfig = nullptr;
+		stmtGetPending = nullptr;
+		stmtEvalPending = nullptr;
+		stmtReadCommand = nullptr;
+		stmtInfoCommand = nullptr;
+		stmtSaveResponse = nullptr;
+		stmtDeletePending = nullptr;
+		stmtInsertPending = nullptr;
+		stmtGetTag = nullptr;
+		stmtInfoClient = nullptr;
+		stmtUpdateClientStatus = nullptr;
+		stmtPendingCommand = nullptr;
+		stmtInsertTracking = nullptr;
+		stmtEvent = nullptr;
+		stmtTracking = nullptr;
+		stmtGetInfoPending = nullptr;
 		
-		delete stmtUnitCommand;
-		delete stmtCommandParam;
-		delete stmtIndexCommand;
-		delete stmtUpdateCommand;
-		delete stmtUnitConnected;
-		delete stmtDisconnectedStatus;
+		//stmtUnitCommand;
+		stmtUnitCommand = nullptr;
+		stmtCommandParam = nullptr;
+		stmtIndexCommand = nullptr;
+		stmtUpdateCommand = nullptr;
+		stmtUnitConnected = nullptr;
+		stmtDisconnectedStatus = nullptr;
 		
 		//delete stmtMain;
 		initialized = false;

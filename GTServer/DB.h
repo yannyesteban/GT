@@ -93,6 +93,7 @@ namespace GT {
 		void init();
 		bool connect();
 		bool isValid();
+		bool isAlive();
 		void reset();
 		void SQLException(sql::SQLException& e);
 		void SQLException(sql::SQLException& e, long line);

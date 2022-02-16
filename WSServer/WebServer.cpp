@@ -279,6 +279,8 @@ namespace GT {
 		int roleId = 0;
 
 		printf("UnitId: %d, CommandId: %d, index: %d, mode: %d, role: %s, ", unitId, commandId, index, mode, role.c_str());
+
+		db->isAlive();
 		std::string strCommand = db->loadCommand(unitId, commandId, index, mode, role, roleId);
 
 
