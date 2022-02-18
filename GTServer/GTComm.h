@@ -36,7 +36,7 @@ namespace GT {
 		GTComm(GTAppConfig pConfig);
 		~GTComm();
 
-		void start();
+		void start(std::string fileConfig);
 	
 	private:
 		GTAppConfig config;

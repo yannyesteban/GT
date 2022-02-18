@@ -8,12 +8,12 @@ GT::GTComm::~GTComm()
 {
 }
 
-void GT::GTComm::start()
+void GT::GTComm::start(std::string configFile)
 {
-    std::cout << "hello" << "\n";
-
-
-    rapidjson::Document d = loadConfig("setting.json");
+    
+    
+    std::cout << "Hello: el archivo de configuracion es: " << configFile << "\n";
+    rapidjson::Document d = loadConfig(configFile.c_str());
 
     std::cout << "App " << d["appname"].GetString() << "\n\n";
 

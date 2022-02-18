@@ -15,15 +15,28 @@
 
 using namespace GT;
 
-int main()
+int main(int argc, char* argv[])
 {
     setlocale(LC_CTYPE, "Spanish");
+
+    std::string configFile = "setting.json";
+    if (argc > 1) {
+        configFile = std::string(argv[1]);
+    }
+    
+    
+        
+
+
+    
+
     system("cls");
+
     auto inf = GTAppConfig({
 
         });
     auto admin = new GTComm(inf);
-    admin->start();
+    admin->start(configFile.c_str());
     return 12474737;
 
     auto t = std::time(nullptr);
