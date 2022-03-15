@@ -1109,10 +1109,10 @@ namespace GT {
 					//cout << "es un track" << endl;
 					//cout << Color::_cyan() << "Saving Track" << Color::_reset()  << endl;
 					//cout << ANSI_COLOR_CYAN "Saving Track: " << mClients[unit_id].device_id << endl;
-					
+					std::string track(to.c_str());
 					insertTrack(clients[Info.client].name, to.c_str());
 
-					if (saveTrack(client.id, client.formatId, to.c_str())) {
+					if (saveTrack(client.id, client.formatId, track.c_str())) {
 						cout << Color::_yellow() << "Saving Track from: " << Color::_reset() << getUnitName(clients[Info.client].id)   << endl;
 
 						//std::cout << "ERROR REVISAR WC MY Tracking " << to.c_str() << "\n\n";
@@ -1268,11 +1268,11 @@ namespace GT {
 					//cout << ANSI_COLOR_CYAN "Saving Track: " << mClients[unit_id].device_id << endl;
 					std::string tracking = IStartek.getTracking(message.c_str());
 
-					
+					std::string track(tracking.c_str());
 					
 					insertTrack(clients[Info.client].name, tracking.c_str());
 
-					if (saveTrack(client.id, client.formatId, tracking.c_str())) {
+					if (saveTrack(client.id, client.formatId, track.c_str())) {
 						cout << Color::_yellow() << "Saving Track from: " << Color::_reset() << getUnitName(clients[Info.client].id) << endl;
 
 						//std::cout << "ERROR REVISAR WC MY Tracking " << to.c_str() << "\n\n";
