@@ -475,7 +475,7 @@ namespace GT {
 		Document document;
 		document.Parse(x);
 
-		//std::cout <<"Comando Puro \n\n\n" << x << "\n\n\n\n";
+		std::cout <<"Comando Puro \n\n\n" << x << "\n\n\n\n";
 
 		if (!document.IsObject()) {
 			

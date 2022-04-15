@@ -52,15 +52,17 @@ namespace GT {
 				strcat_s(str_host, info.host);
 				strcat_s(str_host, ":");
 				strcat_s(str_host, info.port);
-				
+				/*
 				sql::ConnectOptionsMap cnProp;
 				cnProp["hostName"] = info.host;
-				cnProp["userName"] = info.user;
+				
 				cnProp["password"] = info.pass;
+
+				cnProp["userName"] = info.user;
 				cnProp["scheme"] = info.name;
 				cnProp["port"] = info.port;
 				cnProp["OPT_RECONNECT"] = info.port;
-
+				*/
 
 				cn = driver->connect(str_host, info.user, info.pass);
 				connected = cn->isValid();
@@ -1467,6 +1469,7 @@ namespace GT {
 						//printf("%p", buffer);
 
 						memcpy(buffer, commandTemp.c_str(), commandTemp.size());
+						std::cout << "\ntemp: " << commandTemp.c_str() << "\n\n";
 						int check = (unsigned int)Tool::getCheckSum((char*)commandTemp.c_str(), commandTemp.size());
 
 						sprintf(tmpBuf, "%02X\r\n", check);
