@@ -170,7 +170,7 @@ namespace GT {
 		stmtLoadProtocols = nullptr;
 		stmtInfoClient = nullptr;
 		stmtInsertTracking = nullptr;
-
+		stmtInfoCommand = nullptr;
 		
 		initialized = false;
 	}
@@ -203,7 +203,7 @@ namespace GT {
 			if (stmtSaveCommand == nullptr) {
 				stmtSaveCommand = cn->prepareStatement(
 					R"(INSERT INTO unit_cmd
-					(`unit_id`, `command_id`, `index`, `mode`, `name`, `params`, `query`, `status`, `user`)
+					(`unit_id`, `command`, `index`, `mode`, `name`, `params`, `query`, `status`, `user`)
 						VALUES
 						(?, ?, ?, ?, ?, ?, ?, ?, ?)
 						ON DUPLICATE KEY UPDATE
@@ -219,7 +219,7 @@ namespace GT {
 			sql::ResultSet* result = nullptr;
 
 			stmtSaveCommand->setInt(1, info.unitId);
-			stmtSaveCommand->setInt(2, info.commandId);
+			stmtSaveCommand->setString(2, info.command);
 			stmtSaveCommand->setInt(3, info.index);
 			stmtSaveCommand->setInt(4, info.mode);
 			stmtSaveCommand->setString(5, info.name.c_str());
@@ -774,6 +774,36 @@ namespace GT {
 		return true;
 	}
 
+	bool ProtoDB::updateCommand(int unitId, int commandId, int index, std::string values)
+	{
+		
+		if (!connect()) {
+			return false;
+		}
+
+		
+		try {
+			if (stmtUpdateCommand == nullptr) {
+				stmtUpdateCommand = cn->prepareStatement(
+					R"(	UPDATE unit_cmd as uc
+						INNER JOIN device_command as c ON c.id = uc.command_id
+						SET uc.values = CASE uc.mode WHEN 1 THEN uc.values ELSE ? END
+						WHERE uc.unit_id = ? AND uc.command_id = ? AND uc.index = CASE c.w_index WHEN 1 THEN ? ELSE 0 END 
+					)");
+			}
+
+			stmtUpdateCommand->setString(1, values.c_str());
+			stmtUpdateCommand->setInt(2, unitId);
+			stmtUpdateCommand->setInt(3, commandId);
+			stmtUpdateCommand->setInt(4, index);
+
+		}
+		catch (sql::SQLException& e) {
+			SQLException(e, __LINE__);
+		}
+		return true;
+	}
+
 	std::map<std::string, std::string> ProtoDB::decodeExp(std::string s, ClientProto& proto) {
 
 		regex regexp(proto.tracking);
@@ -945,6 +975,146 @@ namespace GT {
 			
 		
 		return false;
+	}
+	std::vector<std::string> ProtoDB::decodeArray(std::string json)
+	{
+		std::vector<std::string> array;
+		Document document;
+		
+		document.Parse(json.c_str());
+		if (document.IsArray()) {
+			const Value& a = document.GetArray();
+			for (SizeType i = 0; i < a.Size(); i++) // Uses SizeType instead of size_t
+			{
+				array.push_back(a[i].GetString());
+			}
+		}
+		
+		return array;
+	}
+	EncodeCommand ProtoDB::infoCommand(int unitId, std::string command, int index)
+	{
+		
+		EncodeCommand info;
+		
+		if (!connect()) {
+			return info;
+		}
+		try {
+			if (stmtInfoCommand == nullptr) {
+				stmtInfoCommand = cn->prepareStatement(
+					R"(SELECT
+
+						d.name as deviceId,
+						p.document->'$.name' as name,
+						p.document->'$.pass' as pass,
+						p.document->'$.header' as header,
+						p.document->'$.encode.commandExp' as commandExp,
+						p.document->'$.encode.packlen' as packlen,
+						p.document->'$.encode.checksum' as checksum,
+						p.document->'$.encode.packnoBegin' as packnoBegin,
+						p.document->'$.encode.packnoEnd' as packnoEnd,
+						p.document->'$.encode.deltaIndex' as deltaIndex,
+						j->'$.name' as command,
+						j->'$.usePass' as usePass,
+						j->'$.indexed' as indexed,
+						CASE uc.mode WHEN 1 THEN uc.params WHEN 2 THEN uc.query END as params,
+
+						uc.*, d.*
+
+						FROM unit_cmd as uc
+						INNER JOIN unit as u ON u.id = uc.unit_id
+						INNER JOIN device as d ON u.device_id = d.id
+						INNER JOIN protocol as p ON p.id = d.version_id
+
+						INNER JOIN json_table(document,
+						'$.commands[*]' columns
+							(
+								name text path '$.command',
+								j json path '$'
+
+							)
+						) as pc ON pc.name = uc.command
+						
+
+						WHERE uc.unit_id = ? AND uc.command = ? AND uc.index = ?
+
+				)");
+			}
+
+			sql::ResultSet* result = nullptr;
+
+			stmtInfoCommand->setInt(1, unitId);
+			stmtInfoCommand->setString(2, command);
+			stmtInfoCommand->setInt(3, index);
+			
+
+			stmtInfoCommand->execute();
+
+			if (stmtInfoCommand->execute()) {
+				result = stmtInfoCommand->getResultSet();
+				
+				if (result->next()) {
+
+					info.unitId = unitId;
+					info.index = index;
+					info.deviceId = result->getString("deviceId").c_str();
+					info.pass = result->getString("pass").c_str();
+					
+					info.commandExp = result->getString("commandExp").c_str();
+					info.packlen = result->getString("packlen").c_str();
+					info.checksum = result->getString("checksum").c_str();
+
+					info.packnoBegin = result->getInt("packnoBegin");
+					info.packnoEnd = result->getInt("packnoEnd");
+					info.deltaIndex = result->getInt("deltaIndex");
+
+					info.command = result->getString("command").c_str();
+					info.usePass = result->getBoolean("usePass");
+					info.indexed = result->getBoolean("indexed");
+					info.params = decodeArray(result->getString("params").c_str());
+					info.listOParams = cmd.toList(info.params, ",");
+
+					if (info.listOParams != "") {
+
+						info.listParams = "," + info.listOParams;
+					}
+					else {
+						info.listParams = "";
+					}
+
+					static char packNo = info.packnoBegin;
+
+					if (info.indexed) {
+						packNo = index;
+					}
+					else {
+						
+						packNo++;
+
+						if (packNo < info.packnoBegin) {
+							packNo = info.packnoBegin;
+						}
+						if (packNo > info.packnoEnd) {
+							packNo = info.packnoEnd;
+						}
+						
+					}
+					
+
+					info.packno = std::string(1, packNo % 256);
+					delete result;
+				}
+			}
+
+
+		}
+		catch (sql::SQLException& e) {
+			SQLException(e, __LINE__);
+		}
+
+
+		return info;
 	}
 	std::string ProtoDB::encodeToArray(std::vector<string> params)
 	{

@@ -53,3 +53,47 @@ std::string Cmd::encode(std::string ss, std::map<std::string, std::string> data)
 
 	return str;
 }
+
+std::string Cmd::encodeToArray(std::vector<std::string> params)
+{
+
+	rapidjson::Document json;
+	json.SetArray();
+
+	rapidjson::Document::AllocatorType& allocator = json.GetAllocator();
+
+	std::vector<std::string> result;
+	for (std::vector<std::string>::iterator it = params.begin(); it != params.end(); it++) {
+
+		rapidjson::Value key(it->c_str(), it->size(), allocator);
+		json.PushBack(key, allocator);
+
+	}
+
+	rapidjson::StringBuffer sbuffer;
+	rapidjson::Writer<rapidjson::StringBuffer> wr(sbuffer);
+
+	json.Parse(sbuffer.GetString());
+
+	json.Accept(wr);
+
+	//std::cout << " JSON-STRING-ARRAY: " << sbuffer.GetString() << "\n";
+	return sbuffer.GetString();
+}
+
+std::string Cmd::toList(std::vector<std::string> data, std::string sep)
+{
+	std::string list = "";
+	
+	for (int i = 1; i < data.size(); i++) {
+
+		if (list != "") {
+			list += sep + data[i];
+		}
+		else {
+			list += data[i];
+		}
+	}
+
+	return list;
+}

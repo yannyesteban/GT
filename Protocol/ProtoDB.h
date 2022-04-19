@@ -18,9 +18,9 @@
 
 
 template <class Container>
-void split2(const std::string& str, Container& cont, char delim = ' ');
+void split22(const std::string& str, Container& cont, char delim = ' ');
 template <class Container>
-void split2(const std::string& str, Container& cont, char delim) {
+void split22(const std::string& str, Container& cont, char delim) {
 	std::stringstream ss(str);
 	std::string token;
 	while (std::getline(ss, token, delim)) {
@@ -29,6 +29,34 @@ void split2(const std::string& str, Container& cont, char delim) {
 }
 namespace GT {
 
+
+	struct EncodeCommand {
+		int unitId;
+		std::string command;
+		int index;
+		std::string deviceId;
+		std::vector <std::string> params;
+		std::string listParams;
+		std::string listOParams;
+		
+		bool indexed = false;
+
+		std::string role;
+		std::string label;
+		std::string descrption;
+		bool usePass = true;
+		int level = 0;
+
+		std::string commandExp;
+		std::string packlen;
+		std::string checksum;
+		std::string pass;
+		std::string packno;
+		int packnoBegin = 1;
+		int packnoEnd = 100;
+		int deltaIndex = 0;
+		
+	};
 	struct FieldConfig {
 		std::string name;
 		std::string type;
@@ -68,10 +96,11 @@ namespace GT {
 	struct InfoCmd {
 
 		int unitId;
-		int commandId;
+		std::string command;
 		int index;
 		int mode;
 		int status;
+		
 		std::string name;
 		std::string params;
 		std::string query;
@@ -83,67 +112,7 @@ namespace GT {
 
 	};
 
-	struct InfoProto {
-		
-		int id_device;
-		int tag_length;
-		std::string pass_default;
-		std::string protocol_pre;
-		std::string token_ok;
-		std::string token_error;
-		std::string token_resp;
-		std::string sync_header;
-		int format_id;
-
-	};
-
-	struct InfoPending {
-		unsigned int id;
-		unsigned int unitId;
-		unsigned int commandId;
-		std::string command;
-		std::string name;
-		unsigned short level;
-		unsigned short type;
-		unsigned short mode;
-		std::string user;
-
-	};
-	struct InfoClientX {
-		
-		int unit_id;
-		int device_id;
-		int version_id;
-	};
-
-	struct Format {
-		char s[30][20];
-		int n = 0;
-	};
-	struct TrackingField {
-		int pos = 0;
-		int type = 0;
-	};
-	struct InfoProto3 {
-
-		int id_device;
-		int tag_length;
-		char* pass_default;
-		char* protocol_pre;
-		char* sync_header;
-
-	};
-
-	struct DBEvent {
-		int unitId;
-		char dateTime[20] = "";
-		int eventId;
-		int mode;
-		char title[1024] = "";
-		char info[1024] = "";
-		char user[45] = "";
-		unsigned short status;
-	};
+	
 
 
 	class ProtoDB {
@@ -171,6 +140,7 @@ namespace GT {
 		ClientProto decodeProto(std::string);
 		void loadProtocols();
 		bool saveTrack(int unitId, std::map<std::string, std::string> data);
+		bool updateCommand(int unitId, int commandId, int index, std::string value);
 		
 		std::map<std::string, std::string> decodeExp(std::string s, ClientProto& proto);
 
@@ -181,6 +151,7 @@ namespace GT {
 		std::vector<std::string> decodeParams(std::string s, ClientProto& proto);
 		std::string encodeToArray(std::vector<string>);
 
+
 		void evalData(std::map<std::string, std::string>& data, ClientProto & proto);
 
 		std::string encodeJson(std::map<std::string, std::string> data);
@@ -188,6 +159,10 @@ namespace GT {
 		bool isTrack(std::string data, ClientProto& proto);
 		bool isCommand(std::string data, ClientProto& proto);
 
+
+		std::vector<std::string> decodeArray(std::string json);
+
+		EncodeCommand infoCommand(int unitId, std::string command, int index);
 		std::map<int, ClientProto> mProto;
 
 	private:
@@ -203,11 +178,15 @@ namespace GT {
 
 
 		sql::PreparedStatement* stmtSaveCommand = nullptr;
+		sql::PreparedStatement* stmtUpdateCommand = nullptr;
+
+		
 		sql::PreparedStatement* stmtEncodeCommand = nullptr;
 
 		
 		sql::PreparedStatement* stmtLoadProtocols = nullptr;
 		sql::PreparedStatement* stmtInfoClient = nullptr;
+		sql::PreparedStatement* stmtInfoCommand = nullptr;
 		sql::PreparedStatement* stmtInsertTracking = nullptr;
 
 		

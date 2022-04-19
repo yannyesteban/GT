@@ -13,6 +13,7 @@
 #include "rapidjson/document.h"
 #include "rapidjson/prettywriter.h" // for stringify JSON
 #include "rapidjson/filereadstream.h"
+#include "Cmd.h"
 
 using namespace GT;
 int getCheckSum(char* buf, long bufLen) {
@@ -195,6 +196,32 @@ int main()
 	};
 	auto db = new ProtoDB(infoDB);
 	db->connect();
+
+	EncodeCommand encodeInfo = db->infoCommand(4032, "109", 5);
+
+
+	std::map<std::string, std::string> cmdData;
+	cmdData["id"] = encodeInfo.deviceId;
+	cmdData["pass"] = encodeInfo.pass;
+	cmdData["cmd"] = encodeInfo.command;
+
+
+	cmdData["fpacklen"] = encodeInfo.packlen;
+	cmdData["fchecksum"] = encodeInfo.checksum;
+	cmdData["index"] = std::to_string(encodeInfo.index);
+	cmdData["oparams"] = encodeInfo.listOParams;
+	cmdData["params"] = encodeInfo.listParams;
+	cmdData["packno"] = encodeInfo.packno;
+	
+
+	Cmd cmd;
+	std::string x = cmd.encode(encodeInfo.commandExp, cmdData);
+
+	std::cout << "new command es : " << x << "\n\n";
+
+	return 0;
+
+
 	db->loadProtocols(); 
 
 
