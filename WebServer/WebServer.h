@@ -88,6 +88,8 @@ namespace GT {
 		void sendToDevice(ConnInfo Info, int unitId, int commandId, int index, int mode, std::string user);
 		void sendToDevice(SOCKET server, GT::RCommand * request);
 
+		void sendCommand(GT::RCommand);
+
 		int sendToServers(char * buffer, int len);
 
 

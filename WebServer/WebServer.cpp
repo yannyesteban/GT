@@ -162,9 +162,36 @@ namespace GT {
 
 
 			Cmd cmd;
-			std::string x = cmd.encode(encodeInfo.commandExp, cmdData);
+			std::string strCommand = cmd.encode(encodeInfo.commandExp, cmdData);
 
-			std::cout << "new command es : " << encodeInfo.commandExp  << x << "\n\n";
+			std::cout << "new command es : " << encodeInfo.commandExp  << strCommand << "\n\n";
+
+			GT::RCommand r = {
+				10020,
+				info.mode,
+				Info.client,
+				"",
+				"",
+				"",
+				"",//name
+				info.unitId,
+				0,
+				0,
+				"",// date
+				1,
+				info.index,//index
+				ClientMsg::Request,
+				0,// time
+				0,// Delay
+				info.index,
+				0
+			};
+
+			strcpy_s(r.message, sizeof r.message, strCommand.c_str());
+			strcpy_s(r.command, sizeof r.command, "");
+			strcpy_s(r.user, sizeof r.user, info.user.c_str());
+
+			sendCommand(r);
 
 
 		}
@@ -646,6 +673,13 @@ namespace GT {
 		response.unitId = request->unitId;
 		//jsonResponse(Info.client, &response);
 
+	}
+
+	void WebServer::sendCommand(GT::RCommand rCommand)
+	{
+		char buffer[1024];
+		memcpy(buffer, &rCommand, sizeof(rCommand));
+		sendToServers(buffer, (int)sizeof(buffer));
 	}
 
 	int WebServer::sendToServers(char* buffer, int len)

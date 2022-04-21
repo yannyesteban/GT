@@ -85,7 +85,7 @@ std::string Cmd::toList(std::vector<std::string> data, std::string sep)
 {
 	std::string list = "";
 	
-	for (int i = 1; i < data.size(); i++) {
+	for (int i = 0; i < data.size(); i++) {
 
 		if (list != "") {
 			list += sep + data[i];

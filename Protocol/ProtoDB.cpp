@@ -1100,7 +1100,6 @@ namespace GT {
 						}
 						
 					}
-					
 
 					info.packno = std::string(1, packNo % 256);
 					delete result;
