@@ -6,7 +6,7 @@ bool isNumber(std::string ss) {
 
 	std::smatch m;
 	
-	std::regex re("^-?[0-9][0-9,\.]+$");
+	std::regex re("^-?[0-9][0-9,\\.]+$");
 
 	if (std::regex_search(ss, m, re)) {
 		return true;
@@ -896,6 +896,99 @@ namespace WC {
 		}
 	}
 
+	bool Webcar::saveTracking(int unitId, std::map<std::string, std::string> data) {
+		
+
+		try {
+			std::vector<string> fields = {
+
+				"unit_id", "device_id", "date_time", "longitude", "latitude",
+				"speed", "heading", "altitude", "satellite", "event_id",
+				"mileage", "input_status", "voltage_level_i1", "voltage_level_i2", "output_status",
+				"voltage_output","pulse_i3", "pulse_i4", "info"
+				
+			};
+
+			if (stmtTracking == nullptr) {
+
+				stmtTracking = cn->prepareStatement(
+					R"(INSERT IGNORE INTO tracks_2020 
+						(
+							codequipo, id_equipo, fecha_hora, longitud, latitud,
+							velocidad, heading, altitud, satelites, event_id, 
+							millas, input,  analog_input_1, analog_input_2, output,
+							analog_output, counter_1, counter_2, info
+						)
+						VALUES (
+							?,?,?,?,?,
+							?,?,?,?,?,
+							?,?,?,?,?,
+							?,?,?,?
+						)
+					)");
+			}
+
+			InfoDevice info = getInfoDevice(data["device_id"].c_str());
+			
+			
+			stmtTracking->setInt(1, info.codequipo);
+
+			for (int i = 1; i < fields.size(); i++) {
+				if (data[fields[i]] == "") {
+					if (fields[i] == "date_time" || fields[i] == "longitude" || fields[i] == "longitude" ||
+						fields[i] == "latitude" || fields[i] == "speed" || fields[i] == "heading" ||
+						fields[i] == "altitude" || fields[i] == "satellite" || fields[i] == "event_id" ||
+						fields[i] == "input_status" || fields[i] == "voltage_level_i1" || fields[i] == "voltage_level_i2" ||
+						fields[i] == "pulse_i3" || fields[i] == "pulse_i4" || fields[i] == "battery_voltage" ||
+						fields[i] == "voltage_output")
+					{
+						stmtTracking->setNull(i + 1, sql::DataType::INTEGER);
+					}
+					else {
+						stmtTracking->setNull(i + 1, sql::DataType::VARCHAR);
+					}
+				}
+				else {
+					stmtTracking->setString(i + 1, data[fields[i]].c_str());
+				}
+				//std::cout << "\n i: " << i << " - " << fields[i] << " ";
+			}
+
+			stmtTracking->execute();
+
+			
+			std::cout << "saving WEBCAR tracking from: " << info.codequipo << "\n";
+			int trackId = 0;
+			sql::ResultSet* result = nullptr;
+			if (stmtLastId->execute()) {
+
+				result = stmtLastId->getResultSet();
+
+				if (result->next()) {
+					trackId = result->getInt("last_id");
+				}
+				delete result;
+			}
+
+			WC::TrackParam P({ trackId, info.codequipo, data["device_id"], data["date_time"], 
+				stof(data["longitude"]), stof(data["latitude"]),
+				stoi(data["speed"]), stoi(data["input_status"]) });
+			evalTrack(&P);
+		}
+
+		catch (sql::SQLException& e) {
+			if (e.getErrorCode() == 1062) {
+				cout << "WEBCAR ERR: DUPLICATE\n";
+			}
+			else {
+				cout << endl << " (MySQL error code: " << e.getErrorCode();
+			}
+		}
+
+		return true;
+	}
+
+
 	AppConfig Webcar::loadConfig(const char* path) {
 
 		//"C:\\source\\cpp\\XT\\XTServer\\config.json"
@@ -944,6 +1037,51 @@ namespace WC {
 		}
 
 		return config;
+	}
+
+	std::string Webcar::encodeTracking(std::map<std::string, std::string> data)
+	{
+		std::vector<std::string> params = {
+			"ID",
+			"dateTime",
+			"longitude",
+			"latitude",
+			"speed",
+			"heading",
+			"altitude",
+			"satellites",
+			"almCode",
+			"mileage",
+			"in-sta",
+			"voltage_level_i1",
+			"voltage_level_i2",
+			"out-sta",
+			"pulse_i3",
+			"pulse_i4",
+			"rtc"
+
+		};
+
+		
+		std::string str = "";
+
+		for (std::vector<std::string>::iterator it = params.begin(); it != params.end(); ++it) {
+			if (str != "") {
+				if (data[*it] != "") {
+					str += "," + data[*it];
+				}
+				else {
+					str += ",0";
+				}
+
+			}
+			else {
+				str = data[*it];
+			}
+
+		}
+
+		return str;
 	}
 
 }

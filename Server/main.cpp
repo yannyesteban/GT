@@ -1,46 +1,64 @@
-// WSServer.cpp : Este archivo contiene la función "main". La ejecución del programa comienza y termina ahí.
+// GTServer.cpp : Este archivo contiene la función "main". La ejecución del programa comienza y termina ahí.
 //
+
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
-#include "Conn.h"
-#include "WebServer.h"
-#include "JsonConfig.h"
 #include "Color.h"
+
+#include "Server.h"
+#include "Config.h"
+
 #include <iomanip> // para la fecha
+
+#include "GTComm.h"
 
 
 using namespace GT;
 
-
-int main()
+int main(int argc, char* argv[])
 {
     setlocale(LC_CTYPE, "Spanish");
+
+    std::string configFile = "setting.json";
+    if (argc > 1) {
+        configFile = std::string(argv[1]);
+    }
+    
+
     system("cls");
+
+    auto inf = GTAppConfig({
+
+        });
+    auto admin = new GTComm(inf);
+    admin->start(configFile.c_str());
+    return 12474737;
 
     auto t = std::time(nullptr);
     auto tm = *std::localtime(&t);
-    std::cout << std::put_time(&tm, "%d-%m-%Y %H-%M-%S") << std::endl;
+    std::cout << std::put_time(&tm, "%d/%m/%Y %H:%M:%S") << std::endl;
 
-    auto appInfo = GT::JsonConfig::load("wsserver.json");
-    printf("APP NAME: %s\n", appInfo.appname);
+    Color::set(4);
+    std::cout << "GT v1.1 (2022)!\n";
+    Color::set(0);
+
+    auto appInfo = GT::Config::load("config.json");
+    std::cout << Color::_yellow() << "NAME: " << appInfo.appname << Color::_reset() << std::endl;
     printf("Version: %s \n", appInfo.version);
     printf("DB Name: %s\n", appInfo.db.name);
     printf("Socket Port: %d\n\n", appInfo.port);
     printf("Max Clients: %d\n\n", appInfo.max_clients);
+    //printf("Time: %s\n\n", XT::Time::now());
 
-    Color::set(4);
-    std::cout << "GT WEB-Socket v1.2 (May 2022)!\n\n\n";
-    Color::set(0);
     SocketInfo Info;
     Info.host = (char*)"127.0.0.1";
-    Info.port = 3310;
+    Info.port = appInfo.port;
     Info.maxClients = appInfo.max_clients;
 
-    WebServer* S = new WebServer(Info);
-    S->init();
-    //S->start();
+    Server * S = new Server(Info);
+    S->init(appInfo);
+    S->start();
     
-    //S->startListen();
     return 1;
 }
 

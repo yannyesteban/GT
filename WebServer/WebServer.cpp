@@ -144,54 +144,61 @@ namespace GT {
 			});
 			evalCommand(info);
 			
-			EncodeCommand encodeInfo = db->infoCommand(info.unitId, info.command, info.index);
+			if (info.status == 2) {
+				EncodeCommand encodeInfo = db->infoCommand(info.unitId, info.command, info.index);
 
 
-			std::map<std::string, std::string> cmdData;
-			cmdData["id"] = encodeInfo.deviceId;
-			cmdData["pass"] = encodeInfo.pass;
-			cmdData["cmd"] = encodeInfo.command;
+				std::map<std::string, std::string> cmdData;
+				cmdData["id"] = encodeInfo.deviceId;
+				cmdData["pass"] = encodeInfo.pass;
+				cmdData["cmd"] = encodeInfo.command;
 
 
-			cmdData["fpacklen"] = encodeInfo.packlen;
-			cmdData["fchecksum"] = encodeInfo.checksum;
-			cmdData["index"] = std::to_string(encodeInfo.index);
-			cmdData["oparams"] = encodeInfo.listOParams;
-			cmdData["params"] = encodeInfo.listParams;
-			cmdData["packno"] = encodeInfo.packno;
+				cmdData["fpacklen"] = encodeInfo.packlen;
+				cmdData["fchecksum"] = encodeInfo.checksum;
+				cmdData["index"] = std::to_string(encodeInfo.index);
+				cmdData["oparams"] = encodeInfo.listOParams;
+				cmdData["params"] = encodeInfo.listParams;
+				cmdData["packno"] = encodeInfo.packno;
 
 
-			Cmd cmd;
-			std::string strCommand = cmd.encode(encodeInfo.commandExp, cmdData);
+				Cmd cmd;
+				std::string strCommand = cmd.encode(encodeInfo.commandExp, cmdData);
 
-			std::cout << "new command es : " << encodeInfo.commandExp  << strCommand << "\n\n";
+				std::cout << "new command es : " << encodeInfo.commandExp << strCommand << "\n\n";
 
-			GT::RCommand r = {
-				10020,
-				info.mode,
-				Info.client,
-				"",
-				"",
-				"",
-				"",//name
-				info.unitId,
-				0,
-				0,
-				"",// date
-				1,
-				info.index,//index
-				ClientMsg::Request,
-				0,// time
-				0,// Delay
-				info.index,
-				0
-			};
+				GT::RCommand r = {
+					10020,
+					info.mode,
+					Info.client,
+					"",
+					"",
+					"",
+					"",//name
+					info.unitId,
+					0,
+					0,
+					"",// date
+					1,
+					info.index,//index
+					ClientMsg::Request,
+					0,// time
+					0,// Delay
+					info.index,
+					0
+				};
 
-			strcpy_s(r.message, sizeof r.message, strCommand.c_str());
-			strcpy_s(r.command, sizeof r.command, "");
-			strcpy_s(r.user, sizeof r.user, info.user.c_str());
+				strcpy_s(r.message, sizeof r.message, strCommand.c_str());
+				strcpy_s(r.command, sizeof r.command, "");
+				strcpy_s(r.user, sizeof r.user, info.user.c_str());
 
-			sendCommand(r);
+				sendCommand(r);
+			}
+			else {
+				std::cout << "SAVING COMMAND FOR LATE...\n";
+			}
+
+			
 
 
 		}

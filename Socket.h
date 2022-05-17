@@ -46,7 +46,7 @@ namespace GT {
 		void start();
 		void stop();
 
-		int disconect(SOCKET client);
+		int disconnect(SOCKET client);
 	
 		void (*CallConection)(ConnInfo Info);
 		void (*CallMessage)(ConnInfo Info);

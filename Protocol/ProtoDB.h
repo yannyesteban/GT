@@ -1,10 +1,10 @@
 #pragma once
-#define _CRT_SECURE_NO_WARNINGS
+//#define _CRT_SECURE_NO_WARNINGS
 #define MULTILINE(...) #__VA_ARGS__
 #include <ctime>
 #include "Color.h"
 #include "Types.h"
-#include "Tool.h"
+
 #include "ConsoleColors.h"
 #include <mysql/jdbc.h>
 #include <string>
@@ -12,6 +12,8 @@
 #include "rapidjson/document.h"
 #include "rapidjson/prettywriter.h" // for stringify JSON
 #include "rapidjson/filereadstream.h"
+
+#include "GTServer/Tool.h"
 
 
 #include "Cmd.h"
@@ -29,6 +31,27 @@ void split22(const std::string& str, Container& cont, char delim) {
 }
 namespace GT {
 
+	struct InfoEvent {
+		int unitId;
+		int eventId;
+		int mode;
+		std::string title;
+		std::string info;
+		std::string user;
+		unsigned short status;
+	};
+
+
+	struct DBEvent1 {
+		int unitId;
+		char dateTime[20] = "";
+		int eventId;
+		int mode;
+		char title[1024] = "";
+		char info[1024] = "";
+		char user[45] = "";
+		unsigned short status;
+	};
 
 	struct EncodeCommand {
 		int unitId;
@@ -135,12 +158,12 @@ namespace GT {
 
 		std::string commandEncode(int unitId, int commandId, int index, int mode, std::string params);
 
-		InfoClient getInfoClient(string id);
+		InfoClient getInfoClient(std::string id);
 
 		ClientProto decodeProto(std::string);
-		void loadProtocols();
+		std::map<int, ClientProto> loadProtocols();
 		bool saveTrack(int unitId, std::map<std::string, std::string> data);
-		bool updateCommand(int unitId, int commandId, int index, std::string value);
+		bool updateCommand(int unitId, std::string command, int index, std::string value);
 		
 		std::map<std::string, std::string> decodeExp(std::string s, ClientProto& proto);
 
@@ -149,7 +172,7 @@ namespace GT {
 		std::map<std::string, std::string> decodeTracking(std::string s, ClientProto& proto);
 		
 		std::vector<std::string> decodeParams(std::string s, ClientProto& proto);
-		std::string encodeToArray(std::vector<string>);
+		std::string encodeToArray(std::vector<std::string>);
 
 
 		void evalData(std::map<std::string, std::string>& data, ClientProto & proto);
@@ -165,10 +188,16 @@ namespace GT {
 		EncodeCommand infoCommand(int unitId, std::string command, int index);
 		std::map<int, ClientProto> mProto;
 
+		std::vector<int> loadSynchValue();
+		std::vector<std::string> loadIdentExp();
+
+		void insertEvent(InfoEvent& infoEvent);
+
 	private:
 		bool debug;
 		InfoDB info;
 		Cmd cmd;
+		
 		
 		
 		sql::Driver* driver = nullptr;
@@ -189,7 +218,10 @@ namespace GT {
 		sql::PreparedStatement* stmtInfoCommand = nullptr;
 		sql::PreparedStatement* stmtInsertTracking = nullptr;
 
+		sql::PreparedStatement* stmtSynchValue = nullptr;
+		sql::PreparedStatement* stmtIdentExp = nullptr;
 		
+		sql::PreparedStatement* stmtEvent = nullptr;
 
 		bool initialized = false;
 	};

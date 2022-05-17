@@ -298,7 +298,7 @@ namespace GT {
 
 			if (oldSocket != 0 && oldSocket != socket) {
 				std::cout << "oldSocket: " << oldSocket << "  new is : " << socket << "\n\n";
-				disconect(oldSocket);
+				disconnect(oldSocket);
 				clients.erase(oldSocket);
 			}
 
@@ -483,7 +483,7 @@ namespace GT {
 			std::cout << "Unit: " << response.unit << std::endl;
 			*/
 
-			int value = disconect(device.socket);
+			int value = disconnect(device.socket);
 
 			if (value > 0) {
 				std::cout << "DISCONECTING TO: " << device.socket << "\n";
@@ -504,7 +504,7 @@ namespace GT {
 	
 	void Server::closeClient(SOCKET client) {
 
-		disconect(client);
+		disconnect(client);
 		
 		deleteClient(client);
 		
@@ -615,7 +615,7 @@ namespace GT {
 
 			if (oldSocket != 0 && oldSocket != socket) {
 				std::cout << "oldSocket: " << oldSocket << "  new is : " << socket << "\n\n";
-				disconect(oldSocket);
+				disconnect(oldSocket);
 				clients.erase(oldSocket);
 			}
 
@@ -775,7 +775,7 @@ namespace GT {
 
 			if (oldSocket != 0 && oldSocket != socket) {
 				std::cout << "oldSocket: " << oldSocket << "  new is : " << socket << "\n\n";
-				disconect(oldSocket);
+				disconnect(oldSocket);
 				clients.erase(oldSocket);
 			}
 
@@ -898,7 +898,7 @@ namespace GT {
 		case '*':
 			puts("* asterisco");
 			//shutdown(Info.client, 0);
-			disconect(Info.client);
+			disconnect(Info.client);
 			break;
 		case '$':
 			//puts("$ dolar");

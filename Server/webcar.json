@@ -1,0 +1,15 @@
+{
+  "appname": "WebcarSync",
+  "db": {
+    "host": "localhost",
+    "name": "cota",
+    "pass": "123456",
+    "port": "3306",
+    "user": "root"
+  },
+  "debug": false,
+  "max_clients": 35,
+  "port": 3317,
+  "show_cache": false,
+  "version": "1.0.0.1"
+}

@@ -190,6 +190,9 @@ namespace WC {
 
 		InfoDevice getInfoDevice(std::string unitId);
 		void insertTrack(std::string name, std::string track);
+		std::string encodeTracking(std::map<std::string, std::string> data);
+
+		bool saveTracking(int unitId, std::map<std::string, std::string> data);
 		AppConfig config;
 	private:
 		void reconnect();
@@ -212,6 +215,8 @@ namespace WC {
 		sql::PreparedStatement* stmtLastId;
 
 		sql::PreparedStatement* stmtTrack;
+		sql::PreparedStatement* stmtTracking;
+
 		std::map<std::string, int> cPos;
 		const char* qSpeedVar = "SELECT ? into @_vel;";
 		//const char* qMain = R"(SELECT @_vel:=? as v1,@_vel+1 as z,

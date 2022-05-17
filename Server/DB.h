@@ -74,8 +74,6 @@ namespace GT {
 
 	};
 
-	
-
 	struct DBEvent {
 		int unitId;
 		char dateTime[20] = "";

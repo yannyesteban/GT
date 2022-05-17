@@ -34,7 +34,7 @@ namespace GT {
 	void Socket::stop() {
 	}
 
-	int Socket::disconect(SOCKET client) {
+	int Socket::disconnect(SOCKET client) {
 		//shutdown(client, 2);
 		
 		for (int i = 0; i < maxClients; i++) {

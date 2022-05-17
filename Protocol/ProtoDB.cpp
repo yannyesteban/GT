@@ -171,7 +171,10 @@ namespace GT {
 		stmtInfoClient = nullptr;
 		stmtInsertTracking = nullptr;
 		stmtInfoCommand = nullptr;
-		
+		stmtSynchValue = nullptr;
+		stmtIdentExp = nullptr;
+		stmtEvent = nullptr;
+
 		initialized = false;
 	}
 
@@ -211,7 +214,9 @@ namespace GT {
 						`name` = COALESCE(?, `name`),
 						`params` = COALESCE(?, `params`),
 						`query` = COALESCE(?, `query`),
-						`user` = ?
+						`user` = ?,
+						`status` = ?
+
 
 				)");
 			}
@@ -251,6 +256,8 @@ namespace GT {
 			}
 			
 			stmtSaveCommand->setString(14, info.user.c_str());
+
+			stmtSaveCommand->setInt(15, info.status);
 
 			stmtSaveCommand->execute();
 
@@ -345,7 +352,7 @@ namespace GT {
 					modeCommand = result->getInt("mode");
 					useTag = (unsigned short)result->getInt("use_tag");
 					
-					std:string proto = result->getString("protocol").c_str();
+					std::string proto = result->getString("protocol").c_str();
 					//auto j = Json(proto.c_str());
 
 					
@@ -516,19 +523,19 @@ namespace GT {
 	}
 
 	
-	void ProtoDB::loadProtocols() {
-
+	std::map<int, ClientProto> ProtoDB::loadProtocols() {
+		std::map<int, ClientProto> map;
 		if (!connect()) {
-			return;
+			return map;
 		}
+		
 
 		try {
 
 			if (stmtLoadProtocols == nullptr) {
 				stmtLoadProtocols = cn->prepareStatement(R"(
-					SELECT id, tag_length, pass_default as pass, protocol_pre,sync_header, format_id, 
-					token_ok, token_error,token_resp, protocol
-					FROM device_version as d 
+					SELECT id, document
+					FROM protocol as d 
 				)");
 			}
 
@@ -539,14 +546,17 @@ namespace GT {
 				int id;
 				std::string pass;
 				std::string protocol;
-				mProto.clear();
+				//mProto.clear();
 				while (result->next()) {
 					id = result->getInt("id");
-					protocol = result->getString("protocol");
+					protocol = result->getString("document");
+
+					
 
 
-
-					mProto[id] = decodeProto(protocol.c_str());
+					//mProto[id] = decodeProto(protocol.c_str());
+					map[id] = decodeProto(protocol.c_str());
+					//std::cout << "id: " << id << "\n\n";
 
 				}
 
@@ -561,7 +571,7 @@ namespace GT {
 		catch (sql::SQLException& e) {
 			SQLException(e, __LINE__);
 		}
-
+		return map;
 	}
 	
 	ClientProto ProtoDB::decodeProto(std::string jsonDoc)
@@ -574,27 +584,31 @@ namespace GT {
 			return proto;
 		}
 
-		if (doc.HasMember("name")) {
+		if (doc.HasMember("name") && !doc["name"].IsNull()) {
 			proto.protoName = doc["name"].GetString();
 		}
 
-		if (doc.HasMember("pass")) {
+		if (doc.HasMember("pass") && !doc["pass"].IsNull()) {
 			proto.pass = doc["pass"].GetString();
 		}
 
-		if (doc.HasMember("header")) {
+		if (doc.HasMember("header") && !doc["header"].IsNull()) {
 			proto.header = doc["header"].GetInt();
 		}
 		if (doc.HasMember("decode")) {
 			
 			Value& decode = doc["decode"];
-				
+			std::cout << "DECODE" << "\n";
 			if (decode.IsObject()) {
-				if (decode.HasMember("tracking")) {
+				std::cout << "is Object" << "\n";
+				if (decode.HasMember("tracking") && !decode["tracking"].IsNull()) {
+					//std::cout << "trackig" << "\n";
 					proto.tracking = decode["tracking"].GetString();
+
+					std::cout << proto.tracking << "\n";
 				}
 
-				if (decode.HasMember("tracking_elem")) {
+				if (decode.HasMember("tracking_elem") && !decode["tracking_elem"].IsNull()) {
 					proto.trackingNames.clear();
 
 					const Value& arr = decode["tracking_elem"].GetArray();
@@ -761,7 +775,7 @@ namespace GT {
 				else {
 					stmtInsertTracking->setString(i + 1, data[fields[i]].c_str());
 				}
-				std::cout << "\n i: " << i << " - " << fields[i] << " ";
+				//std::cout << "\n i: " << i << " - " << fields[i] << " ";
 			}
 			
 			stmtInsertTracking->execute();
@@ -774,7 +788,7 @@ namespace GT {
 		return true;
 	}
 
-	bool ProtoDB::updateCommand(int unitId, int commandId, int index, std::string values)
+	bool ProtoDB::updateCommand(int unitId, std::string command, int index, std::string values)
 	{
 		
 		if (!connect()) {
@@ -786,16 +800,20 @@ namespace GT {
 			if (stmtUpdateCommand == nullptr) {
 				stmtUpdateCommand = cn->prepareStatement(
 					R"(	UPDATE unit_cmd as uc
-						INNER JOIN device_command as c ON c.id = uc.command_id
-						SET uc.values = CASE uc.mode WHEN 1 THEN uc.values ELSE ? END
-						WHERE uc.unit_id = ? AND uc.command_id = ? AND uc.index = CASE c.w_index WHEN 1 THEN ? ELSE 0 END 
+						
+						SET
+							uc.status = 3,
+							uc.values = CASE uc.mode WHEN 1 THEN uc.values ELSE ? END
+						WHERE uc.unit_id = ? AND uc.command = ? AND uc.index = ? 
 					)");
 			}
-
+			std::cout << "TODO BIEN :" <<  unitId << " " << command << " " << values.c_str() << "\n\n";
 			stmtUpdateCommand->setString(1, values.c_str());
 			stmtUpdateCommand->setInt(2, unitId);
-			stmtUpdateCommand->setInt(3, commandId);
+			stmtUpdateCommand->setString(3, command);
 			stmtUpdateCommand->setInt(4, index);
+			stmtUpdateCommand->execute();
+
 
 		}
 		catch (sql::SQLException& e) {
@@ -818,16 +836,10 @@ namespace GT {
 		for (int i = 1; i < m.size(); i++) {
 			if (i < names.size()) {
 				map[names[i - 1]] = m[i].str();
-				cout << "\nm [" << names[i - 1] << "]: " << m[i].str();
+				//cout << "\nm [" << names[i - 1] << "]: " << m[i].str();
 			}
 		}
-		printf("\n\n");
-
-		for (std::map<std::string, std::string>::iterator it = map.begin(); it != map.end(); ++it) {
-			printf("%20s", it->first.c_str());
-			printf("%50s\n", it->second.c_str());
-
-		}
+		
 
 		return map;
 	}
@@ -850,16 +862,10 @@ namespace GT {
 			printf("----\n\n");
 			if (i <= names.size()) {
 				map[names[i - 1]] = m[i].str();
-				cout << "\nm [" << names[i - 1] << "]: " << m[i].str();
+				//cout << "\nm [" << names[i - 1] << "]: " << m[i].str();
 			}
 		}
-		printf("sixe: %d\n%s...\n\n", m.size(), s.c_str());
-
-		for (std::map<std::string, std::string>::iterator it = map.begin(); it != map.end(); ++it) {
-			printf("%20s", it->first.c_str());
-			printf("%50s\n", it->second.c_str());
-
-		}
+		
 
 		return map;
 	}
@@ -884,16 +890,10 @@ namespace GT {
 		for (int i = 1; i < m.size(); i++) {
 			if (i < names.size()) {
 				map[names[i - 1]] = m[i].str();
-				cout << "\nm [" << names[i - 1] << "]: " << m[i].str();
+				//cout << "\nm [" << names[i - 1] << "]: " << m[i].str();
 			}
 		}
-		printf("\n\n");
-
-		for (std::map<std::string, std::string>::iterator it = map.begin(); it != map.end(); ++it) {
-			printf("%20s", it->first.c_str());
-			printf("%50s\n", it->second.c_str());
-
-		}
+		
 
 		return map;
 	}
@@ -905,7 +905,7 @@ namespace GT {
 	void ProtoDB::evalData(std::map<std::string, std::string> & data, ClientProto & proto)
 	{
 		
-		printf("\n\n");
+		//printf("\n\n");
 
 		std::map<std::string, std::string> info;
 
@@ -925,8 +925,8 @@ namespace GT {
 			}
 			//std::cout << field.name << "\n";
 			
-			printf("%20s", it->first.c_str());
-			printf("%50s\n", it->second.c_str());
+			//printf("%20s", it->first.c_str());
+			//printf("%50s\n", it->second.c_str());
 
 			
 		}
@@ -943,8 +943,8 @@ namespace GT {
 		rapidjson::Value msg;
 
 		for (std::map<std::string, std::string>::iterator it = data.begin(); it != data.end(); ++it) {
-			printf("%20s", it->first.c_str());
-			printf("%50s\n", it->second.c_str());
+			//printf("%20s", it->first.c_str());
+			//printf("%50s\n", it->second.c_str());
 			message = it->second;
 			rapidjson::Value key(it->first.c_str(), it->first.size(), json.GetAllocator());
 			msg.SetString(message.c_str(), message.size(), json.GetAllocator());
@@ -961,7 +961,7 @@ namespace GT {
 
 		json.Accept(wr);
 
-		std::cout << " JSON : " << sbuffer.GetString() << "\n\n";
+		//std::cout << " JSON : " << sbuffer.GetString() << "\n\n";
 		return sbuffer.GetString();
 	}
 	bool ProtoDB::isTrack(std::string s, ClientProto& proto)
@@ -1006,15 +1006,15 @@ namespace GT {
 					R"(SELECT
 
 						d.name as deviceId,
-						p.document->'$.name' as name,
-						p.document->'$.pass' as pass,
-						p.document->'$.header' as header,
-						p.document->'$.encode.commandExp' as commandExp,
-						p.document->'$.encode.packlen' as packlen,
-						p.document->'$.encode.checksum' as checksum,
-						p.document->'$.encode.packnoBegin' as packnoBegin,
-						p.document->'$.encode.packnoEnd' as packnoEnd,
-						p.document->'$.encode.deltaIndex' as deltaIndex,
+						p.document->>'$.name' as name,
+						p.document->>'$.pass' as pass,
+						p.document->>'$.header' as header,
+						p.document->>'$.encode.commandExp' as commandExp,
+						p.document->>'$.encode.packlen' as packlen,
+						p.document->>'$.encode.checksum' as checksum,
+						p.document->>'$.encode.packnoBegin' as packnoBegin,
+						p.document->>'$.encode.packnoEnd' as packnoEnd,
+						p.document->>'$.encode.deltaIndex' as deltaIndex,
 						j->'$.name' as command,
 						j->'$.usePass' as usePass,
 						j->'$.indexed' as indexed,
@@ -1140,5 +1140,126 @@ namespace GT {
 
 		//std::cout << " JSON-STRING-ARRAY: " << sbuffer.GetString() << "\n";
 		return sbuffer.GetString();
+	}
+
+
+	std::vector<int> ProtoDB::loadSynchValue() {
+
+		std::vector<int> list;
+
+		if (!connect()) {
+			return list;
+		}
+
+		try {
+
+			if (stmtSynchValue == nullptr) {
+				stmtSynchValue = cn->prepareStatement(R"(
+					SELECT value FROM device_synch where status = 1
+				)");
+			}
+
+			if (stmtSynchValue->execute()) {
+				sql::ResultSet* result;
+
+				result = stmtSynchValue->getResultSet();
+				
+				while (result->next()) {
+					list.push_back(result->getInt("value"));
+				}
+
+				delete result;
+			}
+
+
+
+		}
+		catch (sql::SQLException& e) {
+			SQLException(e, __LINE__);
+		}
+		return list;
+
+	}
+
+	std::vector<std::string> ProtoDB::loadIdentExp() {
+
+		std::vector<std::string> list;
+
+		if (!connect()) {
+			return list;
+		}
+
+		try {
+
+			if (stmtIdentExp == nullptr) {
+				stmtIdentExp = cn->prepareStatement(R"(
+					SELECT expression as value FROM device_detect where status = 1
+				)");
+			}
+
+			if (stmtIdentExp->execute()) {
+				sql::ResultSet* result;
+
+				result = stmtIdentExp->getResultSet();
+
+				while (result->next()) {
+					list.push_back(result->getString("value").c_str());
+				}
+
+				delete result;
+			}
+
+		}
+		catch (sql::SQLException& e) {
+			SQLException(e, __LINE__);
+		}
+
+		return list;
+
+	}
+
+
+	void ProtoDB::insertEvent(InfoEvent & infoEvent) {
+
+
+		if (!connect()) {
+			return;
+		}
+
+		try {
+
+			if (stmtEvent == nullptr) {
+				stmtEvent = cn->prepareStatement(
+					R"(
+
+					INSERT INTO event (`unit_id`, `date_time`, `event_id`, `mode`, `info`, `status`,`title`,`user`)
+	
+					SELECT ?, null, ue.event_id, ue.mode, ?, 0, COALESCE (ue.name, ?), ?
+					FROM unit_event as ue
+					WHERE (unit_id = ? OR unit_id IS NULL) AND ue.event_id = ? AND ue.mode > 0
+	
+					ORDER BY ue.unit_id DESC
+					LIMIT 1;
+				
+			)");
+			}
+
+			stmtEvent->setInt(1, infoEvent.unitId);
+			
+			stmtEvent->setString(2, infoEvent.info);
+			stmtEvent->setString(3, infoEvent.title);
+
+			stmtEvent->setString(4, infoEvent.user);
+			stmtEvent->setInt(5, infoEvent.unitId);
+			stmtEvent->setInt(6, infoEvent.eventId);
+
+			stmtEvent->execute();
+
+
+		}
+		catch (sql::SQLException& e) {
+			SQLException(e, __LINE__);
+		}
+
 	}
 }

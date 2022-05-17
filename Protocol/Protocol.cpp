@@ -77,7 +77,7 @@ std::string process(std::string ss, std::map<std::string, std::string> data) {
 }
 
 
-std::map<std::string, std::string> decodeExp(std::string s, std::string exp, std::vector<string> names) {
+std::map<std::string, std::string> decodeExp(std::string s, std::string exp, std::vector<std::string> names) {
 	
 	regex regexp(exp);
 	smatch m;
@@ -268,7 +268,7 @@ int main()
 
 	db->saveCmd({
 		4032,
-		2597,
+		"2597",
 		5,
 		2,
 		1,
@@ -282,7 +282,7 @@ int main()
 
 	db->saveCmd({
 		4032,
-		2597,
+		"2597",
 		5,
 		1,
 		1,
@@ -301,7 +301,7 @@ int main()
 
 	InfoCmd info2 = {
 		4032,
-		2597,
+		"2597",
 		1,
 		1,
 		1,
@@ -326,7 +326,7 @@ int main()
 	std::string user;
 	InfoCmd info = {
 		4032,
-		2549,
+		"202",
 		1,
 		2,
 		1,

@@ -54,6 +54,38 @@ std::string Cmd::encode(std::string ss, std::map<std::string, std::string> data)
 	return str;
 }
 
+std::map<std::string, std::string> Cmd::encode(std::string exp, std::vector<std::string> names, std::string message) {
+
+	std::regex regexp(exp);
+	
+	std::smatch m;
+
+
+	std::map<std::string, std::string> map;
+
+	std::regex_search(message, m, regexp);
+	
+	for (int i = 0; i < m.size(); i++) {
+		
+
+		if (i < names.size()) {
+			map[names[i]] = m[i+1].str();
+			//std::cout << "\nm [" << names[i] << "]: " << m[i+1].str();
+		}
+	}
+	return map;
+	/*
+	printf("\n\n");
+
+	for (std::map<std::string, std::string>::iterator it = map.begin(); it != map.end(); ++it) {
+		printf("%20s", it->first.c_str());
+		printf("%50s\n", it->second.c_str());
+
+	}
+
+	return map;*/
+}
+
 std::string Cmd::encodeToArray(std::vector<std::string> params)
 {
 
@@ -96,4 +128,49 @@ std::string Cmd::toList(std::vector<std::string> data, std::string sep)
 	}
 
 	return list;
+}
+
+std::string Cmd::getName(std::string exp, std::string str) {
+
+	std::smatch m;
+
+	std::string name = "";
+
+	std::regex Exp(exp.c_str());
+	
+	while (std::regex_search(str, m, Exp)) {
+		
+		if (m[1] != "") {
+			name = m[1].str();
+			break;
+		}
+		
+		str = m.suffix().str();
+	}
+
+	return name;
+
+}
+
+
+std::vector<std::string> Cmd::splitParams(const std::string& s, char delim) {
+	std::vector<std::string> result;
+	std::stringstream ss(s);
+	std::string item;
+
+	while (getline(ss, item, delim)) {
+		result.push_back(item);
+	}
+
+	return result;
+}
+
+int Cmd::toInteger(std::string value)
+{
+	
+	int i;
+	std::istringstream(value) >> i;
+
+	
+	return i;
 }
