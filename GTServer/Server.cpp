@@ -254,7 +254,9 @@ namespace GT {
 			//std::cout << " HOLA \n\n";
 			//printf("Info.Device %s, %d, version: %d\n", clients[Info.client].device_id, clients[Info.client].id, clients[Info.client].version_id);
 			
-			if (IStartek.isMe(Info)) {
+			std::string buf = Info.buffer;
+			std::string name = isName("&&[^,]+,(\\d+),\\d+", buf);
+			if (name != "") {
 				deviceMessage2(Info);
 			}
 			else {

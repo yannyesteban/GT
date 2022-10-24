@@ -16,7 +16,27 @@
 #include <iomanip> // para la fecha
 
 #include "iStartek.h"
+std::string isName(std::string exp, std::string str) {
 
+	std::smatch m;
+
+	std::string name = "";
+
+	std::regex Exp(exp.c_str());
+
+	while (std::regex_search(str, m, Exp)) {
+
+		if (m[1] != "") {
+			name = m[1].str();
+			break;
+		}
+
+		str = m.suffix().str();
+	}
+
+	return name;
+
+}
 namespace GT {
 	
 

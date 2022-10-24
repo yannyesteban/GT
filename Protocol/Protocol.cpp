@@ -25,6 +25,28 @@ int getCheckSum(char* buf, long bufLen) {
 	//sprintf(tmpBuf, "%03d", (unsigned int)(cks % 256));
 	return(cks % 256);
 }
+
+std::string getName(std::string exp, std::string str) {
+
+	std::smatch m;
+
+	std::string name = "";
+
+	std::regex Exp(exp.c_str());
+
+	while (std::regex_search(str, m, Exp)) {
+
+		if (m[1] != "") {
+			name = m[1].str();
+			break;
+		}
+
+		str = m.suffix().str();
+	}
+
+	return name;
+
+}
 std::string process(std::string ss, std::map<std::string, std::string> data) {
 
 	std::smatch m;
@@ -181,6 +203,13 @@ int main()
 	setlocale(LC_CTYPE, "Spanish");
 	system("cls");
 
+	std::string ss = "&&y178,2024000036,000,0,,220413183959";
+	std::string xx = getName("&&[^,]+,(\\d+),\\d+", ss);
+
+	//1012000372,2022-05-17 20:24:50
+	std::cout << xx;
+
+	return 1;
 
 	//return test2();
 	//return test();
