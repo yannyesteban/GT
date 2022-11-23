@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
     std::cout << std::put_time(&tm, "%d/%m/%Y %H:%M:%S") << std::endl;
 
     Color::set(4);
-    std::cout << "GT v1.0 (2020)!\n";
+    std::cout << "GT v1.0 (2022)!\n";
     Color::set(0);
 
     auto appInfo = GT::Config::load("config.json");
